@@ -1,0 +1,68 @@
+<script type="text/javascript">
+    require([
+            'jquery',
+            'Magento_Ui/js/modal/alert'
+        ],
+        function ($, alert) {
+            $('#authenticate').click(function (event) {
+                event.preventDefault();
+
+                const url = $(this).data('url');
+                const body = {
+                    "scope": $(this).data('scope'),
+                    "client_id": $(this).data('client-id')
+                }
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    contentType: 'application/x-www-form-urlencoded',
+                    data: body,
+                    success: function (data) {
+                        popupCenter({url: data.redirect_uri, title: "Authenticate", w: 500, h: 600})
+                    },
+                    error: function (jqXHR) {
+                        if (jqXHR !== null && jqXHR !== undefined && (jqXHR.status === 400 || jqXHR.status === 401)) {
+                            let message = 'Invalid Request';
+                            if (jqXHR.responseJSON !== null && jqXHR.responseJSON !== undefined &&
+                                jqXHR.responseJSON.message !== null && jqXHR.responseJSON.message !== undefined) {
+                                message = jqXHR.responseJSON.message;
+                            }
+                            alert({title: "Error", content: message});
+                        } else {
+                            alert({title: "Error", content: "Internal Server Error"});
+                        }
+                    }
+                });
+            });
+        });
+    const popupCenter = ({url, title, w, h}) => {
+        const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+        const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+
+        const width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth
+            ? document.documentElement.clientWidth : screen.width;
+        const height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight
+            ? document.documentElement.clientHeight : screen.height;
+
+        const systemZoom = width / window.screen.availWidth;
+        const left = (width - w) / 2 / systemZoom + dualScreenLeft
+        const top = (height - h) / 2 / systemZoom + dualScreenTop
+        const options = `scrollbars=yes,width=${w / systemZoom},height=${h / systemZoom},top=${top},left=${left}`
+        const newWindow = window.open(url, title, options);
+
+        if (window.focus) {
+            newWindow.focus();
+        }
+    }
+
+
+</script>
+
+<div class="actions actions-get-apikey">
+    <div id="validation_result" class="message-validation hidden"></div>
+    <button data-url="<?= /* @noEscape */
+    $block->getAuthenticationURL() ?>" data-scope="<?= $block->getScope() ?>"
+            data-client-id="<?= $block->getClientID() ?>" id="authenticate">
+        <span><?= $block->escapeHtml($block->getButtonLabel()) ?></span>
+    </button>
+</div>

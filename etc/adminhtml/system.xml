@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="autopilot" translate="label" sortOrder="99999">
+            <label>Autopilot</label>
+        </tab>
+        <section id="autopilot" translate="label" type="text" sortOrder="100" showInDefault="0"
+                 showInWebsite="1"
+                 showInStore="1">
+            <label>General</label>
+            <tab>autopilot</tab>
+            <resource>Autopilot_AP3Connector::config</resource>
+            <group id="general" translate="label" sortOrder="1" showInDefault="0" showInWebsite="1" showInStore="1">
+                <label>Autopilot General Configuration</label>
+                <field id="active" translate="label" type="select" showInDefault="0" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="oauth_wizard" translate="label" sortOrder="2" showInDefault="0" showInStore="1"
+                       showInWebsite="1">
+                    <label>Get API credentials</label>
+                    <frontend_model>Autopilot\AP3Connector\Block\Adminhtml\System\Config\AuthWizard</frontend_model>
+                    <depends>
+                        <field id="*/*/active">1</field>
+                    </depends>
+                </field>
+                <field id="apikey" translate="label" type="obscure" sortOrder="3" showInDefault="0" showInWebsite="1"
+                       showInStore="1">
+                    <label>API Key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <depends>
+                        <field id="*/*/active">1</field>
+                    </depends>
+                </field>
+                <field id="logs" translate="label" type="select" sortOrder="4" showInDefault="0"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Logs</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <depends>
+                        <field id="*/*/active">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
