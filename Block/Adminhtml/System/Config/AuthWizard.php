@@ -16,8 +16,12 @@ class AuthWizard extends Field
     private Data $helper;
     private ScopeManager $scopeManager;
 
-
-    public function __construct(Context $context, Data $helper, ScopeManager $scopeManager, array $data = [], ?SecureHtmlRenderer $secureRenderer = null)
+    public function __construct(Context             $context,
+                                Data                $helper,
+                                ScopeManager        $scopeManager,
+                                array               $data = [],
+                                ?SecureHtmlRenderer $secureRenderer = null
+    )
     {
         parent::__construct($context, $data, $secureRenderer);
         $this->helper = $helper;

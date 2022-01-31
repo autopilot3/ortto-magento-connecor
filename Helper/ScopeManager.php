@@ -3,7 +3,6 @@
 
 namespace Autopilot\AP3Connector\Helper;
 
-
 use Autopilot\AP3Connector\Logger\Logger;
 use Autopilot\AP3Connector\Model\Scope;
 use Magento\Framework\App\Helper\AbstractHelper;
@@ -20,8 +19,11 @@ class ScopeManager extends AbstractHelper
     private EncryptorInterface $encryptor;
     private Logger $logger;
 
-
-    public function __construct(Context $context, StoreManagerInterface $storeManager, EncryptorInterface $encryptor, Logger $logger)
+    public function __construct(Context               $context,
+                                StoreManagerInterface $storeManager,
+                                EncryptorInterface    $encryptor,
+                                Logger                $logger
+    )
     {
         parent::__construct($context);
         $this->storeManager = $storeManager;
@@ -36,7 +38,7 @@ class ScopeManager extends AbstractHelper
      */
     public function getActiveScopes(?int $websiteId, ?int $storeId): array
     {
-        $result = array();
+        $result = [];
 
         $websiteAPIKey = '';
         try {
