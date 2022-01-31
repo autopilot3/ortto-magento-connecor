@@ -4,7 +4,7 @@
     <default>
         <autopilot>
             <general>
-                <logs>1</logs>
+                <debug_logs>0</debug_logs>
             </general>
         </autopilot>
     </default>
