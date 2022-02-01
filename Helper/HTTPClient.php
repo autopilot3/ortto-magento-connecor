@@ -3,8 +3,9 @@
 namespace Autopilot\AP3Connector\Helper;
 
 use Autopilot\AP3Connector\Logger\Logger;
-use Autopilot\AP3Connector\Model\ApiException;
 use Autopilot\AP3Connector\Model\AutopilotException;
+use Exception;
+use JsonException;
 use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -52,47 +53,43 @@ class HTTPClient extends AbstractHelper
 
             foreach ($activeScopes as $scope) {
                 $apiKey = $scope->getAPIKey();
-                $data = array_merge($data, $scope->toArray());
+                $data['scope'] = $scope->toArray();
                 $this->logger->debug("POST " . $url, $storeId, $data);
                 $this->postJSON($url, $apiKey, $data);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error($e);
         }
     }
 
     /**
-     * @return string
-     * @throws AutopilotException
+     * @param string $url
+     * @param string $apiKey
+     * @param array $data
+     * @return mixed
+     * @throws AutopilotException|JsonException
      */
-    private function postJSON(string $url, string $apiKey, array $data): string
+    private function postJSON(string $url, string $apiKey, array $data)
     {
-        try {
-            $this->curl->addHeader("Content-Type", "application/json");
-            $this->curl->setCredentials($this->helper->getClientId(), $apiKey);
-            $payload = json_encode($data);
-            $this->curl->post($url, $payload);
-            $status = $this->curl->getStatus();
-            $response = $this->curl->getBody();
-            if ($status != 200) {
-                throw new ApiException('Server Error', $status, $response);
-            }
-            return $response;
-        } catch (ApiException $e) {
-            $status = $e->getCode();
-            throw new AutopilotException("HTTP Response Error", $url, "POST", $status,
+        $this->curl->addHeader("Content-Type", "application/json");
+        $this->curl->setCredentials($this->helper->getClientId(), $apiKey);
+        $payload = json_encode($data, JSON_THROW_ON_ERROR);
+        $this->curl->post($url, $payload);
+        $status = $this->curl->getStatus();
+        $response = $this->curl->getBody();
+        if ($status != 200) {
+            throw new AutopilotException(
+                "HTTP Response Error",
+                $url,
+                "POST",
+                $status,
                 [
-                    'response' => $e->getResponse(),
+                    'response' => $response,
                     'status' => $status,
-                    'payload' => $data
-                ]);
-        } catch (\Exception $e) {
-            $apException = new AutopilotException("Failed to send request to Autopilot", $url, "POST", 500,
-                [
-                    'payload' => $data
-                ]);
-            $apException->setError($e);
-            throw $apException;
+                    'payload' => $data,
+                ]
+            );
         }
+        return json_decode($response, JSON_THROW_ON_ERROR);
     }
 }

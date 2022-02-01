@@ -18,13 +18,14 @@ class ScopeManager extends AbstractHelper
     private StoreManagerInterface $storeManager;
     private EncryptorInterface $encryptor;
     private Logger $logger;
+    private Scope $currentScope;
 
-    public function __construct(Context               $context,
-                                StoreManagerInterface $storeManager,
-                                EncryptorInterface    $encryptor,
-                                Logger                $logger
-    )
-    {
+    public function __construct(
+        Context $context,
+        StoreManagerInterface $storeManager,
+        EncryptorInterface $encryptor,
+        Logger $logger
+    ) {
         parent::__construct($context);
         $this->storeManager = $storeManager;
         $this->encryptor = $encryptor;
@@ -81,6 +82,10 @@ class ScopeManager extends AbstractHelper
      */
     public function getCurrentConfigurationScope(): Scope
     {
+        if (!empty($this->currentScope)) {
+            $this->logger->info("From Cache");
+            return $this->currentScope;
+        }
         try {
             $websiteID = $this->_request->getParam(ScopeInterface::SCOPE_WEBSITE, 0);
             if ($websiteID > 0) {
@@ -101,6 +106,7 @@ class ScopeManager extends AbstractHelper
                     $code .= '_' . $websiteID;
                 }
                 $scope->setCode($code);
+                $this->currentScope = $scope;
                 return $scope;
             }
 
@@ -122,6 +128,7 @@ class ScopeManager extends AbstractHelper
                     $code .= '_' . $storeID;
                 }
                 $scope->setCode($code);
+                $this->currentScope = $scope;
                 return $scope;
             }
             return new Scope($this->encryptor, $this->scopeConfig, "", -1);

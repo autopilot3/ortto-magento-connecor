@@ -3,7 +3,6 @@
 
 namespace Autopilot\AP3Connector\Model;
 
-
 class AutopilotException extends \Exception
 {
     private string $url;

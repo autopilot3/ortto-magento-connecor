@@ -3,7 +3,6 @@
 
 namespace Autopilot\AP3Connector\Logger\Handler;
 
-
 use Magento\Framework\Logger\Handler\Base;
 use Monolog\Logger;
 

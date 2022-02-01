@@ -3,7 +3,6 @@
 
 namespace Autopilot\AP3Connector\Model;
 
-
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 
@@ -84,12 +83,10 @@ class Scope
     public function toArray(): array
     {
         return [
-            'scope' => array(
-                'type' => $this->type,
-                'id' => $this->id,
-                'name' => $this->name,
-                'code' => $this->code,
-            )
+            'type' => $this->type,
+            'id' => $this->id,
+            'name' => $this->name,
+            'code' => $this->code,
         ];
     }
 

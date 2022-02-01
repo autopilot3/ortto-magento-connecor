@@ -1,6 +1,6 @@
 <?php
 
-use Autopilot\AP3Connector\Model\Scope;
+use Autopilot\AP3Connector\Block\Adminhtml\System\Config\AuthWizard;
 
 ?>
 <script type="text/javascript">
@@ -64,18 +64,23 @@ use Autopilot\AP3Connector\Model\Scope;
 
 </script>
 
-<div class="actions actions-get-apikey">
-    <div id="validation_result" class="message-validation hidden"></div>
+<div>
     <?php
     /**
-     * @var $scope Scope
-     * @var $block
+     * @var $block AuthWizard
      */
-    $scope = $block->getScope();
     ?>
-    <button data-url="<?= /* @noEscape */
-    $block->getAuthenticationURL() ?>" data-scope="<?= $scope->getCode() ?>" data-name="<?= $scope->getName() ?>"
-            data-client-id="<?= $block->getClientID() ?>" id="authenticate">
-        <span><?= $block->escapeHtml($block->getButtonLabel()) ?></span>
+    <button
+        data-url="<?= /* @noEscape */
+        $block->getAuthenticationURL() ?>"
+        data-scope="<?= /* @noEscape */
+        $block->getScopeCode() ?>"
+        data-name="<?= /* @noEscape */
+        $block->getScopeName() ?>"
+        data-client-id="<?= /* @noEscape */
+        $block->getClientID() ?>" id="authenticate">
+        <span><?= /* @noEscape */
+            $block->getButtonLabel() ?></span>
     </button>
+
 </div>

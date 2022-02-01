@@ -3,7 +3,6 @@
 
 namespace Autopilot\AP3Connector\Logger;
 
-
 use Autopilot\AP3Connector\Model\AutopilotException;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
@@ -50,12 +49,10 @@ class Logger
             return;
         }
 
-        $enabled = $this->scopeConfig->getValue(self::XML_PATH_DEBUG_LOG_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
-        if ($enabled) {
+        if ($this->scopeConfig->getValue(self::XML_PATH_DEBUG_LOG_ENABLED, ScopeInterface::SCOPE_STORE, $storeId)) {
             $this->logger->debug($message, ['data' => $this->encodeData($data)]);
         }
     }
-
 
     private function encodeData($data): string
     {
@@ -76,4 +73,3 @@ class Logger
         return '';
     }
 }
-
