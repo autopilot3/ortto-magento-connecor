@@ -4,20 +4,29 @@
 namespace Autopilot\AP3Connector\Model;
 
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
+
 class Scope
 {
+
+    const XML_PATH_ACTIVE = "autopilot/general/active";
+    const XML_PATH_API_KEY = "autopilot/general/apikey";
+
     private string $name;
     private int $id;
     private string $type;
     private string $code;
-    private bool $isUnique;
 
-    public function __construct(string $type, int $id, string $name = "", string $code = "")
+    private EncryptorInterface $encryptor;
+    private ScopeConfigInterface $scopeConfig;
+
+    public function __construct(EncryptorInterface $encryptor, ScopeConfigInterface $scopeConfig, string $type, int $id)
     {
+        $this->encryptor = $encryptor;
+        $this->scopeConfig = $scopeConfig;
         $this->id = $id;
         $this->type = $type;
-        $this->name = $name;
-        $this->code = $code;
     }
 
     /**
@@ -47,38 +56,60 @@ class Scope
     /**
      * @return string
      */
-    public function getUniqueName(): string
-    {
-        if ($this->id < 0) {
-            return "";
-        }
-        if ($this->isUnique) {
-            return $this->name;
-        }
-        return $this->name . '::' . $this->id;
-    }
-
-    /**
-     * @return string
-     */
     public function getCode(): string
     {
         return $this->code;
     }
 
     /**
-     * @return bool
+     * @param string $name
+     * @return Scope
      */
-    public function isUnique(): bool
+    public function setName(string $name): Scope
     {
-        return $this->isUnique;
+        $this->name = $name;
+        return $this;
     }
 
     /**
-     * @param bool $isUnique
+     * @param string $code
+     * @return Scope
      */
-    public function setIsUnique(bool $isUnique): void
+    public function setCode(string $code): Scope
     {
-        $this->isUnique = $isUnique;
+        $this->code = $code;
+        return $this;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'scope' => array(
+                'type' => $this->type,
+                'id' => $this->id,
+                'name' => $this->name,
+                'code' => $this->code,
+            )
+        ];
+    }
+
+    /**
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return (bool)$this->scopeConfig->getValue(self::XML_PATH_ACTIVE, $this->type, $this->id);
+    }
+
+    /**
+     * @return string
+     */
+    public function getAPIKey(): string
+    {
+        $encrypted = trim($this->scopeConfig->getValue(self::XML_PATH_API_KEY, $this->type, $this->id));
+        if (empty($encrypted)) {
+            return "";
+        }
+        return $this->encryptor->decrypt($encrypted);
     }
 }

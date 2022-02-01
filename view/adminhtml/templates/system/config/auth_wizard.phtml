@@ -1,3 +1,8 @@
+<?php
+
+use Autopilot\AP3Connector\Model\Scope;
+
+?>
 <script type="text/javascript">
     require([
             'jquery',
@@ -10,6 +15,7 @@
                 const url = $(this).data('url');
                 const body = {
                     "scope": $(this).data('scope'),
+                    "name": $(this).data('name'),
                     "client_id": $(this).data('client-id')
                 }
                 $.ajax({
@@ -60,8 +66,15 @@
 
 <div class="actions actions-get-apikey">
     <div id="validation_result" class="message-validation hidden"></div>
+    <?php
+    /**
+     * @var $scope Scope
+     * @var $block
+     */
+    $scope = $block->getScope();
+    ?>
     <button data-url="<?= /* @noEscape */
-    $block->getAuthenticationURL() ?>" data-scope="<?= $block->getScope() ?>"
+    $block->getAuthenticationURL() ?>" data-scope="<?= $scope->getCode() ?>" data-name="<?= $scope->getName() ?>"
             data-client-id="<?= $block->getClientID() ?>" id="authenticate">
         <span><?= $block->escapeHtml($block->getButtonLabel()) ?></span>
     </button>

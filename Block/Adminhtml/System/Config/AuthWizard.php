@@ -3,6 +3,8 @@
 namespace Autopilot\AP3Connector\Block\Adminhtml\System\Config;
 
 use Autopilot\AP3Connector\Helper\Data;
+use Autopilot\AP3Connector\Helper\ScopeManager;
+use Autopilot\AP3Connector\Model\Scope;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 use Magento\Backend\Block\Template\Context;
@@ -12,12 +14,18 @@ class AuthWizard extends Field
 {
     protected $_template = 'system/config/auth_wizard.phtml';
     private Data $helper;
+    private ScopeManager $scopeManager;
 
-
-    public function __construct(Context $context, Data $helper, array $data = [], ?SecureHtmlRenderer $secureRenderer = null)
+    public function __construct(Context             $context,
+                                Data                $helper,
+                                ScopeManager        $scopeManager,
+                                array               $data = [],
+                                ?SecureHtmlRenderer $secureRenderer = null
+    )
     {
         parent::__construct($context, $data, $secureRenderer);
         $this->helper = $helper;
+        $this->scopeManager = $scopeManager;
     }
 
     protected function _getElementHtml(AbstractElement $element): string
@@ -32,7 +40,7 @@ class AuthWizard extends Field
 
     public function getAuthenticationURL(): string
     {
-        return $this->helper->getAuthenticationURL();
+        return $this->helper->getBaseURL() . "/-/installation/auth";
     }
 
     public function getClientID(): string
@@ -40,9 +48,8 @@ class AuthWizard extends Field
         return $this->helper->getClientId();
     }
 
-    public function getScope(): string
+    public function getScope(): Scope
     {
-        $scope = $this->helper->getScope();
-        return $scope->getUniqueName();
+        return $this->scopeManager->getCurrentConfigurationScope();
     }
 }
