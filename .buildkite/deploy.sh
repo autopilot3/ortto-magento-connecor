@@ -10,7 +10,7 @@ echo "--- Packaging"
 tar cfvz /tmp/magento-connector-php.tgz --exclude=.git --exclude=.gitignore --exclude=.buildkite .
 
 echo "--- Copying to $POD"
-kubectl cp -n magento /tmp/magento-connector-php.tgz "$POD":/tmp/
+kubectl cp -n magento /tmp/magento-connector-php.tgz "$POD":/bitnami/magento/
 
 echo "--- Trigger php bin/magento setup:upgrade"
 
@@ -19,3 +19,25 @@ kubectl -n magento delete job ap3-stg-magento-setup-upgrade-manual || :
 
 echo "Triggering new job from cronjob"
 kubectl -n magento create job --from=cronjob/ap3-stg-magento-setup-upgrade ap3-stg-magento-setup-upgrade-manual
+
+echo "Waiting for the job to complete"
+kubectl wait --for=condition=complete job/ap3-stg-magento-setup-upgrade-manual &
+completion_pid=$!
+
+# wait for failure as background process - capture PID
+kubectl wait --for=condition=failed job/ap3-stg-magento-setup-upgrade-manual && exit 1 &
+failure_pid=$!
+
+# capture exit code of the first subprocess to exit
+wait -n $completion_pid $failure_pid
+
+# store exit code in variable
+exit_code=$?
+
+if ((exit_code == 0)); then
+  echo "Job completed"
+else
+  echo "Job failed with exit code ${exit_code}, exiting..."
+fi
+
+exit $exit_code
