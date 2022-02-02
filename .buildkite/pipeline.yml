@@ -1,17 +1,10 @@
 ---
 
 steps:
-  - label: ":php: :package: Packaging"
-    command:
-      - tar cfvz /tmp/magento-connector-php.tgz --exclude=.git --exclude=.gitignore --exclude=.buildkite .
-      - buildkite-agent artifact upload /tmp/magento-connector-php.tgz
+  - block: ":rocket: Deploy to https://magento-stg.autopilothq.dev"
 
-  - block: ":rocket: Release!"
-
-  - label: ":k8s: :mage: Deploy to stg"
-    command:
-      - echo successfully deployed
-      - echo lmao
+  - label: ":php: :package: Package and Deploy :k8s: :mage:"
+    command: .buildkite/deploy.sh
     agents:
       env: stg
       region: ap-southeast-2
