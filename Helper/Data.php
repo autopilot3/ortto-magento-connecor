@@ -3,6 +3,7 @@
 namespace Autopilot\AP3Connector\Helper;
 
 use Autopilot\AP3Connector\Logger\Logger;
+use Magento\Backend\Model\Auth\Session;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\AddressInterface;
@@ -32,6 +33,7 @@ class Data extends AbstractHelper
     private CountryInformationAcquirerInterface $countryRepository;
     private TimezoneInterface $time;
     private CustomerMetadataInterface $customerMetadata;
+    private Session $authSession;
 
     public function __construct(
         Context $context,
@@ -40,6 +42,7 @@ class Data extends AbstractHelper
         CountryInformationAcquirerInterface $countryRepository,
         TimezoneInterface $time,
         CustomerMetadataInterface $customerMetadata,
+        Session $authSession,
         Logger $logger
     ) {
         parent::__construct($context);
@@ -50,6 +53,7 @@ class Data extends AbstractHelper
         $this->countryRepository = $countryRepository;
         $this->time = $time;
         $this->customerMetadata = $customerMetadata;
+        $this->authSession = $authSession;
     }
 
     /**
@@ -185,6 +189,23 @@ class Data extends AbstractHelper
         }
 
         return $data;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getAdminUserFields(): ?array
+    {
+        $user = $this->authSession->getUser();
+        if (!empty($user)) {
+            return [
+                'name' => $user->getName(),
+                'email' => $user->getEmail(),
+                'username' => $user->getUserName(),
+            ];
+        }
+        $this->logger->warn("Failed to retrieve admin user details");
+        return null;
     }
 
     public function formatDate(string $value): string

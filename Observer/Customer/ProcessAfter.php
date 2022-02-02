@@ -22,6 +22,6 @@ class ProcessAfter implements ObserverInterface
     {
         $event = $observer->getEvent();
         $customer = $event->getData('customer');
-        $this->autopilotClient->upsertContact($customer);
+        $this->autopilotClient->upsertContactBackend($customer);
     }
 }
