@@ -15,7 +15,7 @@ kubectl cp -n magento /tmp/magento-connector-php.tgz "$POD":/tmp/
 echo "--- Trigger php bin/magento setup:upgrade"
 
 echo "Deleting existing job if it exists"
-kubectl -n magento delete job magento-setup-upgrade-manual || :
+kubectl -n magento delete job ap3-stg-magento-setup-upgrade-manual || :
 
 echo "Triggering new job from cronjob"
-kubectl -n magento create job --from=cronjob/magento-setup-upgrade magento-setup-upgrade-manual
+kubectl -n magento create job --from=cronjob/ap3-stg-magento-setup-upgrade ap3-stg-magento-setup-upgrade-manual
