@@ -1,0 +1,17 @@
+---
+
+steps:
+  - label: ":php: Packaging"
+    command:
+      - tar -cfz /tmp/magento-connector-php.tgz --exclude=.git --exclude=.gitignore .
+      - buildkite-agent artifact upload /tmp/magento-connector-php.tgz
+
+  - block: ~
+
+  - label: "Deploy to stg"
+    command:
+      - echo successfully deployed
+      - echo lmao
+    agents:
+      env: stg
+      region: ap-southeast-2
