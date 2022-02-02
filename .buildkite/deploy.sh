@@ -6,7 +6,7 @@ NAMESPACE=magento
 CRONJOB=ap3-stg-magento-setup-upgrade
 
 echo "--- Getting Magento pod name"
-POD=$(kubectl get pods -l autopilothq.com/name=magento --namespace magento -o jsonpath='{.items[*].metadata.name}' --field-selector status.phase=Running --sort-by=.metadata.creationTimestamp | head -n 1)
+POD=$(kubectl get pods -l autopilothq.com/app=magento --namespace magento -o jsonpath='{.items[*].metadata.name}' --field-selector status.phase=Running --sort-by=.metadata.creationTimestamp | head -n 1)
 echo "Pod name is $POD"
 
 echo "--- Packaging"
