@@ -44,12 +44,7 @@ class HTTPClient extends AbstractHelper
             }
             $url = $this->helper->getBaseURL() . '/magento/contact/merge';
 
-            // TODO: Add more fields
-            $data = [
-                'first_name' => $customer->getFirstname(),
-                'last_name' => $customer->getLastname(),
-                'email' => $customer->getEmail(),
-            ];
+            $data = $this->helper->getCustomerFields($customer);
 
             foreach ($activeScopes as $scope) {
                 $apiKey = $scope->getAPIKey();
