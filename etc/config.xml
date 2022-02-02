@@ -4,8 +4,6 @@
     <autopilot>
       <general>
         <debug_logs>0</debug_logs>
-        <base_url>https://magento-integration-api-master.stgautopilotapp.com/</base_url>
-        <client_id>LVnybGZlbLPGWNuihFRTsqYpeDyfHGMJ</client_id>
       </general>
     </autopilot>
   </default>
