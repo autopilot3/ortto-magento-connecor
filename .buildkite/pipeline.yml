@@ -3,12 +3,12 @@
 steps:
   - label: ":php: Packaging"
     command:
-      - tar -cfz /tmp/magento-connector-php.tgz --exclude=.git --exclude=.gitignore .
+      - tar -cfz /tmp/magento-connector-php.tgz --exclude='.git' --exclude='.gitignore' .
       - buildkite-agent artifact upload /tmp/magento-connector-php.tgz
 
-  - block: ~
+  - block: ":rocket: Release!"
 
-  - label: ":rocket: :mage: Deploy to stg"
+  - label: ":k8s: :mage: Deploy to stg"
     command:
       - echo successfully deployed
       - echo lmao
