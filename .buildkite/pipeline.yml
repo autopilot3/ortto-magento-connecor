@@ -8,7 +8,7 @@ steps:
 
   - block: ~
 
-  - label: "Deploy to stg"
+  - label: ":rocket: :mage: Deploy to stg"
     command:
       - echo successfully deployed
       - echo lmao
