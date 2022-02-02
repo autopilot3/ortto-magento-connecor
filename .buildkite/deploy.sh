@@ -24,11 +24,11 @@ echo "Triggering new job from cronjob"
 kubectl -n $NAMESPACE create job --from=cronjob/${CRONJOB} ${CRONJOB}-manual
 
 echo "Waiting for the job to complete"
-kubectl -n $NAMESPACE wait --for=condition=complete --timeout=300 job/${CRONJOB}-manual &
+kubectl -n $NAMESPACE wait --for=condition=complete --timeout=300s job/${CRONJOB}-manual &
 completion_pid=$!
 
 # wait for failure as background process - capture PID
-kubectl -n $NAMESPACE wait --for=condition=failed --timeout=300 job/${CRONJOB}-manual && exit 1 &
+kubectl -n $NAMESPACE wait --for=condition=failed --timeout=300s job/${CRONJOB}-manual && exit 1 &
 failure_pid=$!
 
 # capture exit code of the first subprocess to exit
