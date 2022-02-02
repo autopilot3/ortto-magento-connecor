@@ -1,9 +1,9 @@
 ---
 
 steps:
-  - label: ":php: Packaging"
+  - label: ":php: :package: Packaging"
     command:
-      - tar -cfz /tmp/magento-connector-php.tgz --exclude='.git' --exclude='.gitignore' .
+      - tar cfvz /tmp/magento-connector-php.tgz --exclude=.git --exclude=.gitignore --exclude=.buildkite .
       - buildkite-agent artifact upload /tmp/magento-connector-php.tgz
 
   - block: ":rocket: Release!"
