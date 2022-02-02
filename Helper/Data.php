@@ -25,6 +25,8 @@ class Data extends AbstractHelper
     // "2006-01-02T15:04:05Z07:00"
     const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';
 
+    const EMPTY_DATE_TIME = "0001-01-01T00:00:00Z";
+
     private string $baseURL = "https://magento-integration-api.autopilotapp.com";
     private string $clientID = "mgqQkvCJWDFnxJTgQwfVuYEdQRWVAywE";
     private GroupRepositoryInterface $groupRepository;
@@ -177,7 +179,6 @@ class Data extends AbstractHelper
             $country = $this->countryRepository->getCountryInfo($address->getCountryId());
             if (!empty($country)) {
                 $data['country'] = [
-                    'id' => $country->getId(),
                     'name_en' => $country->getFullNameEnglish(),
                     'name_local' => $country->getFullNameLocale(),
                     'abbr2' => $country->getTwoLetterAbbreviation(),
@@ -211,7 +212,7 @@ class Data extends AbstractHelper
     public function formatDate(string $value): string
     {
         if (empty($value)) {
-            return "";
+            return self::EMPTY_DATE_TIME;
         }
         $date = date_create($value);
         if ($date) {
@@ -219,7 +220,7 @@ class Data extends AbstractHelper
         }
 
         $this->logger->warn("Invalid time value", ["value" => $value]);
-        return $value;
+        return self::EMPTY_DATE_TIME;
     }
 
     public function now(): string
