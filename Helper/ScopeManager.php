@@ -83,7 +83,6 @@ class ScopeManager extends AbstractHelper
     public function getCurrentConfigurationScope(): Scope
     {
         if (!empty($this->currentScope)) {
-            $this->logger->info("From Cache");
             return $this->currentScope;
         }
         try {
