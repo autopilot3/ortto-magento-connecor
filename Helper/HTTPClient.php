@@ -33,7 +33,7 @@ class HTTPClient extends AbstractHelper
         $this->scopeManager = $scopeManager;
     }
 
-    public function upsertContact(CustomerInterface $customer)
+    public function upsertContactBackend(CustomerInterface $customer)
     {
         try {
             $websiteID = $customer->getWebsiteId();
@@ -42,14 +42,11 @@ class HTTPClient extends AbstractHelper
             if (empty($activeScopes)) {
                 return;
             }
-            $url = $this->helper->getBaseURL() . '/magento/contact/merge';
+            $url = $this->helper->getBaseURL() . '/magento/backend/contact/merge';
 
-            // TODO: Add more fields
-            $data = [
-                'first_name' => $customer->getFirstname(),
-                'last_name' => $customer->getLastname(),
-                'email' => $customer->getEmail(),
-            ];
+            $data = $this->helper->getCustomerFields($customer);
+
+            $data['updated_by'] = $this->helper->getAdminUserFields();
 
             foreach ($activeScopes as $scope) {
                 $apiKey = $scope->getAPIKey();

@@ -26,7 +26,12 @@ class Logger
         $this->logger->info($message, ['data' => $this->encodeData($data)]);
     }
 
-    public function error(\Exception $exception)
+    public function warn(string $message, $data = null)
+    {
+        $this->logger->warning($message, ['data' => $this->encodeData($data)]);
+    }
+
+    public function error(\Exception $exception, string $message = '')
     {
         $params = [
             'code' => $exception->getCode(),
@@ -40,7 +45,11 @@ class Logger
                 $params['err'] = $internalErr->getMessage();
             }
         }
-        $this->logger->error($exception->getMessage(), $params);
+        $msg = $exception->getMessage();
+        if (!empty($message)) {
+            $msg = $message . '. ' . $msg;
+        }
+        $this->logger->error($msg, $params);
     }
 
     public function debug(string $message, ?int $storeId, $data = null)
