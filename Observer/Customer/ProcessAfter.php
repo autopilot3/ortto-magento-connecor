@@ -4,7 +4,6 @@
 namespace Autopilot\AP3Connector\Observer\Customer;
 
 use Autopilot\AP3Connector\Helper\HTTPClient;
-use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 

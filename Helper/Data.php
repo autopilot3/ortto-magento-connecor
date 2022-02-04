@@ -16,6 +16,7 @@ use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Newsletter\Model\Subscriber;
 
 class Data extends AbstractHelper
 {
@@ -36,6 +37,7 @@ class Data extends AbstractHelper
     private TimezoneInterface $time;
     private CustomerMetadataInterface $customerMetadata;
     private Session $authSession;
+    private Subscriber $subscriber;
 
     public function __construct(
         Context $context,
@@ -44,6 +46,7 @@ class Data extends AbstractHelper
         CountryInformationAcquirerInterface $countryRepository,
         TimezoneInterface $time,
         CustomerMetadataInterface $customerMetadata,
+        Subscriber $subscriber,
         Session $authSession,
         Logger $logger
     ) {
@@ -56,6 +59,7 @@ class Data extends AbstractHelper
         $this->time = $time;
         $this->customerMetadata = $customerMetadata;
         $this->authSession = $authSession;
+        $this->subscriber = $subscriber;
     }
 
     /**
@@ -109,11 +113,13 @@ class Data extends AbstractHelper
         }
 
         $groupId = $customer->getGroupId();
+        $this->logger->info("Group " . $groupId);
         if (!empty($groupId)) {
             try {
                 $group = $this->groupRepository->getById($groupId);
                 if (!empty($group)) {
                     $data['group'] = $group->getCode();
+                    $this->logger->info("Group " . $group->getCode());
                 }
             } catch (NoSuchEntityException|LocalizedException $e) {
                 $this->logger->error($e, 'Failed to fetch customer group details');
@@ -148,6 +154,9 @@ class Data extends AbstractHelper
             }
             $data['custom_attributes'] = $customAttrs;
         }
+
+        $sub = $this->subscriber->loadByCustomer($customer->getId(), $customer->getWebsiteId());
+        $data['is_subscribed'] = $sub->isSubscribed();
 
         return $data;
     }
