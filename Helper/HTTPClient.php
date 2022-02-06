@@ -52,7 +52,8 @@ class HTTPClient extends AbstractHelper
                 $apiKey = $scope->getAPIKey();
                 $data['scope'] = $scope->toArray();
                 $this->logger->debug("POST " . $url, $storeId, $data);
-                $this->postJSON($url, $apiKey, $data);
+                $response = $this->postJSON($url, $apiKey, $data);
+                $this->logger->debug("POST " . $url, $storeId, $response);
             }
         } catch (Exception $e) {
             $this->logger->error($e);
