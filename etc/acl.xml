@@ -7,6 +7,11 @@
                 <resource id="Autopilot_AP3Connector::menu" title="Autopilot">
                     <resource id="Autopilot_AP3Connector::config" title="Configuration" sortOrder="100"/>
                     <resource id="Autopilot_AP3Connector::view_logs" title="View Logs" sortOrder="101"/>
+                    <resource id="Autopilot_AP3Connector::api" title="API" sortOrder="102">
+                        <resource id="Autopilot_AP3Connector::coupons" title="Coupons">
+                            <resource id="Autopilot_AP3Connector::coupons_create" title="Create"/>
+                        </resource>
+                    </resource>
                 </resource>
             </resource>
         </resources>
