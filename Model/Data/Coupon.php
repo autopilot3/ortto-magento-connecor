@@ -3,7 +3,7 @@
 
 namespace Autopilot\AP3Connector\Model\Data;
 
-use Autopilot\AP3Connector\API\Data\CouponInterface;
+use Autopilot\AP3Connector\Api\Data\CouponInterface;
 use Magento\Framework\DataObject;
 
 class Coupon extends DataObject implements CouponInterface

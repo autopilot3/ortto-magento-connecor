@@ -3,16 +3,15 @@
 
 namespace Autopilot\AP3Connector\Observer\Customer;
 
-use Autopilot\AP3Connector\Helper\HTTPClient;
+use Autopilot\AP3Connector\Api\AutopilotClientInterface;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 
 class ProcessAfter implements ObserverInterface
 {
+    private AutopilotClientInterface $autopilotClient;
 
-    private HTTPClient $autopilotClient;
-
-    public function __construct(HTTPClient $autopilotClient)
+    public function __construct(AutopilotClientInterface $autopilotClient)
     {
         $this->autopilotClient = $autopilotClient;
     }

@@ -5,14 +5,15 @@
         <tab id="autopilot" translate="label" sortOrder="99999">
             <label>Autopilot</label>
         </tab>
-        <section id="autopilot" translate="label" type="text" sortOrder="100" showInDefault="0"
+        <section id="ap_general" translate="label" type="text" sortOrder="100" showInDefault="0"
                  showInWebsite="1"
                  showInStore="1">
             <label>General</label>
             <tab>autopilot</tab>
             <resource>Autopilot_AP3Connector::config</resource>
-            <group id="general" translate="label" sortOrder="1" showInDefault="0" showInWebsite="1" showInStore="1">
-                <label>Autopilot General Configuration</label>
+            <group id="authentication" translate="label" sortOrder="1" showInDefault="0" showInWebsite="1"
+                   showInStore="1">
+                <label>Authentication</label>
                 <field id="active" translate="label" type="select" showInDefault="0" showInWebsite="1" showInStore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -25,7 +26,7 @@
                         <field id="*/*/active">1</field>
                     </depends>
                 </field>
-                <field id="apikey" translate="label" type="obscure" sortOrder="3" showInDefault="0" showInWebsite="1"
+                <field id="api_key" translate="label" type="obscure" sortOrder="3" showInDefault="0" showInWebsite="1"
                        showInStore="1">
                     <label>API Key</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
@@ -33,14 +34,41 @@
                         <field id="*/*/active">1</field>
                     </depends>
                 </field>
-                <field id="debug_logs" translate="label" type="select" sortOrder="4" showInDefault="0"
+                <field id="access_token" translate="label" type="obscure" sortOrder="4" showInDefault="0"
                        showInWebsite="1"
                        showInStore="1">
-                    <label>Debug Logs</label>
-                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                    <label>Access Token</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <depends>
                         <field id="*/*/active">1</field>
                     </depends>
+                </field>
+            </group>
+        </section>
+        <section id="ap_sync" translate="label" type="text" sortOrder="101" showInDefault="0"
+                 showInWebsite="1"
+                 showInStore="1">
+            <label>Sync</label>
+            <tab>autopilot</tab>
+            <resource>Autopilot_AP3Connector::config</resource>
+            <group id="customer" translate="label" sortOrder="2" showInDefault="0" showInWebsite="1"
+                   showInStore="1">
+                <label>Customer</label>
+                <field id="non_subscribed_enabled" translate="label" sortOrder="1" type="select" showInDefault="0"
+                       showInWebsite="1"
+                       showInStore="1">
+                    <label>Sync non-subscribed contacts</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="auto_sync_enabled" translate="label" sortOrder="2" type="select" showInDefault="0"
+                       showInWebsite="1" showInStore="1">
+                    <label>Automatic Sync</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
+                       showInWebsite="1">
+                    <label>Sync Customers</label>
+                    <frontend_model>Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncCustomers</frontend_model>
                 </field>
             </group>
         </section>

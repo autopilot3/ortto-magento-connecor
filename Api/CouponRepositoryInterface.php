@@ -1,8 +1,8 @@
 <?php
 
-namespace Autopilot\AP3Connector\API;
+namespace Autopilot\AP3Connector\Api;
 
-use Autopilot\AP3Connector\API\Data\CouponInterface;
+use Autopilot\AP3Connector\Api\Data\CouponInterface;
 
 /**
  *  Interface CouponRepositoryInterface

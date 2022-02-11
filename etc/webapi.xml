@@ -2,7 +2,7 @@
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
     <route url="/V1/autopilot/ap3/coupon/create" method="POST">
-        <service class="Autopilot\AP3Connector\API\CouponRepositoryInterface" method="create"/>
+        <service class="Autopilot\AP3Connector\Api\CouponRepositoryInterface" method="create"/>
         <resources>
             <resource ref="Autopilot_AP3Connector::coupons_create"/>
         </resources>

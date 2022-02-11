@@ -5,4 +5,8 @@
         <observer name="autopilot_ap3_connector_customer_after_save"
                   instance="\Autopilot\AP3Connector\Observer\Customer\ProcessAfter"/>
     </event>
+    <event name="admin_system_config_changed_section_ap_general">
+        <observer name="custom_admin_system_config_changed_section_ap_general"
+                  instance="\Autopilot\AP3Connector\Observer\ConfigChange"/>
+    </event>
 </config>

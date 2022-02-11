@@ -7,22 +7,23 @@ use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Helper\Data;
 use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Data\Form\Element\AbstractElement;
-use Magento\Framework\View\Helper\SecureHtmlRenderer;
 
-class AuthWizard extends FieldBase
+class SyncCustomers extends FieldBase
 {
-    private Data $helper;
-
     public function __construct(
         Context $context,
         Data $helper,
         ScopeManagerInterface $scopeManager,
-        array $data = [],
-        ?SecureHtmlRenderer $secureRenderer = null
+        array $data = []
     ) {
-        parent::__construct($context, $scopeManager, $helper, $data, $secureRenderer);
-        $this->setTemplate('system/config/auth_wizard.phtml');
-        $this->helper = $helper;
+
+        parent::__construct($context, $scopeManager, $helper, $data);
+        $this->setTemplate('system/config/sync_products.phtml');
+    }
+
+    public function getAjaxURL(): string
+    {
+        return $this->_escaper->escapeHtmlAttr($this->getUrl(Config::SYNC_CUSTOMERS_ROUTE));
     }
 
     protected function _getElementHtml(AbstractElement $element): string
@@ -33,10 +34,5 @@ class AuthWizard extends FieldBase
             'button_label' => $label,
         ]);
         return parent::_toHtml();
-    }
-
-    public function getAjaxURL(): string
-    {
-        return $this->_escaper->escapeHtmlAttr($this->helper->getAutopilotURL(Config::AUTHENTICATION_ROUTE));
     }
 }

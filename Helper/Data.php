@@ -2,7 +2,8 @@
 
 namespace Autopilot\AP3Connector\Helper;
 
-use Autopilot\AP3Connector\Logger\Logger;
+use Autopilot\AP3Connector\Api\ConfigScopeInterface;
+use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Magento\Backend\Model\Auth\Session;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
@@ -20,18 +21,10 @@ use Magento\Newsletter\Model\Subscriber;
 
 class Data extends AbstractHelper
 {
-    const XML_PATH_BASE_URL = "autopilot/general/base_url";
-    const XML_PATH_CLIENT_ID = "autopilot/general/client_id";
-
-    // "2006-01-02T15:04:05Z07:00"
-    const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';
-
-    const EMPTY_DATE_TIME = "0001-01-01T00:00:00Z";
-
     private string $baseURL = "https://magento-integration-api.autopilotapp.com";
     private string $clientID = "mgqQkvCJWDFnxJTgQwfVuYEdQRWVAywE";
     private GroupRepositoryInterface $groupRepository;
-    private Logger $logger;
+    private AutopilotLoggerInterface $logger;
     private CustomerRepositoryInterface $customerRepository;
     private CountryInformationAcquirerInterface $countryRepository;
     private TimezoneInterface $time;
@@ -48,7 +41,7 @@ class Data extends AbstractHelper
         CustomerMetadataInterface $customerMetadata,
         Subscriber $subscriber,
         Session $authSession,
-        Logger $logger
+        AutopilotLoggerInterface $logger
     ) {
         parent::__construct($context);
         $this->_request = $context->getRequest();
@@ -63,15 +56,20 @@ class Data extends AbstractHelper
     }
 
     /**
+     * @param string $path
      * @return string
      */
-    public function getBaseURL(): string
+    public function getAutopilotURL(string $path): string
     {
-        $url = $this->scopeConfig->getValue(self::XML_PATH_BASE_URL);
+        $path = trim($path);
+        $url = $this->scopeConfig->getValue(Config::XML_PATH_BASE_URL);
         if (empty($url)) {
-            return $this->baseURL;
+            $url = $this->baseURL;
         }
-        return rtrim($url, ' /');
+        if (empty($path)) {
+            return rtrim($url, ' /');
+        }
+        return rtrim($url, ' /') . '/' . ltrim($path, '/');
     }
 
     /**
@@ -79,7 +77,7 @@ class Data extends AbstractHelper
      */
     public function getClientId(): string
     {
-        $clientID = $this->scopeConfig->getValue(self::XML_PATH_CLIENT_ID);
+        $clientID = $this->scopeConfig->getValue(Config::XML_PATH_CLIENT_ID);
         if (empty($clientID)) {
             return $this->clientID;
         }
@@ -88,10 +86,16 @@ class Data extends AbstractHelper
 
     /**
      * @param CustomerInterface $customer
+     * @param ConfigScopeInterface $scope
      * @return array
      */
-    public function getCustomerFields(CustomerInterface $customer): array
+    public function getCustomerFields(CustomerInterface $customer, ConfigScopeInterface $scope): array
     {
+        $sub = $this->subscriber->loadByCustomer($customer->getId(), $customer->getWebsiteId());
+        $isSubscribed = $sub->isSubscribed();
+        if (!$scope->isNonSubscribedCustomerSyncEnabled() && !$isSubscribed) {
+            return [];
+        }
         $data = [
             'prefix' => $customer->getPrefix(),
             'first_name' => $customer->getFirstname(),
@@ -103,6 +107,7 @@ class Data extends AbstractHelper
             'updated_at' => $this->now(),
             'created_in' => $customer->getCreatedIn(),
             'dob' => $this->formatDate($customer->getDob()),
+            'is_subscribed' => $isSubscribed,
         ];
 
         try {
@@ -154,9 +159,6 @@ class Data extends AbstractHelper
             }
             $data['custom_attributes'] = $customAttrs;
         }
-
-        $sub = $this->subscriber->loadByCustomer($customer->getId(), $customer->getWebsiteId());
-        $data['is_subscribed'] = $sub->isSubscribed();
 
         return $data;
     }
@@ -221,19 +223,27 @@ class Data extends AbstractHelper
     public function formatDate(string $value): string
     {
         if (empty($value)) {
-            return self::EMPTY_DATE_TIME;
+            return Config::EMPTY_DATE_TIME;
         }
         $date = date_create($value);
         if ($date) {
-            return $this->time->date($date)->format(self::DATE_TIME_FORMAT);
+            return $this->time->date($date)->format(Config::DATE_TIME_FORMAT);
         }
 
         $this->logger->warn("Invalid time value", ["value" => $value]);
-        return self::EMPTY_DATE_TIME;
+        return Config::EMPTY_DATE_TIME;
+    }
+
+    public function getErrorResponse(string $message): array
+    {
+        return [
+            'error' => true,
+            'message' => $message,
+        ];
     }
 
     public function now(): string
     {
-        return $this->time->date()->format(self::DATE_TIME_FORMAT);
+        return $this->time->date()->format(Config::DATE_TIME_FORMAT);
     }
 }

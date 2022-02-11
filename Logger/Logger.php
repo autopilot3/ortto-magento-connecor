@@ -4,31 +4,35 @@
 namespace Autopilot\AP3Connector\Logger;
 
 use Autopilot\AP3Connector\Model\AutopilotException;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
-class Logger
+class Logger implements AutopilotLoggerInterface
 {
-    const XML_PATH_DEBUG_LOG_ENABLED = "autopilot/general/debug_logs";
-
     private LoggerInterface $logger;
-    private ScopeConfigInterface $scopeConfig;
 
-    public function __construct(LoggerInterface $logger, ScopeConfigInterface $scopeConfig)
+    const LOG_LEVEL_INFO = "info";
+    const LOG_LEVEL_WARNING = "warning";
+    const LOG_LEVEL_ERROR = "error";
+    const LOG_LEVEL_DEBUG = "debug";
+
+    public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
-        $this->scopeConfig = $scopeConfig;
     }
 
     public function info(string $message, $data = null)
     {
-        $this->logger->info($message, ['data' => $this->encodeData($data)]);
+        $this->log(self::LOG_LEVEL_INFO, $message, $data);
     }
 
     public function warn(string $message, $data = null)
     {
-        $this->logger->warning($message, ['data' => $this->encodeData($data)]);
+        $this->log(self::LOG_LEVEL_WARNING, $message, $data);
+    }
+
+    public function debug(string $message, $data = null)
+    {
+        $this->log(self::LOG_LEVEL_DEBUG, $message, $data);
     }
 
     public function error(\Exception $exception, string $message = '')
@@ -37,40 +41,33 @@ class Logger
             'code' => $exception->getCode(),
         ];
         if ($exception instanceof AutopilotException) {
-            $params['url'] = $exception->getUrl();
-            $params['method'] = $exception->getMethod();
-            $params['data'] = $this->encodeData($exception->getParams());
-            $internalErr = $exception->getError();
-            if ($internalErr !== null) {
-                $params['err'] = $internalErr->getMessage();
-            }
+            $params = $exception->toArray();
         }
         $msg = $exception->getMessage();
         if (!empty($message)) {
             $msg = $message . '. ' . $msg;
         }
-        $this->logger->error($msg, $params);
+
+        $this->log(self::LOG_LEVEL_ERROR, $msg, $params);
     }
 
-    public function debug(string $message, ?int $storeId, $data = null)
+    private function log(string $level, string $message, $data = null)
     {
-        if ($storeId === null) {
+        if (empty($data)) {
+            $this->logger->log($level, $message);
             return;
         }
-
-        if ($this->scopeConfig->getValue(self::XML_PATH_DEBUG_LOG_ENABLED, ScopeInterface::SCOPE_STORE, $storeId)) {
-            $this->logger->debug($message, ['data' => $this->encodeData($data)]);
+        if (is_array($data)) {
+            $this->logger->log($level, $message, $data);
+            return;
         }
+        $this->logger->log($level, $message, ['context' => $this->encodeData($data)]);
     }
 
-    private function encodeData($data): string
+    private function encodeData($data)
     {
-        if ($data == null) {
-            return '';
-        }
-
         try {
-            if (is_array($data) || is_object($data)) {
+            if (is_object($data)) {
                 return json_encode($data);
             }
             if (is_string($data)) {
