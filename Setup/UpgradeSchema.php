@@ -3,8 +3,8 @@
 
 namespace Autopilot\AP3Connector\Setup;
 
-use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
+use Autopilot\AP3Connector\Setup\SchemaInterface as Schema;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
 use Magento\Framework\Setup\UpgradeSchemaInterface;
@@ -20,17 +20,17 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $this->logger = $logger;
     }
 
-    /**
-     * @inheritDoc
-     * @throws Zend_Db_Exception
-     */
     public function upgrade(SchemaSetupInterface $setup, ModuleContextInterface $context)
     {
         $installer = $setup;
         $installer->startSetup();
-        if (version_compare($context->getVersion(), '0.0.2') >= 0) {
-            $this->logger->info("Setting up " . Config::TABLE_SYNC_JOBS . ' table');
-            Installer::setupJobsTable($installer);
+        if (version_compare($context->getVersion(), '0.0.2', '<')) {
+            try {
+                $this->logger->info("Upgrading " . Schema::TABLE_SYNC_JOBS);
+                Installer::setupJobsTable($installer);
+            } catch (Zend_Db_Exception $e) {
+                $this->logger->error($e, "Failed to upgrade schema");
+            }
         }
         $installer->endSetup();
     }

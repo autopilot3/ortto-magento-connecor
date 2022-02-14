@@ -20,6 +20,7 @@ class Scope implements ConfigScopeInterface
     private int $id;
     private string $type;
     private string $code;
+    private bool $isExplicit;
 
     private EncryptorInterface $encryptor;
     private ScopeConfigInterface $scopeConfig;
@@ -49,6 +50,7 @@ class Scope implements ConfigScopeInterface
     {
         $this->type = $type;
         $this->id = $id;
+        $this->isExplicit = $this->scopeConfig->isSetFlag(Config::XML_PATH_ACTIVE, $type, $id);
         if ($type === ScopeInterface::SCOPE_WEBSITE) {
             $website = $this->storeManager->getWebsite($this->id);
             $this->name = $website->getName();
@@ -64,7 +66,6 @@ class Scope implements ConfigScopeInterface
             $store = $this->storeManager->getStore($this->id);
             $this->name = $store->getName();
             $this->code = $store->getCode();
-
             $stores = $this->storeManager->getStores();
             $count = 0;
             foreach ($stores as $s) {
@@ -141,7 +142,7 @@ class Scope implements ConfigScopeInterface
      */
     public function isConnected(): bool
     {
-        return $this->isActive() && !empty($this->getAPIKey());
+        return $this->isExplicit && !empty($this->getAPIKey());
     }
 
     /**

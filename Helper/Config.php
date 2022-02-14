@@ -21,18 +21,6 @@ class Config extends AbstractHelper
     const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';
     const EMPTY_DATE_TIME = "0001-01-01T00:00:00Z";
 
-    // Tables
-    const TABLE_SYNC_JOBS = 'autopilot_sync_jobs';
-
-    // Job Types
-    const SYNC_JOB_CUSTOMER = "customer";
-
-    // Sync Status
-    const SYNC_STATUS_IN_QUEUED = "queued";
-    const SYNC_STATUS_IN_PROGRESS = "in-progress";
-    const SYNC_STATUS_IN_SUCCESS = "success";
-    const SYNC_STATUS_IN_FAILED = "failed";
-
     // Magento Routes
     public const SYNC_CUSTOMERS_ROUTE = "autopilot/sync/customers";
 

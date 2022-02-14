@@ -3,7 +3,7 @@
 
 namespace Autopilot\AP3Connector\Setup;
 
-use Autopilot\AP3Connector\Helper\Config;
+use Autopilot\AP3Connector\Setup\SchemaInterface as Schema;
 use Magento\Framework\DB\Ddl\Table;
 use Magento\Framework\Setup\SchemaSetupInterface;
 use Zend_Db_Exception;
@@ -16,26 +16,32 @@ class Installer
      */
     public static function setupJobsTable(SchemaSetupInterface $setup)
     {
-        if (!$setup->tableExists(Config::TABLE_SYNC_JOBS)) {
+        if (!$setup->tableExists(Schema::TABLE_SYNC_JOBS)) {
             $connection = $setup->getConnection();
-            $table = $connection->newTable(Config::TABLE_SYNC_JOBS)->addColumn(
+            $table = $connection->newTable(Schema::TABLE_SYNC_JOBS)->addColumn(
                 'id',
                 Table::TYPE_INTEGER,
                 null,
                 ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true],
                 'Job Id'
             )->addColumn(
-                'scope_id',
-                Table::TYPE_INTEGER,
-                null,
+                'category',
+                Table::TYPE_TEXT,
+                64,
                 ['nullable' => false],
                 'Scope ID'
             )->addColumn(
                 'scope_type',
                 Table::TYPE_TEXT,
-                24,
+                12,
                 ['nullable' => false],
                 'Scope Type'
+            )->addColumn(
+                'scope_id',
+                Table::TYPE_INTEGER,
+                null,
+                ['nullable' => false],
+                'Scope ID'
             )->addColumn(
                 'status',
                 Table::TYPE_TEXT,
@@ -66,7 +72,8 @@ class Installer
                 1024,
                 [],
                 'Error'
-            );
+            )->addIndex("category_status_index", ["category", "status"])
+                ->setComment("Autopilot Cron Job History");
             $connection->createTable($table);
         }
     }

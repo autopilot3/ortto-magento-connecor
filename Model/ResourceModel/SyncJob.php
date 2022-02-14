@@ -2,22 +2,19 @@
 
 namespace Autopilot\AP3Connector\Model\ResourceModel;
 
-use Autopilot\AP3Connector\Helper\Config;
+use Autopilot\AP3Connector\Setup\SchemaInterface as Schema;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 class SyncJob extends AbstractDb
 {
-    /**
-     * @var string
-     */
-    protected $_eventPrefix = 'autopilot_sync_jobs_resource_model';
+    protected $_eventPrefix = 'autopilot_sync_jobs';
 
     /**
      * @inheritdoc
      */
     protected function _construct()
     {
-        $this->_init(Config::TABLE_SYNC_JOBS, 'id');
+        $this->_init(Schema::TABLE_SYNC_JOBS, 'id');
         $this->_useIsObjectNew = true;
     }
 }
