@@ -21,6 +21,7 @@ class Scope implements ConfigScopeInterface
     private string $type;
     private string $code;
     private bool $isExplicit;
+    private int $websiteId;
 
     private EncryptorInterface $encryptor;
     private ScopeConfigInterface $scopeConfig;
@@ -50,12 +51,13 @@ class Scope implements ConfigScopeInterface
     {
         $this->type = $type;
         $this->id = $id;
-        $this->isExplicit = $this->scopeConfig->isSetFlag(Config::XML_PATH_ACTIVE, $type, $id);
         if ($type === ScopeInterface::SCOPE_WEBSITE) {
+            $this->websiteId = $id;
             $website = $this->storeManager->getWebsite($this->id);
             $this->name = $website->getName();
             $this->code = $website->getCode();
             $websites = $this->storeManager->getWebsites();
+            $this->isExplicit = true;
             $count = 0;
             foreach ($websites as $w) {
                 if ($w->getCode() === $this->code) {
@@ -64,6 +66,14 @@ class Scope implements ConfigScopeInterface
             }
         } else {
             $store = $this->storeManager->getStore($this->id);
+            $this->websiteId = $store->getWebsiteId();
+            $websiteAPIKey = $this->scopeConfig->getValue(
+                Config::XML_PATH_API_KEY,
+                ScopeInterface::SCOPE_WEBSITE,
+                $this->websiteId
+            );
+            $storeAPIKey = $this->scopeConfig->getValue(Config::XML_PATH_API_KEY, $type, $id);
+            $this->isExplicit = $websiteAPIKey !== $storeAPIKey;
             $this->name = $store->getName();
             $this->code = $store->getCode();
             $stores = $this->storeManager->getStores();
@@ -79,6 +89,7 @@ class Scope implements ConfigScopeInterface
             throw new NotFoundException(new Phrase("Scope not found", ['type' => $type, 'id' => $id]));
         }
 
+        // Code is not necessarily unique in Magento
         if ($count > 1) {
             $this->code .= '_' . $this->id;
         }
@@ -187,5 +198,18 @@ class Scope implements ConfigScopeInterface
             return "";
         }
         return $this->encryptor->decrypt($encrypted);
+    }
+
+    public function equals(ConfigScopeInterface $scope): bool
+    {
+        return $this->type === $scope->getType() && $this->code === $scope->getCode();
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function getWebsiteId(): int
+    {
+        return $this->websiteId;
     }
 }

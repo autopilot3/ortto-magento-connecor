@@ -15,9 +15,12 @@ interface SyncJobInterface
     const SCOPE_ID = "scope_id";
     const STATUS = "status";
     const CREATED_AT = "created_at";
+    const STARTED_AT = "started_at";
     const FINISHED_AT = "finished_at";
     const COUNT = "count";
+    const TOTAL = "total";
     const ERROR = "error";
+    const METADATA = "metadata";
 
     /**
      * Getter for Id.
@@ -132,6 +135,22 @@ interface SyncJobInterface
     public function setFinishedAt(DateTime $finishedAt);
 
     /**
+     * Getter for StartedAt.
+     *
+     * @return DateTime|null
+     */
+    public function getStartedAt();
+
+    /**
+     * Setter for StartedAt.
+     *
+     * @param DateTime|null $startedAt
+     *
+     * @return $this
+     */
+    public function setStartedAt(DateTime $startedAt);
+
+    /**
      * Getter for Count.
      *
      * @return int
@@ -148,6 +167,22 @@ interface SyncJobInterface
     public function setCount(int $count);
 
     /**
+     * Getter for Total.
+     *
+     * @return int
+     */
+    public function getTotal();
+
+    /**
+     * Setter for Total.
+     *
+     * @param int $total
+     *
+     * @return $this
+     */
+    public function setTotal(int $total);
+
+    /**
      * Getter for Error.
      *
      * @return string|null
@@ -162,4 +197,20 @@ interface SyncJobInterface
      * @return $this
      */
     public function setError(?string $error);
+
+    /**
+     * Getter for Metadata.
+     *
+     * @return string|null
+     */
+    public function getMetadata();
+
+    /**
+     * Setter for Metadata.
+     *
+     * @param string|null $metadata
+     *
+     * @return $this
+     */
+    public function setMetadata(?string $metadata);
 }

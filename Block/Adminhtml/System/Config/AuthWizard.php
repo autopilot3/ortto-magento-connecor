@@ -2,8 +2,8 @@
 
 namespace Autopilot\AP3Connector\Block\Adminhtml\System\Config;
 
+use Autopilot\AP3Connector\Api\RoutesInterface;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
-use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Helper\Data;
 use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Data\Form\Element\AbstractElement;
@@ -37,6 +37,6 @@ class AuthWizard extends FieldBase
 
     public function getAjaxURL(): string
     {
-        return $this->_escaper->escapeHtmlAttr($this->helper->getAutopilotURL(Config::AUTHENTICATION_ROUTE));
+        return $this->_escaper->escapeHtmlAttr($this->helper->getAutopilotURL(RoutesInterface::AP_AUTHENTICATE));
     }
 }

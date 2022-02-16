@@ -33,36 +33,34 @@ class ScopeManager extends AbstractHelper implements ScopeManagerInterface
         $this->logger = $logger;
     }
 
-    public function getActiveScopes(?int $websiteId = null, ?int $storeId = null): array
+    public function getActiveScopes(): array
     {
         $result = [];
 
-        $websiteAPIKey = '';
-        try {
-            if ($websiteId !== null) {
-                $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
-                if ($scope->isActive()) {
-                    $websiteAPIKey = $scope->getAPIKey();
-                    if (!empty($websiteAPIKey)) {
-                        $scope->load(ScopeInterface::SCOPE_WEBSITE, $websiteId);
-                        $result[] = $scope;
-                    }
+        $stores = $this->storeManager->getWebsites();
+        foreach ($stores as $website) {
+            $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
+            try {
+                $scope->load(ScopeInterface::SCOPE_WEBSITE, $website->getId());
+                if ($scope->isConnected()) {
+                    $result[] = $scope;
                 }
+            } catch (NoSuchEntityException|LocalizedException|NotFoundException $e) {
+                $this->logger->error($e);
             }
+        }
 
-            if ($storeId !== null) {
-                $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
-                if ($scope->isActive()) {
-                    $storeAPIKey = $scope->getAPIKey();
-                    // Check if it's explicitly enabled and not inherited from website scope
-                    if (!empty($storeAPIKey) && $storeAPIKey !== $websiteAPIKey) {
-                        $scope->load(ScopeInterface::SCOPE_STORE, $storeId);
-                        $result[] = $scope;
-                    }
+        $stores = $this->storeManager->getStores();
+        foreach ($stores as $store) {
+            $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
+            try {
+                $scope->load(ScopeInterface::SCOPE_STORE, $store->getId());
+                if ($scope->isConnected()) {
+                    $result[] = $scope;
                 }
+            } catch (NoSuchEntityException|LocalizedException|NotFoundException $e) {
+                $this->logger->error($e);
             }
-        } catch (NoSuchEntityException|LocalizedException|NotFoundException $e) {
-            $this->logger->error($e);
         }
 
         return $result;

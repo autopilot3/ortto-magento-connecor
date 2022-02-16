@@ -9,15 +9,17 @@ use Autopilot\AP3Connector\Api\JobStatusInterface as Status;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob as ResourceModel;
 use Autopilot\AP3Connector\Model\SyncJobFactory;
 use Autopilot\AP3Connector\Model\SyncJob as Model;
-use Exception;
 use Magento\Framework\Data\Collection\Db\FetchStrategyInterface;
 use Magento\Framework\Data\Collection\EntityFactoryInterface;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\Event\ManagerInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
+use Magento\Framework\Phrase;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Psr\Log\LoggerInterface;
+use Exception;
 
 class Collection extends AbstractCollection
 {
@@ -51,22 +53,14 @@ class Collection extends AbstractCollection
 
     /**
      * @param string $category
-     * @param ConfigScopeInterface $scope
-     * @return SyncJobInterface|bool
+     * @return SyncJobInterface[]
      */
-    public function getScopeJob(string $category, ConfigScopeInterface $scope)
+    public function getQueuedJobs(string $category)
     {
-        $result = $this->addFieldToSelect('status')
+        return $this->addFieldToSelect('*')
             ->addFieldToFilter(Job::CATEGORY, $category)
-            ->addFieldToFilter(Job::SCOPE_TYPE, $scope->getType())
-            ->addFieldToFilter(Job::SCOPE_ID, $scope->getId())
-            ->setPageSize(1);
-
-        if ($result->getSize()) {
-            return $result->getFirstItem();
-        }
-
-        return false;
+            ->addFieldToFilter(Job::STATUS, Status::QUEUED)
+            ->load()->getItems();
     }
 
     /**
@@ -105,5 +99,70 @@ class Collection extends AbstractCollection
         $job->setCreatedAt($this->time->date());
         $this->addItem($job);
         $this->save();
+    }
+
+    /**
+     * @throws NoSuchEntityException
+     */
+    public function markAsInProgress(int $jobId)
+    {
+        $job = $this->getJobById($jobId);
+        $job->setStatus(Status::IN_PROGRESS);
+        $job->setStartedAt($this->time->date());
+        $this->save();
+    }
+
+    /**
+     * @throws NoSuchEntityException
+     */
+    public function markAsFailed(int $jobId, string $error, string $metadata = "")
+    {
+        $job = $this->getJobById($jobId);
+        $job->setStatus(Status::FAILED);
+        $job->setError($error);
+        $job->setFinishedAt($this->time->date());
+        $job->setMetadata($metadata);
+        $this->save();
+    }
+
+    /**
+     * @throws NoSuchEntityException
+     */
+    public function updateStats(int $jobId, int $total, int $count, string $metadata = "")
+    {
+        $job = $this->getJobById($jobId);
+        $job->setTotal($total);
+        $job->setCount($job->getCount() + $count);
+        $job->setMetadata($metadata);
+        $this->save();
+    }
+
+    /**
+     * @throws NoSuchEntityException
+     */
+    public function markAsDone(int $jobId, string $metadata = "")
+    {
+        $job = $this->getJobById($jobId);
+        $job->setStatus(Status::SUCCESS);
+        $job->setFinishedAt($this->time->date());
+        $job->setMetadata($metadata);
+        $this->save();
+    }
+
+    /**
+     * @param int $jobId
+     * @return SyncJobInterface
+     * @throws NoSuchEntityException
+     */
+    public function getJobById(int $jobId)
+    {
+        /**
+         * @var $job SyncJobInterface
+         */
+        $job = $this->addFieldToSelect('*')->getItemById($jobId);
+        if ($job === null) {
+            throw new NoSuchEntityException(new Phrase(sprintf("Job ID %d not found", $jobId)));
+        }
+        return $job;
     }
 }

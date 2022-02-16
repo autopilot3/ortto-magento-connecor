@@ -12,7 +12,6 @@ use Zend_Db_Exception;
 
 class UpgradeSchema implements UpgradeSchemaInterface
 {
-
     private AutopilotLoggerInterface $logger;
 
     public function __construct(AutopilotLoggerInterface $logger)
@@ -24,7 +23,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
     {
         $installer = $setup;
         $installer->startSetup();
-        if (version_compare($context->getVersion(), '0.0.2', '<')) {
+        if (version_compare($context->getVersion(), '0.0.2', '<=')) {
             try {
                 $this->logger->info("Upgrading " . Schema::TABLE_SYNC_JOBS);
                 Installer::setupJobsTable($installer);

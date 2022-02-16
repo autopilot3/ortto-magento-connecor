@@ -4,9 +4,7 @@ namespace Autopilot\AP3Connector\Helper;
 
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Magento\Backend\Model\Auth\Session;
 use Magento\Customer\Api\CustomerMetadataInterface;
-use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Api\Data\RegionInterface;
@@ -25,33 +23,27 @@ class Data extends AbstractHelper
     private string $clientID = "mgqQkvCJWDFnxJTgQwfVuYEdQRWVAywE";
     private GroupRepositoryInterface $groupRepository;
     private AutopilotLoggerInterface $logger;
-    private CustomerRepositoryInterface $customerRepository;
     private CountryInformationAcquirerInterface $countryRepository;
     private TimezoneInterface $time;
     private CustomerMetadataInterface $customerMetadata;
-    private Session $authSession;
     private Subscriber $subscriber;
 
     public function __construct(
         Context $context,
         GroupRepositoryInterface $groupRepository,
-        CustomerRepositoryInterface $customerRepository,
         CountryInformationAcquirerInterface $countryRepository,
         TimezoneInterface $time,
         CustomerMetadataInterface $customerMetadata,
         Subscriber $subscriber,
-        Session $authSession,
         AutopilotLoggerInterface $logger
     ) {
         parent::__construct($context);
         $this->_request = $context->getRequest();
         $this->groupRepository = $groupRepository;
         $this->logger = $logger;
-        $this->customerRepository = $customerRepository;
         $this->countryRepository = $countryRepository;
         $this->time = $time;
         $this->customerMetadata = $customerMetadata;
-        $this->authSession = $authSession;
         $this->subscriber = $subscriber;
     }
 
@@ -111,31 +103,25 @@ class Data extends AbstractHelper
         ];
 
         try {
-            $genderAttribute = $this->customerMetadata->getAttributeMetadata('gender');
-            $data['gender'] = $genderAttribute->getOptions()[$customer->getGender()]->getLabel();
+            $gender = $customer->getGender();
+            if (!empty($gender)) {
+                $genderAttribute = $this->customerMetadata->getAttributeMetadata('gender');
+                $data['gender'] = $genderAttribute->getOptions()[$gender]->getLabel();
+            }
         } catch (NoSuchEntityException|LocalizedException $e) {
             $this->logger->error($e, 'Failed to fetch customer gender details');
         }
 
         $groupId = $customer->getGroupId();
-        $this->logger->info("Group " . $groupId);
         if (!empty($groupId)) {
             try {
                 $group = $this->groupRepository->getById($groupId);
                 if (!empty($group)) {
                     $data['group'] = $group->getCode();
-                    $this->logger->info("Group " . $group->getCode());
                 }
             } catch (NoSuchEntityException|LocalizedException $e) {
                 $this->logger->error($e, 'Failed to fetch customer group details');
             }
-        }
-
-        try {
-            $customer = $this->customerRepository->getById($customer->getId());
-        } catch (NoSuchEntityException|LocalizedException $e) {
-            $this->logger->error($e, 'Failed to fetch customer details');
-            return $data;
         }
 
         $addresses = $customer->getAddresses();
@@ -203,24 +189,7 @@ class Data extends AbstractHelper
         return $data;
     }
 
-    /**
-     * @return array|null
-     */
-    public function getAdminUserFields(): ?array
-    {
-        $user = $this->authSession->getUser();
-        if (!empty($user)) {
-            return [
-                'name' => $user->getName(),
-                'email' => $user->getEmail(),
-                'username' => $user->getUserName(),
-            ];
-        }
-        $this->logger->warn("Failed to retrieve admin user details");
-        return null;
-    }
-
-    public function formatDate(string $value): string
+    public function formatDate(?string $value): string
     {
         if (empty($value)) {
             return Config::EMPTY_DATE_TIME;

@@ -144,6 +144,22 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
     /**
      * @inheritDoc
      */
+    public function getStartedAt()
+    {
+        return $this->getData(self::STARTED_AT);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setStartedAt(\DateTime $startedAt)
+    {
+        return $this->setData(self::STARTED_AT, $startedAt);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getCount()
     {
         return $this->getData(self::COUNT);
@@ -152,9 +168,25 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
     /**
      * @inheritDoc
      */
-    public function setCount(?int $count)
+    public function setCount(int $count)
     {
         return $this->setData(self::COUNT, $count);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getTotal()
+    {
+        return $this->getData(self::TOTAL);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setTotal(int $total)
+    {
+        return $this->setData(self::TOTAL, $total);
     }
 
     /**
@@ -171,5 +203,15 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
     public function setError(?string $error)
     {
         return $this->setData(self::ERROR, $error);
+    }
+
+    public function getMetadata()
+    {
+        return $this->getData(self::METADATA);
+    }
+
+    public function setMetadata(?string $metadata)
+    {
+        return $this->setData(self::METADATA, $metadata);
     }
 }

@@ -31,10 +31,8 @@
                 type="Autopilot\AP3Connector\Api\AutopilotClient"/>
     <preference for="Autopilot\AP3Connector\Api\ConfigScopeInterface"
                 type="Autopilot\AP3Connector\Model\Scope"/>
-    <preference for="Autopilot\AP3Connector\Api\Data\HelloInterfaceInterface"
-                type="Autopilot\AP3Connector\Model\Data\HelloInterface"/>
-    <preference for="Autopilot\AP3Connector\Api\Data\SyncJobInterfaceInterface"
-                type="Autopilot\AP3Connector\Model\Data\SyncJobInterface"/>
     <preference for="Autopilot\AP3Connector\Api\Data\SyncJobInterface"
-                type="Autopilot\AP3Connector\Model\Data\SyncJob"/>
+                type="Autopilot\AP3Connector\Model\SyncJob"/>
+    <preference for="Autopilot\AP3Connector\Api\CustomerReaderInterface"
+                type="Autopilot\AP3Connector\Api\CustomerReader"/>
 </config>

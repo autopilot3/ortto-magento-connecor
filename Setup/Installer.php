@@ -55,6 +55,12 @@ class Installer
                 ['nullable' => false],
                 'Created at'
             )->addColumn(
+                'started_at',
+                Table::TYPE_DATETIME,
+                null,
+                ['nullable' => true],
+                'Started at'
+            )->addColumn(
                 'finished_at',
                 Table::TYPE_DATETIME,
                 null,
@@ -65,13 +71,25 @@ class Installer
                 Table::TYPE_INTEGER,
                 null,
                 ['unsigned' => true, 'default' => 0, 'nullable' => false],
-                'Job Id'
+                'Number of records processed'
+            )->addColumn(
+                'total',
+                Table::TYPE_INTEGER,
+                null,
+                ['unsigned' => true, 'default' => 0, 'nullable' => false],
+                'Number of total records'
             )->addColumn(
                 'error',
                 Table::TYPE_TEXT,
                 1024,
                 [],
                 'Error'
+            )->addColumn(
+                'metadata',
+                Table::TYPE_TEXT,
+                1024,
+                ['nullable' => true],
+                'Metadata'
             )->addIndex("category_status_index", ["category", "status"])
                 ->setComment("Autopilot Cron Job History");
             $connection->createTable($table);

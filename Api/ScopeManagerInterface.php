@@ -5,11 +5,9 @@ namespace Autopilot\AP3Connector\Api;
 interface ScopeManagerInterface
 {
     /**
-     * @param int|null $websiteId
-     * @param int|null $storeId
      * @return ConfigScopeInterface[]
      */
-    public function getActiveScopes(?int $websiteId = null, ?int $storeId = null): array;
+    public function getActiveScopes(): array;
 
     /**
      * @param string $scopeType

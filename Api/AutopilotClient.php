@@ -6,8 +6,10 @@ use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
+use Autopilot\AP3Connector\Model\ImportContactResponse;
 use Exception;
 use JsonException;
+use Laminas\Router\RouteInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\HTTP\ClientInterface;
 
@@ -36,32 +38,28 @@ class AutopilotClient implements AutopilotClientInterface
         $this->scopeManager = $scopeManager;
     }
 
-    public function upsertContactBackend(CustomerInterface $customer)
+    /**
+     * @inheirtDoc
+     */
+    public function importContacts(ConfigScopeInterface $scope, $customers)
     {
-        try {
-            $websiteID = $customer->getWebsiteId();
-            $storeId = $customer->getStoreId();
-            $activeScopes = $this->scopeManager->getActiveScopes($websiteID, $storeId);
-            if (empty($activeScopes)) {
-                return;
+        $url = $this->helper->getAutopilotURL(RoutesInterface::AP_IMPORT_CONTACTS);
+        $apiKey = $scope->getAPIKey();
+        $payload = [];
+        foreach ($customers as $customer) {
+            $data = $this->helper->getCustomerFields($customer, $scope);
+            if (empty($data)) {
+                continue;
             }
-            $url = $this->helper->getAutopilotURL('magento/backend/contact/merge');
-
-            $admin = $this->helper->getAdminUserFields();
-
-            foreach ($activeScopes as $scope) {
-                $data = $this->helper->getCustomerFields($customer, $scope);
-                if (empty($data)) {
-                    continue;
-                }
-                $data['updated_by'] = $admin;
-                $apiKey = $scope->getAPIKey();
-                $data['scope'] = $scope->toArray();
-                $this->postJSON($url, $apiKey, $data);
-            }
-        } catch (Exception $e) {
-            $this->logger->error($e);
+            $data['scope'] = $scope->toArray();
+            $payload[] = $data;
         }
+        if (empty($payload)) {
+            $this->logger->debug("No customer to export");
+            return;
+        }
+        $response = $this->postJSON($url, $apiKey, $payload);
+        return new ImportContactResponse($response);
     }
 
     public function updateAccessToken(ConfigScopeInterface $scope)
@@ -78,7 +76,7 @@ class AutopilotClient implements AutopilotClientInterface
             }
 
             $this->postJSON(
-                $this->helper->getAutopilotURL(Config::UPDATE_ACCESS_TOKEN_ROUTE),
+                $this->helper->getAutopilotURL(RoutesInterface::AP_UPDATE_ACCESS_TOKEN),
                 $apiKey,
                 [
                     'scope' => $scope->getCode(),
@@ -94,8 +92,9 @@ class AutopilotClient implements AutopilotClientInterface
      * @param string $url
      * @param string $apiKey
      * @param array $request
-     * @return mixed
-     * @throws AutopilotException|JsonException
+     * @return array
+     * @throws AutopilotException
+     * @throws \JsonException
      */
     private function postJSON(string $url, string $apiKey, array $request)
     {
@@ -106,12 +105,13 @@ class AutopilotClient implements AutopilotClientInterface
         $this->curl->post($url, $payload);
         $status = $this->curl->getStatus();
         $response = $this->curl->getBody();
-        $this->logger->debug('POST: ' . $url, [
-            'response' => empty($response) ? '{}' : $response,
-        ]);
+        if (empty($response)) {
+            $response = "{}";
+        }
+        $this->logger->debug('POST: ' . $url, ['response' => $response,]);
         if ($status != 200) {
             throw new AutopilotException($url, "POST", $status, $payload, $response);
         }
-        return json_decode($response, JSON_THROW_ON_ERROR);
+        return json_decode($response, true, 512, JSON_THROW_ON_ERROR);
     }
 }

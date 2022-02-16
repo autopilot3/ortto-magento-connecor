@@ -48,7 +48,7 @@
         <section id="ap_sync" translate="label" type="text" sortOrder="101" showInDefault="0"
                  showInWebsite="1"
                  showInStore="1">
-            <label>Sync</label>
+            <label>Data Synchronization</label>
             <tab>autopilot</tab>
             <resource>Autopilot_AP3Connector::config</resource>
             <group id="customer" translate="label" sortOrder="2" showInDefault="0" showInWebsite="1"

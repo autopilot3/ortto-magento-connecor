@@ -20,11 +20,4 @@ class Config extends AbstractHelper
     // "2006-01-02T15:04:05Z07:00"
     const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';
     const EMPTY_DATE_TIME = "0001-01-01T00:00:00Z";
-
-    // Magento Routes
-    public const SYNC_CUSTOMERS_ROUTE = "autopilot/sync/customers";
-
-    // Autopilot Routes
-    public const AUTHENTICATION_ROUTE = "/-/installation/auth";
-    public const UPDATE_ACCESS_TOKEN_ROUTE = "/magento/update-access-token";
 }

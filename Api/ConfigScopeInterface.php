@@ -63,6 +63,8 @@ interface ConfigScopeInterface
      */
     public function getAccessToken(): string;
 
+    public function equals(ConfigScopeInterface $scope): bool;
+
     /**
      * @param string $type
      * @param int $id
@@ -70,4 +72,9 @@ interface ConfigScopeInterface
      * @throws LocalizedException|NotFoundException|NoSuchEntityException
      */
     public function load(string $type, int $id);
+
+    /**
+     * @return int
+     */
+    public function getWebsiteId(): int;
 }
