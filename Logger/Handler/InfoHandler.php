@@ -8,7 +8,7 @@ use Monolog\Logger;
 
 class InfoHandler extends Base
 {
-    const FILE_NAME = '/var/log/autopilot/info.log';
+    const FILE_NAME = '/var/log/autopilot_info.log';
     /**
      * Logging level
      * @var int

@@ -14,8 +14,25 @@
             <argument name="logger" xsi:type="object">AutopilotLogger</argument>
         </arguments>
     </type>
-    <preference for="Autopilot\AP3Connector\API\CouponRepositoryInterface"
-                type="Autopilot\AP3Connector\API\CouponRepository"/>
-    <preference for="Autopilot\AP3Connector\API\Data\CouponInterface"
+    <type name="Autopilot\AP3Connector\Api\AutopilotClient">
+        <arguments>
+            <argument name="curl" xsi:type="object">Magento\Framework\HTTP\Client\Curl</argument>
+        </arguments>
+    </type>
+    <preference for="Autopilot\AP3Connector\Logger\AutopilotLoggerInterface"
+                type="Autopilot\AP3Connector\Logger\Logger"/>
+    <preference for="Autopilot\AP3Connector\Api\CouponRepositoryInterface"
+                type="Autopilot\AP3Connector\Api\CouponRepository"/>
+    <preference for="Autopilot\AP3Connector\Api\Data\CouponInterface"
                 type="Autopilot\AP3Connector\Model\Data\Coupon"/>
+    <preference for="Autopilot\AP3Connector\Api\ScopeManagerInterface"
+                type="Autopilot\AP3Connector\Helper\ScopeManager"/>
+    <preference for="Autopilot\AP3Connector\Api\AutopilotClientInterface"
+                type="Autopilot\AP3Connector\Api\AutopilotClient"/>
+    <preference for="Autopilot\AP3Connector\Api\ConfigScopeInterface"
+                type="Autopilot\AP3Connector\Model\Scope"/>
+    <preference for="Autopilot\AP3Connector\Api\Data\SyncJobInterface"
+                type="Autopilot\AP3Connector\Model\SyncJob"/>
+    <preference for="Autopilot\AP3Connector\Api\CustomerReaderInterface"
+                type="Autopilot\AP3Connector\Api\CustomerReader"/>
 </config>

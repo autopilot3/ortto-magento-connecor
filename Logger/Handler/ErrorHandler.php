@@ -8,7 +8,7 @@ use Monolog\Logger;
 
 class ErrorHandler extends Base
 {
-    public const FILE_NAME = '/var/log/autopilot/error.log';
+    public const FILE_NAME = '/var/log/autopilot_error.log';
     /**
      * Logging level
      * @var int

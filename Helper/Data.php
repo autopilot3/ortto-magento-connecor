@@ -2,10 +2,9 @@
 
 namespace Autopilot\AP3Connector\Helper;
 
-use Autopilot\AP3Connector\Logger\Logger;
-use Magento\Backend\Model\Auth\Session;
+use Autopilot\AP3Connector\Api\ConfigScopeInterface;
+use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Magento\Customer\Api\CustomerMetadataInterface;
-use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Api\Data\RegionInterface;
@@ -20,58 +19,49 @@ use Magento\Newsletter\Model\Subscriber;
 
 class Data extends AbstractHelper
 {
-    const XML_PATH_BASE_URL = "autopilot/general/base_url";
-    const XML_PATH_CLIENT_ID = "autopilot/general/client_id";
-
-    // "2006-01-02T15:04:05Z07:00"
-    const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';
-
-    const EMPTY_DATE_TIME = "0001-01-01T00:00:00Z";
-
     private string $baseURL = "https://magento-integration-api.autopilotapp.com";
     private string $clientID = "mgqQkvCJWDFnxJTgQwfVuYEdQRWVAywE";
     private GroupRepositoryInterface $groupRepository;
-    private Logger $logger;
-    private CustomerRepositoryInterface $customerRepository;
+    private AutopilotLoggerInterface $logger;
     private CountryInformationAcquirerInterface $countryRepository;
     private TimezoneInterface $time;
     private CustomerMetadataInterface $customerMetadata;
-    private Session $authSession;
     private Subscriber $subscriber;
 
     public function __construct(
         Context $context,
         GroupRepositoryInterface $groupRepository,
-        CustomerRepositoryInterface $customerRepository,
         CountryInformationAcquirerInterface $countryRepository,
         TimezoneInterface $time,
         CustomerMetadataInterface $customerMetadata,
         Subscriber $subscriber,
-        Session $authSession,
-        Logger $logger
+        AutopilotLoggerInterface $logger
     ) {
         parent::__construct($context);
         $this->_request = $context->getRequest();
         $this->groupRepository = $groupRepository;
         $this->logger = $logger;
-        $this->customerRepository = $customerRepository;
         $this->countryRepository = $countryRepository;
         $this->time = $time;
         $this->customerMetadata = $customerMetadata;
-        $this->authSession = $authSession;
         $this->subscriber = $subscriber;
     }
 
     /**
+     * @param string $path
      * @return string
      */
-    public function getBaseURL(): string
+    public function getAutopilotURL(string $path): string
     {
-        $url = $this->scopeConfig->getValue(self::XML_PATH_BASE_URL);
+        $path = trim($path);
+        $url = $this->scopeConfig->getValue(Config::XML_PATH_BASE_URL);
         if (empty($url)) {
-            return $this->baseURL;
+            $url = $this->baseURL;
         }
-        return rtrim($url, ' /');
+        if (empty($path)) {
+            return rtrim($url, ' /');
+        }
+        return rtrim($url, ' /') . '/' . ltrim($path, '/');
     }
 
     /**
@@ -79,7 +69,7 @@ class Data extends AbstractHelper
      */
     public function getClientId(): string
     {
-        $clientID = $this->scopeConfig->getValue(self::XML_PATH_CLIENT_ID);
+        $clientID = $this->scopeConfig->getValue(Config::XML_PATH_CLIENT_ID);
         if (empty($clientID)) {
             return $this->clientID;
         }
@@ -88,10 +78,16 @@ class Data extends AbstractHelper
 
     /**
      * @param CustomerInterface $customer
+     * @param ConfigScopeInterface $scope
      * @return array
      */
-    public function getCustomerFields(CustomerInterface $customer): array
+    public function getCustomerFields(CustomerInterface $customer, ConfigScopeInterface $scope): array
     {
+        $sub = $this->subscriber->loadByCustomer($customer->getId(), $customer->getWebsiteId());
+        $isSubscribed = $sub->isSubscribed();
+        if (!$scope->isNonSubscribedCustomerSyncEnabled() && !$isSubscribed) {
+            return [];
+        }
         $data = [
             'prefix' => $customer->getPrefix(),
             'first_name' => $customer->getFirstname(),
@@ -103,34 +99,29 @@ class Data extends AbstractHelper
             'updated_at' => $this->now(),
             'created_in' => $customer->getCreatedIn(),
             'dob' => $this->formatDate($customer->getDob()),
+            'is_subscribed' => $isSubscribed,
         ];
 
         try {
-            $genderAttribute = $this->customerMetadata->getAttributeMetadata('gender');
-            $data['gender'] = $genderAttribute->getOptions()[$customer->getGender()]->getLabel();
+            $gender = $customer->getGender();
+            if (!empty($gender)) {
+                $genderAttribute = $this->customerMetadata->getAttributeMetadata('gender');
+                $data['gender'] = $genderAttribute->getOptions()[$gender]->getLabel();
+            }
         } catch (NoSuchEntityException|LocalizedException $e) {
             $this->logger->error($e, 'Failed to fetch customer gender details');
         }
 
         $groupId = $customer->getGroupId();
-        $this->logger->info("Group " . $groupId);
         if (!empty($groupId)) {
             try {
                 $group = $this->groupRepository->getById($groupId);
                 if (!empty($group)) {
                     $data['group'] = $group->getCode();
-                    $this->logger->info("Group " . $group->getCode());
                 }
             } catch (NoSuchEntityException|LocalizedException $e) {
                 $this->logger->error($e, 'Failed to fetch customer group details');
             }
-        }
-
-        try {
-            $customer = $this->customerRepository->getById($customer->getId());
-        } catch (NoSuchEntityException|LocalizedException $e) {
-            $this->logger->error($e, 'Failed to fetch customer details');
-            return $data;
         }
 
         $addresses = $customer->getAddresses();
@@ -154,9 +145,6 @@ class Data extends AbstractHelper
             }
             $data['custom_attributes'] = $customAttrs;
         }
-
-        $sub = $this->subscriber->loadByCustomer($customer->getId(), $customer->getWebsiteId());
-        $data['is_subscribed'] = $sub->isSubscribed();
 
         return $data;
     }
@@ -201,39 +189,30 @@ class Data extends AbstractHelper
         return $data;
     }
 
-    /**
-     * @return array|null
-     */
-    public function getAdminUserFields(): ?array
-    {
-        $user = $this->authSession->getUser();
-        if (!empty($user)) {
-            return [
-                'name' => $user->getName(),
-                'email' => $user->getEmail(),
-                'username' => $user->getUserName(),
-            ];
-        }
-        $this->logger->warn("Failed to retrieve admin user details");
-        return null;
-    }
-
-    public function formatDate(string $value): string
+    public function formatDate(?string $value): string
     {
         if (empty($value)) {
-            return self::EMPTY_DATE_TIME;
+            return Config::EMPTY_DATE_TIME;
         }
         $date = date_create($value);
         if ($date) {
-            return $this->time->date($date)->format(self::DATE_TIME_FORMAT);
+            return $this->time->date($date)->format(Config::DATE_TIME_FORMAT);
         }
 
         $this->logger->warn("Invalid time value", ["value" => $value]);
-        return self::EMPTY_DATE_TIME;
+        return Config::EMPTY_DATE_TIME;
+    }
+
+    public function getErrorResponse(string $message): array
+    {
+        return [
+            'error' => true,
+            'message' => $message,
+        ];
     }
 
     public function now(): string
     {
-        return $this->time->date()->format(self::DATE_TIME_FORMAT);
+        return $this->time->date()->format(Config::DATE_TIME_FORMAT);
     }
 }

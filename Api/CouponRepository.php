@@ -1,17 +1,17 @@
 <?php
 
 
-namespace Autopilot\AP3Connector\API;
+namespace Autopilot\AP3Connector\Api;
 
-use Autopilot\AP3Connector\API\Data\CouponInterface;
-use Autopilot\AP3Connector\Logger\Logger;
+use Autopilot\AP3Connector\Api\Data\CouponInterface;
+use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 
 class CouponRepository implements CouponRepositoryInterface
 {
 
-    private Logger $logger;
+    private AutopilotLoggerInterface $logger;
 
-    public function __construct(Logger $logger)
+    public function __construct(AutopilotLoggerInterface $logger)
     {
         $this->logger = $logger;
     }
