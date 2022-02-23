@@ -100,5 +100,6 @@ class ScopeManager extends AbstractHelper implements ScopeManagerInterface
             $this->logger->error($e);
             return new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
         }
+        return new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
     }
 }

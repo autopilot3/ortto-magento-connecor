@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Controller\Adminhtml\Sync;
 
@@ -8,6 +9,7 @@ use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use AutoPilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
 use AutoPilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\Result\Json;
@@ -73,7 +75,7 @@ class Customers extends Action
             }
             try {
                 $jobCollection->enqueueNewScopeJob(JobCategory::CUSTOMER, $scope);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error($e, "Failed to enqueue a new customer sync job");
                 $result->setData($this->helper->getErrorResponse("Failed to add a new job to the queue!"));
                 return $result;
@@ -83,7 +85,7 @@ class Customers extends Action
             ]);
             return $result;
         }
-        $this->logger->error(new \Exception("Invalid job collection type"));
+        $this->logger->error(new Exception("Invalid job collection type"));
         $result->setData($this->helper->getErrorResponse("Failed to initialise a new sync job."));
 
         return $result;

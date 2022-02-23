@@ -1,9 +1,11 @@
 <?php
+declare(strict_types=1);
 
 
 namespace Autopilot\AP3Connector\Logger;
 
 use Autopilot\AP3Connector\Model\AutopilotException;
+use Exception;
 use Psr\Log\LoggerInterface;
 
 class Logger implements AutopilotLoggerInterface
@@ -35,7 +37,7 @@ class Logger implements AutopilotLoggerInterface
         $this->log(self::LOG_LEVEL_DEBUG, $message, $data);
     }
 
-    public function error(\Exception $exception, string $message = '')
+    public function error(Exception $exception, string $message = '')
     {
         $params = [
             'code' => $exception->getCode(),
@@ -73,7 +75,7 @@ class Logger implements AutopilotLoggerInterface
             if (is_string($data)) {
                 return (string)$data;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return "Failed to encode data: " . $e->getMessage();
         }
         return '';

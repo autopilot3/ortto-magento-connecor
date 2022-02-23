@@ -1,16 +1,14 @@
 <?php
+declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Api;
 
-use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
 use Autopilot\AP3Connector\Model\ImportContactResponse;
 use Exception;
 use JsonException;
-use Laminas\Router\RouteInterface;
-use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\HTTP\ClientInterface;
 
 class AutopilotClient implements AutopilotClientInterface
@@ -19,12 +17,10 @@ class AutopilotClient implements AutopilotClientInterface
     private Data $helper;
 
     private AutopilotLoggerInterface $logger;
-    private ScopeManagerInterface $scopeManager;
 
     public function __construct(
         ClientInterface $curl,
         Data $helper,
-        ScopeManagerInterface $scopeManager,
         AutopilotLoggerInterface $logger
     ) {
         // In Seconds
@@ -35,7 +31,6 @@ class AutopilotClient implements AutopilotClientInterface
         $this->curl = $curl;
         $this->helper = $helper;
         $this->logger = $logger;
-        $this->scopeManager = $scopeManager;
     }
 
     /**
@@ -56,7 +51,7 @@ class AutopilotClient implements AutopilotClientInterface
         }
         if (empty($payload)) {
             $this->logger->debug("No customer to export");
-            return;
+            return null;
         }
         $response = $this->postJSON($url, $apiKey, $payload);
         return new ImportContactResponse($response);
@@ -94,7 +89,7 @@ class AutopilotClient implements AutopilotClientInterface
      * @param array $request
      * @return array
      * @throws AutopilotException
-     * @throws \JsonException
+     * @throws JsonException
      */
     private function postJSON(string $url, string $apiKey, array $request)
     {

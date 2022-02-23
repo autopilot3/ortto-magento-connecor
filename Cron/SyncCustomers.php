@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 
 namespace Autopilot\AP3Connector\Cron;
@@ -27,7 +28,6 @@ use Magento\Store\Model\StoreManagerInterface;
 class SyncCustomers
 {
     private AutopilotLoggerInterface $logger;
-    private Data $helper;
     private AutopilotClientInterface $autopilotClient;
     private JobCollectionFactory $jobCollectionFactory;
     private ScopeManagerInterface $scopeManager;
@@ -38,7 +38,6 @@ class SyncCustomers
 
     public function __construct(
         AutopilotLoggerInterface $logger,
-        Data $helper,
         AutopilotClientInterface $autopilotClient,
         JobCollectionFactory $jobCollectionFactory,
         ScopeManagerInterface $scopeManager,
@@ -48,7 +47,6 @@ class SyncCustomers
         CustomerReaderInterface $customerReader
     ) {
         $this->logger = $logger;
-        $this->helper = $helper;
         $this->autopilotClient = $autopilotClient;
         $this->jobCollectionFactory = $jobCollectionFactory;
         $this->scopeManager = $scopeManager;
