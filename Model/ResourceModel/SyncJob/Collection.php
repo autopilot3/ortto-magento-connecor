@@ -35,12 +35,12 @@ class Collection extends AbstractCollection
         FetchStrategyInterface $fetchStrategy,
         TimezoneInterface $time,
         ManagerInterface $eventManager,
-        SyncJobFactory $syncJobFactory,
+        SyncJobFactory $cronCheckpointFactory,
         AdapterInterface $connection = null,
         AbstractDb $resource = null
     ) {
         parent::__construct($entityFactory, $logger, $fetchStrategy, $eventManager, $connection, $resource);
-        $this->syncJobFactory = $syncJobFactory;
+        $this->syncJobFactory = $cronCheckpointFactory;
         $this->time = $time;
     }
 

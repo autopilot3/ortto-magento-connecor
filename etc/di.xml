@@ -33,6 +33,8 @@
                 type="Autopilot\AP3Connector\Model\Scope"/>
     <preference for="Autopilot\AP3Connector\Api\Data\SyncJobInterface"
                 type="Autopilot\AP3Connector\Model\SyncJob"/>
+    <preference for="Autopilot\AP3Connector\Api\Data\CronCheckpointInterface"
+                type="Autopilot\AP3Connector\Model\CronCheckpoint"/>
     <preference for="Autopilot\AP3Connector\Api\CustomerReaderInterface"
                 type="Autopilot\AP3Connector\Api\CustomerReader"/>
 </config>

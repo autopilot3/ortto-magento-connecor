@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-
 namespace Autopilot\AP3Connector\Setup;
 
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
@@ -28,6 +27,8 @@ class UpgradeSchema implements UpgradeSchemaInterface
             try {
                 $this->logger->info("Upgrading " . Schema::TABLE_SYNC_JOBS);
                 Installer::setupJobsTable($installer);
+                $this->logger->info("Upgrading " . Schema::TABLE_CRON_CHECKPOINT);
+                Installer::setupCronJobCheckpointTable($setup);
             } catch (Zend_Db_Exception $e) {
                 $this->logger->error($e, "Failed to upgrade schema");
             }

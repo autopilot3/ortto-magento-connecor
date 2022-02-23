@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-
 namespace Autopilot\AP3Connector\Api;
 
 use Autopilot\AP3Connector\Model\Data\ReadCustomerResult;
@@ -29,7 +28,7 @@ class CustomerReader implements CustomerReaderInterface
      * @inheritDoc
      * @throws LocalizedException
      */
-    public function getScopeCustomers(ConfigScopeInterface $scope, int $page, DateTime $updatedAfter = null)
+    public function getScopeCustomers(ConfigScopeInterface $scope, int $page, ?DateTime $updatedAfter = null)
     {
         if ($page < 1) {
             $page = 1;
@@ -45,7 +44,7 @@ class CustomerReader implements CustomerReaderInterface
             $this->criteriaBuilder->addFilter(CustomerInterface::WEBSITE_ID, $scope->getWebsiteId());
         }
 
-        if ($updatedAfter !== null) {
+        if (!empty($updatedAfter)) {
             $this->criteriaBuilder->addFilter(CustomerInterface::UPDATED_AT, $updatedAfter, "gt");
         }
 

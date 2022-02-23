@@ -5,12 +5,14 @@ namespace Autopilot\AP3Connector\Model;
 
 use Autopilot\AP3Connector\Api\Data\SyncJobInterface;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob as ResourceModel;
+use Autopilot\AP3Connector\Setup\SchemaInterface;
+use DateTime;
 use Magento\Framework\DataObject\IdentityInterface;
 use Magento\Framework\Model\AbstractModel;
 
 class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterface
 {
-    const CACHE_TAG = 'autopilot_sync_jobs';
+    const CACHE_TAG = SchemaInterface::TABLE_SYNC_JOBS;
 
     public function getIdentities()
     {
@@ -20,7 +22,7 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
     /**
      * @var string
      */
-    protected $_eventPrefix = 'autopilot_sync_jobs_model';
+    protected $_eventPrefix = SchemaInterface::TABLE_SYNC_JOBS;
 
     /**
      * @inheritdoc
@@ -121,7 +123,7 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
     /**
      * @inheritDoc
      */
-    public function setCreatedAt(\DateTime $createdAt)
+    public function setCreatedAt(DateTime $createdAt)
     {
         return $this->setData(self::CREATED_AT, $createdAt);
     }
@@ -137,7 +139,7 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
     /**
      * @inheritDoc
      */
-    public function setFinishedAt(\DateTime $finishedAt)
+    public function setFinishedAt(DateTime $finishedAt)
     {
         return $this->setData(self::FINISHED_AT, $finishedAt);
     }
@@ -153,7 +155,7 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
     /**
      * @inheritDoc
      */
-    public function setStartedAt(\DateTime $startedAt)
+    public function setStartedAt(DateTime $startedAt)
     {
         return $this->setData(self::STARTED_AT, $startedAt);
     }

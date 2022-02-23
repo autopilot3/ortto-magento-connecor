@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-
 namespace Autopilot\AP3Connector\Setup;
 
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
@@ -26,6 +25,8 @@ class InstallSchema implements InstallSchemaInterface
         try {
             $this->logger->info("Installing " . Schema::TABLE_SYNC_JOBS);
             Installer::setupJobsTable($setup);
+            $this->logger->info("Installing " . Schema::TABLE_CRON_CHECKPOINT);
+            Installer::setupCronJobCheckpointTable($setup);
         } catch (Zend_Db_Exception $e) {
             $this->logger->error($e, "Failed to install database schema");
         }

@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-
 namespace Autopilot\AP3Connector\Model;
 
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
@@ -212,5 +211,10 @@ class Scope implements ConfigScopeInterface
     public function getWebsiteId(): int
     {
         return $this->websiteId;
+    }
+
+    public function toString(): string
+    {
+        return sprintf("%s:%s:%d", $this->type, $this->code, $this->id);
     }
 }

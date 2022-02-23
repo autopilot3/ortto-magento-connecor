@@ -78,4 +78,9 @@ interface ConfigScopeInterface
      * @return int
      */
     public function getWebsiteId(): int;
+
+    /**
+     * @return string
+     */
+    public function toString(): string;
 }
