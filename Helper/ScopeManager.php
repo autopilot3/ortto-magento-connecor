@@ -74,7 +74,7 @@ class ScopeManager extends AbstractHelper implements ScopeManagerInterface
         try {
             if ($scopeType === ScopeInterface::SCOPE_WEBSITE) {
                 if (empty($scopeId)) {
-                    $websiteId = $this->_request->getParam($scopeType, -1);
+                    $websiteId = (int)$this->_request->getParam($scopeType, -1);
                 } else {
                     $websiteId = $scopeId;
                 }
@@ -87,7 +87,7 @@ class ScopeManager extends AbstractHelper implements ScopeManagerInterface
 
             $scopeType = ScopeInterface::SCOPE_STORE;
             if (empty($scopeId)) {
-                $storeId = $this->_request->getParam($scopeType, -1);
+                $storeId = (int)$this->_request->getParam($scopeType, -1);
             } else {
                 $storeId = $scopeId;
             }
