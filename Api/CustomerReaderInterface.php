@@ -16,5 +16,5 @@ interface CustomerReaderInterface
      * @param DateTime|null $updatedAfter
      * @return ReadCustomerResultInterface
      */
-    public function getScopeCustomers(ConfigScopeInterface $scope, int $page, DateTime $updatedAfter = null);
+    public function getScopeCustomers(ConfigScopeInterface $scope, int $page, ?DateTime $updatedAfter = null);
 }

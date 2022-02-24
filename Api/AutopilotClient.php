@@ -51,7 +51,7 @@ class AutopilotClient implements AutopilotClientInterface
         }
         if (empty($payload)) {
             $this->logger->debug("No customer to export");
-            return null;
+            return new ImportContactResponse();
         }
         $response = $this->postJSON($url, $apiKey, $payload);
         return new ImportContactResponse($response);

@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-
 namespace Autopilot\AP3Connector\Observer;
 
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
