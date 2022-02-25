@@ -66,7 +66,7 @@ class Scope implements ConfigScopeInterface
             }
         } else {
             $store = $this->storeManager->getStore($this->id);
-            $this->websiteId = $store->getWebsiteId();
+            $this->websiteId = (int)$store->getWebsiteId();
             $websiteAPIKey = $this->scopeConfig->getValue(
                 Config::XML_PATH_API_KEY,
                 ScopeInterface::SCOPE_WEBSITE,

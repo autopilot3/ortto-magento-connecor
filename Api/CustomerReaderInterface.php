@@ -13,8 +13,14 @@ interface CustomerReaderInterface
     /**
      * @param ConfigScopeInterface $scope
      * @param int $page
-     * @param DateTime|null $updatedAfter
+     * @param DateTime|null $customerCheckpoint
+     * @param DateTime|null $orderCheckpoint
      * @return ReadCustomerResultInterface
      */
-    public function getScopeCustomers(ConfigScopeInterface $scope, int $page, ?DateTime $updatedAfter = null);
+    public function getScopeCustomers(
+        ConfigScopeInterface $scope,
+        int $page,
+        ?DateTime $customerCheckpoint = null,
+        ?DateTime $orderCheckpoint = null
+    );
 }

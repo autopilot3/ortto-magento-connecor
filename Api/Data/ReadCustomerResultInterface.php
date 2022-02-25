@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Api\Data;
 
-use Magento\Customer\Api\Data\CustomerInterface;
-
 interface ReadCustomerResultInterface
 {
     /**
@@ -15,15 +13,10 @@ interface ReadCustomerResultInterface
     /**
      * @return int
      */
-    public function getCurrentPage(): int;
+    public function getNextPage(): int;
 
     /**
-     * @return int
-     */
-    public function getPageSize(): int;
-
-    /**
-     * @return CustomerInterface[]
+     * @return CustomerDataInterface[]
      */
     public function getCustomers(): array;
 

@@ -9,6 +9,7 @@ use Autopilot\AP3Connector\Api\CustomerReaderInterface;
 use Autopilot\AP3Connector\Api\JobCategoryInterface as JobCategory;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Helper\Config;
+use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
 use Autopilot\AP3Connector\Model\ImportContactResponse;
@@ -23,6 +24,7 @@ use Autopilot\AP3Connector\Api\JobStatusInterface as Status;
 use JsonException;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Phrase;
 use Magento\Store\Model\StoreManagerInterface;
@@ -38,6 +40,7 @@ class SyncCustomers
     private ScopeConfigInterface $scopeConfig;
     private StoreManagerInterface $storeManager;
     private CustomerReaderInterface $customerReader;
+    private Data $helper;
 
     public function __construct(
         AutopilotLoggerInterface $logger,
@@ -48,7 +51,8 @@ class SyncCustomers
         EncryptorInterface $encryptor,
         ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManager,
-        CustomerReaderInterface $customerReader
+        CustomerReaderInterface $customerReader,
+        Data $helper
     ) {
         $this->logger = $logger;
         $this->autopilotClient = $autopilotClient;
@@ -59,6 +63,7 @@ class SyncCustomers
         $this->storeManager = $storeManager;
         $this->customerReader = $customerReader;
         $this->checkpointCollectionFactory = $checkpointCollectionFactory;
+        $this->helper = $helper;
     }
 
     /**
@@ -140,16 +145,24 @@ class SyncCustomers
                 continue;
             }
 
+            $now = $this->helper->now();
+
             try {
                 $this->logger->debug("Checking customer export checkpoint", $scope->toArray());
-                $checkpoint = $checkpointCollection->getCheckpoint(JobCategory::CUSTOMER, $scope);
-                $total = $this->exportUpdatedCustomers($scope, $checkpoint->getCheckedAt());
-                $checkpoint = $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $scope);
+                $customerCheckpoint = $checkpointCollection->getCheckpoint(JobCategory::CUSTOMER, $scope);
+                $orderCheckpoint = $checkpointCollection->getCheckpoint(JobCategory::ORDER, $scope);
+                $total = $this->exportUpdatedCustomers(
+                    $scope,
+                    $customerCheckpoint->getCheckedAt(),
+                    $orderCheckpoint->getCheckedAt()
+                );
+                $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $now, $scope);
+                $checkpointCollection->setCheckpoint(JobCategory::ORDER, $now, $scope);
                 $this->logger->debug(
                     sprintf(
-                        "%d customer(s) exported. Checkpoint has been updated to %s",
+                        "%d customer(s) exported. Checkpoints updated to %s.",
                         $total,
-                        $checkpoint->getCheckedAt()->format(Config::DATE_TIME_FORMAT)
+                        $now->format(Config::DATE_TIME_FORMAT)
                     ),
                     $scope->toArray()
                 );
@@ -161,7 +174,7 @@ class SyncCustomers
 
     /**
      * @return ImportContactResponse
-     * @throws JsonException|AutopilotException|NoSuchEntityException
+     * @throws JsonException|AutopilotException|NoSuchEntityException|LocalizedException
      */
     private function exportAllCustomers(Scope $scope, JobCollection $jobCollection, int $jobId)
     {
@@ -178,7 +191,7 @@ class SyncCustomers
             if (!empty($customers)) {
                 $importResult = $this->autopilotClient->importContacts($scope, $customers);
                 $total->incr($importResult);
-                $page = $result->getCurrentPage() + 1;
+                $page = $result->getNextPage();
                 $jobCollection->updateStats($jobId, $result->getTotal(), count($customers), $total->toJSON());
             }
         } while ($result->hasMore());
@@ -187,22 +200,26 @@ class SyncCustomers
 
     /**
      * @param Scope $scope
-     * @param ?DateTime $lastCheckedAt
+     * @param ?DateTime $customerCheckpoint
+     * @param DateTime|null $orderCheckpoint
      * @return int
      * @throws AutopilotException
-     * @throws JsonException
+     * @throws JsonException|LocalizedException
      */
-    private function exportUpdatedCustomers(Scope $scope, ?DateTime $lastCheckedAt): int
-    {
+    private function exportUpdatedCustomers(
+        Scope $scope,
+        ?DateTime $customerCheckpoint = null,
+        ?DateTime $orderCheckpoint = null
+    ): int {
         $page = 1;
         $total = 0;
         do {
-            $result = $this->customerReader->getScopeCustomers($scope, $page, $lastCheckedAt);
+            $result = $this->customerReader->getScopeCustomers($scope, $page, $customerCheckpoint, $orderCheckpoint);
             $customers = $result->getCustomers();
             if (!empty($customers)) {
                 $total += count($customers);
                 $this->autopilotClient->importContacts($scope, $customers);
-                $page = $result->getCurrentPage() + 1;
+                $page = $result->getNextPage();
             }
         } while ($result->hasMore());
         return $total;

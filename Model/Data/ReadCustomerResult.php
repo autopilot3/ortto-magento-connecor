@@ -3,61 +3,63 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Model\Data;
 
+use Autopilot\AP3Connector\Api\CustomerReaderInterface;
+use Autopilot\AP3Connector\Api\Data\CustomerDataInterface;
 use Autopilot\AP3Connector\Api\Data\ReadCustomerResultInterface;
-use Magento\Customer\Api\Data\CustomerInterface;
-use Magento\Customer\Api\Data\CustomerSearchResultsInterface;
 use Magento\Framework\DataObject;
 
 class ReadCustomerResult extends DataObject implements ReadCustomerResultInterface
 {
     private int $total;
-    private int $currentPage;
+    private int $nextPage;
     /**
-     * @var CustomerInterface[]
+     * @var CustomerDataInterface[]
      */
     private array $customers;
-    private int $pageSize;
 
     /**
-     * @param CustomerSearchResultsInterface $result
-     * @param array $data
+     * @param array $customers
+     * @param int $page
+     * @param int $total
+     * @param CustomerDataInterface[] $data
      */
-    public function __construct(
-        CustomerSearchResultsInterface $result,
-        array $data = []
-    ) {
+    public function __construct(array $customers, int $page, int $total, array $data = [])
+    {
         parent::__construct($data);
-        $this->total = $result->getTotalCount();
-        $this->customers = $result->getItems();
-        $searchCriteria = $result->getSearchCriteria();
-        if ($searchCriteria !== null) {
-            $this->currentPage = $searchCriteria->getCurrentPage();
-            $this->pageSize = $searchCriteria->getPageSize();
-        }
+        $this->total = $total;
+        $this->nextPage = $page + 1;
+        $this->customers = $customers;
     }
 
+    /**
+     * @inheirtDoc
+     */
     public function getTotal(): int
     {
         return $this->total;
     }
 
-    public function getCurrentPage(): int
+    /**
+     * @inheirtDoc
+     */
+    public function getNextPage(): int
     {
-        return $this->currentPage;
+        return $this->nextPage;
     }
 
-    public function getPageSize(): int
-    {
-        return $this->pageSize;
-    }
-
+    /**
+     * @inheirtDoc
+     */
     public function getCustomers(): array
     {
         return $this->customers;
     }
 
+    /**
+     * @inheirtDoc
+     */
     public function hasMore(): bool
     {
-        return count($this->customers) >= $this->pageSize;
+        return count($this->customers) >= CustomerReaderInterface::PAGE_SIZE;
     }
 }

@@ -41,7 +41,7 @@ class ScopeManager extends AbstractHelper implements ScopeManagerInterface
         foreach ($stores as $website) {
             $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
             try {
-                $scope->load(ScopeInterface::SCOPE_WEBSITE, $website->getId());
+                $scope->load(ScopeInterface::SCOPE_WEBSITE, (int)$website->getId());
                 if ($scope->isConnected()) {
                     $result[] = $scope;
                 }
@@ -54,7 +54,7 @@ class ScopeManager extends AbstractHelper implements ScopeManagerInterface
         foreach ($stores as $store) {
             $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
             try {
-                $scope->load(ScopeInterface::SCOPE_STORE, $store->getId());
+                $scope->load(ScopeInterface::SCOPE_STORE, (int)$store->getId());
                 if ($scope->isConnected()) {
                     $result[] = $scope;
                 }
@@ -66,7 +66,7 @@ class ScopeManager extends AbstractHelper implements ScopeManagerInterface
         return $result;
     }
 
-    public function getCurrentConfigurationScope(string $scopeType = '', int $scopeId = null): Scope
+    public function getCurrentConfigurationScope(string $scopeType = '', ?int $scopeId = null): Scope
     {
         if (empty($scopeType)) {
             $scopeType = ScopeInterface::SCOPE_WEBSITE;

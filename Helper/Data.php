@@ -4,10 +4,11 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Helper;
 
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
+use Autopilot\AP3Connector\Api\Data\CustomerDataInterface;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
+use Magento\Customer\Api\AddressRepositoryInterface;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\Data\AddressInterface;
-use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Api\Data\RegionInterface;
 use Magento\Customer\Api\GroupRepositoryInterface;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
@@ -17,6 +18,9 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Newsletter\Model\Subscriber;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
+use Magento\Sales\Api\Data\OrderPaymentInterface;
 
 class Data extends AbstractHelper
 {
@@ -28,6 +32,7 @@ class Data extends AbstractHelper
     private TimezoneInterface $time;
     private CustomerMetadataInterface $customerMetadata;
     private Subscriber $subscriber;
+    private AddressRepositoryInterface $addressRepository;
 
     public function __construct(
         Context $context,
@@ -36,7 +41,8 @@ class Data extends AbstractHelper
         TimezoneInterface $time,
         CustomerMetadataInterface $customerMetadata,
         Subscriber $subscriber,
-        AutopilotLoggerInterface $logger
+        AutopilotLoggerInterface $logger,
+        AddressRepositoryInterface $addressRepository
     ) {
         parent::__construct($context);
         $this->_request = $context->getRequest();
@@ -46,6 +52,7 @@ class Data extends AbstractHelper
         $this->time = $time;
         $this->customerMetadata = $customerMetadata;
         $this->subscriber = $subscriber;
+        $this->addressRepository = $addressRepository;
     }
 
     /**
@@ -78,13 +85,15 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param CustomerInterface $customer
+     * @param CustomerDataInterface $customerData
      * @param ConfigScopeInterface $scope
      * @return array
+     * @throws LocalizedException
      */
-    public function getCustomerFields(CustomerInterface $customer, ConfigScopeInterface $scope): array
+    public function getCustomerFields(CustomerDataInterface $customerData, ConfigScopeInterface $scope): array
     {
-        $sub = $this->subscriber->loadByCustomer($customer->getId(), $customer->getWebsiteId());
+        $customer = $customerData->getCustomer();
+        $sub = $this->subscriber->loadByCustomer((int)$customer->getId(), (int)$customer->getWebsiteId());
         $isSubscribed = $sub->isSubscribed();
         if (!$scope->isNonSubscribedCustomerSyncEnabled() && !$isSubscribed) {
             return [];
@@ -97,10 +106,11 @@ class Data extends AbstractHelper
             'suffix' => $customer->getSuffix(),
             'email' => $customer->getEmail(),
             'created_at' => $this->formatDate($customer->getCreatedAt()),
-            'updated_at' => $this->now(),
+            'updated_at' => $this->formatDate($customer->getUpdatedAt()),
             'created_in' => $customer->getCreatedIn(),
             'dob' => $this->formatDate($customer->getDob()),
             'is_subscribed' => $isSubscribed,
+            'orders' => $this->getOrderFields($customerData->getOrders()),
         ];
 
         try {
@@ -148,6 +158,146 @@ class Data extends AbstractHelper
         }
 
         return $data;
+    }
+
+    /**
+     * @param OrderInterface[] $orders
+     * @return array
+     * @throws LocalizedException
+     */
+    private function getOrderFields(array $orders): array
+    {
+        $result = [];
+        foreach ($orders as $order) {
+            $orderData = [
+                'status' => $order->getStatus(),
+                'created_at' => $this->formatDate($order->getCreatedAt()),
+                'updated_at' => $this->formatDate($order->getUpdatedAt()),
+                'ip_address' => $order->getRemoteIp(),
+                'total_canceled' => $order->getTotalCanceled(),
+                'total_due' => $order->getTotalDue(),
+                'total_invoiced' => $order->getTotalInvoiced(),
+                'total_offline_refunded' => $order->getTotalOfflineRefunded(),
+                'total_online_refunded' => $order->getTotalOnlineRefunded(),
+                'grand_total' => $order->getGrandTotal(),
+                'subtotal' => $order->getSubtotal(),
+                'total_paid' => $order->getTotalPaid(),
+                'base_total_canceled' => $order->getBaseTotalCanceled(),
+                'base_total_due' => $order->getBaseTotalDue(),
+                'base_total_invoiced' => $order->getBaseTotalInvoiced(),
+                'base_total_offline_refunded' => $order->getBaseTotalOfflineRefunded(),
+                'base_total_online_refunded' => $order->getBaseTotalOnlineRefunded(),
+                'base_grand_total' => $order->getBaseGrandTotal(),
+                'base_total_paid' => $order->getBaseTotalPaid(),
+                'base_currency_code' => $order->getBaseCurrencyCode(),
+                'global_currency_code' => $order->getGlobalCurrencyCode(),
+                'order_currency_code' => $order->getOrderCurrencyCode(),
+                'shipping_amount' => $order->getShippingAmount(),
+                'shipping_tax_amount' => $order->getShippingTaxAmount(),
+                'shipping_incl_tax' => $order->getShippingInclTax(),
+                'shipping_invoiced' => $order->getShippingInvoiced(),
+                'shipping_refunded' => $order->getShippingRefunded(),
+                'shipping_canceled' => $order->getShippingCanceled(),
+                'payment_authorization_amount' => $order->getPaymentAuthorizationAmount(),
+                'payment' => $this->getPaymentFields($order->getPayment()),
+                'shipping_description' => $order->getShippingDescription(),
+                'items' => $this->getOrderItemFields($order->getItems()),
+            ];
+            $addressId = $order->getBillingAddressId();
+            if ($addressId !== null) {
+                $address = $this->addressRepository->getById($addressId);
+                $orderData["billing_address"] = $this->getAddressFields($address);
+            }
+
+            $addressId = $order->getQuoteAddressId();
+            if ($addressId !== null) {
+                $address = $this->addressRepository->getById($addressId);
+                $orderData["quote_address"] = $this->getAddressFields($address);
+            }
+
+            $result[] = $orderData;
+        }
+        return $result;
+    }
+
+    /**
+     * @param OrderPaymentInterface $payment
+     * @return array
+     */
+    private function getPaymentFields(OrderPaymentInterface $payment): array
+    {
+        if (empty($payment)) {
+            return [];
+        }
+        return [
+            'method' => $payment->getMethod(),
+            'additional_data' => $payment->getAdditionalData(),
+            'account_status' => $payment->getAccountStatus(),
+            'amount_paid' => $payment->getAmountPaid(),
+            'amount_refunded' => $payment->getAmountRefunded(),
+            'amount_ordered' => $payment->getAmountOrdered(),
+            'address_status' => $payment->getAddressStatus(),
+            'amount_authorized' => $payment->getAmountAuthorized(),
+            'anet_trans_method' => $payment->getAnetTransMethod(),
+            'cc_last_4' => $payment->getCcLast4(),
+            'cc_owner' => $payment->getCcOwner(),
+            'cc_transaction_id' => $payment->getCcTransId(),
+            'cc_type' => $payment->getCcType(),
+            'last_transaction_id' => $payment->getLastTransId(),
+            'po_number' => $payment->getPoNumber(),
+            'e_check_account_name' => $payment->getEcheckAccountName(),
+            'e_check_account_type' => $payment->getEcheckAccountType(),
+            'e_check_bank_name' => $payment->getEcheckBankName(),
+            'e_check_type' => $payment->getEcheckType(),
+        ];
+    }
+
+    /**
+     * @param OrderItemInterface[] $items
+     * @return array
+     */
+    private function getOrderItemFields(array $items): array
+    {
+        if (empty($items)) {
+            return [];
+        }
+        $result = [];
+        foreach ($items as $item) {
+            $result[] = [
+                'name' => $item->getName(),
+                'description' => $item->getDescription(),
+                'created_at' => $this->formatDate($item->getCreatedAt()),
+                'updated_at' => $this->formatDate($item->getUpdatedAt()),
+                'amount_refunded' => $item->getAmountRefunded(),
+                'base_amount_refunded' => $item->getBaseAmountRefunded(),
+                'base_cost' => $item->getBaseCost(),
+                'additional_data' => $item->getAdditionalData(),
+                'base_discount' => $item->getBaseDiscountAmount(),
+                'discount_percent' => $item->getDiscountPercent(),
+                'discount_invoiced' => $item->getDiscountInvoiced(),
+                'discount_refunded' => $item->getDiscountRefunded(),
+                'base_discount_invoiced' => $item->getBaseDiscountInvoiced(),
+                'base_discount_amount' => $item->getBaseDiscountAmount(),
+                'base_discount_refunded' => $item->getBaseDiscountRefunded(),
+                'price' => $item->getPrice(),
+                'base_price' => $item->getBasePrice(),
+                'original_price' => $item->getOriginalPrice(),
+                'base_original_price' => $item->getBaseOriginalPrice(),
+                'product_type' => $item->getProductType(),
+                'qty_ordered' => $item->getQtyOrdered(),
+                'qty_back_ordered' => $item->getQtyBackordered(),
+                'qty_refunded' => $item->getQtyRefunded(),
+                'qty_returned' => $item->getQtyReturned(),
+                'qty_canceled' => $item->getQtyCanceled(),
+                'qty_shipped' => $item->getQtyShipped(),
+                'gty_invoiced' => $item->getQtyInvoiced(),
+                'total' => $item->getRowTotal(),
+                'sku' => $item->getSku(),
+                'tax_amount' => $item->getTaxAmount(),
+                'tax_percent' => $item->getTaxPercent(),
+            ];
+        }
+        return $result;
     }
 
     private function getAddressFields(AddressInterface $address): array
@@ -204,16 +354,20 @@ class Data extends AbstractHelper
         return Config::EMPTY_DATE_TIME;
     }
 
+
+    /**
+     * @return \DateTime
+     */
+    public function now(): \DateTime
+    {
+        return $this->time->date();
+    }
+
     public function getErrorResponse(string $message): array
     {
         return [
             'error' => true,
             'message' => $message,
         ];
-    }
-
-    public function now(): string
-    {
-        return $this->time->date()->format(Config::DATE_TIME_FORMAT);
     }
 }
