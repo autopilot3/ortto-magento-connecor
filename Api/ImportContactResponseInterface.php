@@ -5,24 +5,23 @@ namespace Autopilot\AP3Connector\Api;
 
 interface ImportContactResponseInterface
 {
-    const UPDATED = "updated";
-    const CREATED = "created";
+    const PROCESSED = "processed";
     const SKIPPED = "skipped";
 
     /**
-     * @return int
+     * @return array
      */
-    public function getUpdated(): int;
+    public function getContacts(): array;
 
     /**
      * @return int
      */
-    public function getCreated(): int;
+    public function getContactsTotal(): int;
 
     /**
      * @return int
      */
-    public function getSkipped(): int;
+    public function getSkippedTotal(): int;
 
     public function incr(ImportContactResponseInterface $value): void;
 

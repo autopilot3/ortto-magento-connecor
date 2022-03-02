@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Api\Data;
 
-interface ReadCustomerResultInterface
+interface CustomerOrderSearchResultInterface
 {
     /**
      * @return int
@@ -16,9 +16,9 @@ interface ReadCustomerResultInterface
     public function getNextPage(): int;
 
     /**
-     * @return CustomerDataInterface[]
+     * @return CustomerOrderInterface[]
      */
-    public function getCustomers(): array;
+    public function getOrders(): array;
 
     /**
      * @return bool

@@ -27,6 +27,8 @@ class InstallSchema implements InstallSchemaInterface
             Installer::setupJobsTable($setup);
             $this->logger->info("Installing " . Schema::TABLE_CRON_CHECKPOINT);
             Installer::setupCronJobCheckpointTable($setup);
+            $this->logger->info("Installing " . Schema::TABLE_CUSTOMER_ATTRIBUTES);
+            Installer::setupCustomerAttributesTable($setup);
         } catch (Zend_Db_Exception $e) {
             $this->logger->error($e, "Failed to install database schema");
         }

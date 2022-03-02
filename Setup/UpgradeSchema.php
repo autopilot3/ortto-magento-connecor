@@ -29,6 +29,8 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 Installer::setupJobsTable($installer);
                 $this->logger->info("Upgrading " . Schema::TABLE_CRON_CHECKPOINT);
                 Installer::setupCronJobCheckpointTable($setup);
+                $this->logger->info("Upgrading " . Schema::TABLE_CUSTOMER_ATTRIBUTES);
+                Installer::setupCustomerAttributesTable($setup);
             } catch (Zend_Db_Exception $e) {
                 $this->logger->error($e, "Failed to upgrade schema");
             }

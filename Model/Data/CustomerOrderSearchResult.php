@@ -3,32 +3,32 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Model\Data;
 
-use Autopilot\AP3Connector\Api\CustomerReaderInterface;
-use Autopilot\AP3Connector\Api\Data\CustomerDataInterface;
-use Autopilot\AP3Connector\Api\Data\ReadCustomerResultInterface;
+use Autopilot\AP3Connector\Api\CustomerRepoInterface;
+use Autopilot\AP3Connector\Api\Data\CustomerOrderInterface;
+use Autopilot\AP3Connector\Api\Data\CustomerOrderSearchResultInterface;
 use Magento\Framework\DataObject;
 
-class ReadCustomerResult extends DataObject implements ReadCustomerResultInterface
+class CustomerOrderSearchResult extends DataObject implements CustomerOrderSearchResultInterface
 {
     private int $total;
     private int $nextPage;
     /**
-     * @var CustomerDataInterface[]
+     * @var CustomerOrderInterface[]
      */
-    private array $customers;
+    private array $customerOrders;
 
     /**
      * @param array $customers
      * @param int $page
      * @param int $total
-     * @param CustomerDataInterface[] $data
+     * @param CustomerOrderInterface[] $data
      */
     public function __construct(array $customers, int $page, int $total, array $data = [])
     {
         parent::__construct($data);
         $this->total = $total;
         $this->nextPage = $page + 1;
-        $this->customers = $customers;
+        $this->customerOrders = $customers;
     }
 
     /**
@@ -50,16 +50,16 @@ class ReadCustomerResult extends DataObject implements ReadCustomerResultInterfa
     /**
      * @inheirtDoc
      */
-    public function getCustomers(): array
+    public function hasMore(): bool
     {
-        return $this->customers;
+        return count($this->customerOrders) >= CustomerRepoInterface::ORDER_PAGE_SIZE;
     }
 
     /**
      * @inheirtDoc
      */
-    public function hasMore(): bool
+    public function getOrders(): array
     {
-        return count($this->customers) >= CustomerReaderInterface::PAGE_SIZE;
+        return $this->customerOrders;
     }
 }

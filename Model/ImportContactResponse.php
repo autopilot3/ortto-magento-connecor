@@ -7,70 +7,65 @@ use Autopilot\AP3Connector\Api\ImportContactResponseInterface as ResponseInterfa
 
 class ImportContactResponse implements ResponseInterface
 {
-    private int $updated;
-    private int $created;
-    private int $skipped;
+    private array $contacts;
+    private int $totalSkipped;
+    private int $contactsTotal;
 
     public function __construct(array $data = [])
     {
-        $this->updated = 0;
-        $this->created = 0;
-        $this->skipped = 0;
-        if (isset($data[ResponseInterface::CREATED])) {
-            $this->created = $data[ResponseInterface::CREATED];
-        }
-        if (isset($data[ResponseInterface::UPDATED])) {
-            $this->updated = $data[ResponseInterface::UPDATED];
+        $this->contacts = [];
+        $this->contactsTotal = 0;
+        $this->totalSkipped = 0;
+        if (isset($data[ResponseInterface::PROCESSED])) {
+            $this->contacts = $data[ResponseInterface::PROCESSED];
+            $this->contactsTotal = count($this->contacts);
         }
         if (isset($data[ResponseInterface::SKIPPED])) {
-            $this->skipped = $data[ResponseInterface::SKIPPED];
+            $this->totalSkipped = $data[ResponseInterface::SKIPPED];
         }
     }
 
     /**
-     * @return int
+     * @inheirtDoc
      */
-    public function getUpdated(): int
+    public function getContacts(): array
     {
-        return $this->updated;
+        return $this->contacts;
     }
 
     /**
-     * @return int
+     * @inheirtDoc
      */
-    public function getCreated(): int
+    public function getSkippedTotal(): int
     {
-        return $this->created;
+        return $this->totalSkipped;
     }
 
     /**
-     * @return int
-     */
-    public function getSkipped(): int
-    {
-        return $this->skipped;
-    }
-
-    /**
-     * @param ResponseInterface $value
-     * @return void
+     * @inheirtDoc
      */
     public function incr(ResponseInterface $value): void
     {
         if (empty($value)) {
             return;
         }
-        $this->updated += $value->getUpdated();
-        $this->created += $value->getCreated();
-        $this->skipped += $value->getSkipped();
+        $this->contactsTotal += $value->getContactsTotal();
+        $this->totalSkipped += $value->getSkippedTotal();
     }
 
+    /**
+     * @inheirtDoc
+     */
     public function toJSON(): string
     {
         return json_encode([
-            ResponseInterface::CREATED => $this->getCreated(),
-            ResponseInterface::UPDATED => $this->getUpdated(),
-            ResponseInterface::SKIPPED => $this->getSkipped(),
+            ResponseInterface::PROCESSED => $this->getContactsTotal(),
+            ResponseInterface::SKIPPED => $this->getSkippedTotal(),
         ]);
+    }
+
+    public function getContactsTotal(): int
+    {
+        return $this->contactsTotal;
     }
 }

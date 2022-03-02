@@ -61,7 +61,7 @@ class Collection extends AbstractCollection
         return $this->addFieldToSelect('*')
             ->addFieldToFilter(Job::CATEGORY, $category)
             ->addFieldToFilter(Job::STATUS, Status::QUEUED)
-            ->load()->getItems();
+            ->getItems();
     }
 
     /**

@@ -142,4 +142,46 @@ class Installer
             $connection->createTable($table);
         }
     }
+
+    /**
+     * @throws Zend_Db_Exception
+     */
+    public static function setupCustomerAttributesTable(SchemaSetupInterface $setup)
+    {
+        if (!$setup->tableExists(Schema::TABLE_CUSTOMER_ATTRIBUTES)) {
+            $connection = $setup->getConnection();
+            $table = $connection->newTable(Schema::TABLE_CUSTOMER_ATTRIBUTES)->addColumn(
+                'id',
+                Table::TYPE_INTEGER,
+                null,
+                ['identity' => true, 'unsigned' => true, 'nullable' => false, 'primary' => true],
+                'Entity id'
+            )->addColumn(
+                'customer_id',
+                Table::TYPE_INTEGER,
+                null,
+                ['unsigned' => true, 'nullable' => false],
+                'Customer Id'
+            )->addColumn(
+                'contact_id',
+                Table::TYPE_TEXT,
+                32,
+                ['nullable' => false],
+                'Autopilot contact Id'
+            )->addIndex(
+                "customer_contact_unique_index",
+                ["customer_id", "contact_id"],
+                ['type' => AdapterInterface::INDEX_TYPE_UNIQUE]
+            )->setComment("Autopilot customer attributes");
+            $connection->createTable($table);
+
+            $connection->addForeignKey(
+                "autopilot_customer_attributes_fk",
+                Schema::TABLE_CUSTOMER_ATTRIBUTES,
+                "customer_id",
+                'customer_entity',
+                'entity_id'
+            );
+        }
+    }
 }

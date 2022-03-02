@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Cron;
 
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
-use Autopilot\AP3Connector\Api\CustomerReaderInterface;
-
 use Autopilot\AP3Connector\Api\JobCategoryInterface as JobCategory;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Helper\Config;
@@ -22,11 +20,15 @@ use DateTime;
 use Exception;
 use Autopilot\AP3Connector\Api\JobStatusInterface as Status;
 use JsonException;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Customer\Api\Data\CustomerInterface;
+use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Phrase;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 class SyncCustomers
@@ -39,8 +41,12 @@ class SyncCustomers
     private EncryptorInterface $encryptor;
     private ScopeConfigInterface $scopeConfig;
     private StoreManagerInterface $storeManager;
-    private CustomerReaderInterface $customerReader;
     private Data $helper;
+    private SearchCriteriaBuilder $searchCriteriaBuilder;
+    private CustomerRepositoryInterface $customerRepository;
+
+    const PAGE_SIZE = 100;
+
 
     public function __construct(
         AutopilotLoggerInterface $logger,
@@ -51,7 +57,8 @@ class SyncCustomers
         EncryptorInterface $encryptor,
         ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManager,
-        CustomerReaderInterface $customerReader,
+        SearchCriteriaBuilder $searchCriteriaBuilder,
+        CustomerRepositoryInterface $customerRepository,
         Data $helper
     ) {
         $this->logger = $logger;
@@ -61,9 +68,10 @@ class SyncCustomers
         $this->encryptor = $encryptor;
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
-        $this->customerReader = $customerReader;
         $this->checkpointCollectionFactory = $checkpointCollectionFactory;
         $this->helper = $helper;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->customerRepository = $customerRepository;
     }
 
     /**
@@ -150,14 +158,8 @@ class SyncCustomers
             try {
                 $this->logger->debug("Checking customer export checkpoint", $scope->toArray());
                 $customerCheckpoint = $checkpointCollection->getCheckpoint(JobCategory::CUSTOMER, $scope);
-                $orderCheckpoint = $checkpointCollection->getCheckpoint(JobCategory::ORDER, $scope);
-                $total = $this->exportUpdatedCustomers(
-                    $scope,
-                    $customerCheckpoint->getCheckedAt(),
-                    $orderCheckpoint->getCheckedAt()
-                );
+                $total = $this->exportUpdatedCustomers($scope, $customerCheckpoint->getCheckedAt());
                 $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $now, $scope);
-                $checkpointCollection->setCheckpoint(JobCategory::ORDER, $now, $scope);
                 $this->logger->debug(
                     sprintf(
                         "%d customer(s) exported. Checkpoints updated to %s.",
@@ -186,42 +188,81 @@ class SyncCustomers
                 throw new NoSuchEntityException(new Phrase("Job status changed"));
             }
 
-            $result = $this->customerReader->getScopeCustomers($scope, $page);
-            $customers = $result->getCustomers();
+            $result = $this->customerRepository->getList($this->buildCustomerSearchCriteria($page, $scope));
+            $customers = $result->getItems();
+            $pageSize = 0;
             if (!empty($customers)) {
+                $pageSize = count($customers);
                 $importResult = $this->autopilotClient->importContacts($scope, $customers);
                 $total->incr($importResult);
-                $page = $result->getNextPage();
-                $jobCollection->updateStats($jobId, $result->getTotal(), count($customers), $total->toJSON());
+                $page += 1;
+                $contacts = $importResult->getContacts();
+                if (!empty($contacts)) {
+                    foreach ($customers as $customer) {
+                        $contactId = $contacts[$customer->getId()];
+                        if (isset($contactId)) {
+                            $attributes = $customer->getExtensionAttributes();
+                            $attributes->setAutopilotContactId($contactId);
+                            $customer->setExtensionAttributes($attributes);
+                            $this->customerRepository->save($customer);
+                        }
+                    }
+                }
+                $jobCollection->updateStats($jobId, $result->getTotalCount(), $pageSize, $total->toJSON());
             }
-        } while ($result->hasMore());
+        } while ($pageSize === self::PAGE_SIZE);
         return $total;
     }
 
     /**
      * @param Scope $scope
-     * @param ?DateTime $customerCheckpoint
-     * @param DateTime|null $orderCheckpoint
+     * @param ?DateTime $checkpoint
      * @return int
      * @throws AutopilotException
      * @throws JsonException|LocalizedException
      */
     private function exportUpdatedCustomers(
         Scope $scope,
-        ?DateTime $customerCheckpoint = null,
-        ?DateTime $orderCheckpoint = null
+        ?DateTime $checkpoint = null
     ): int {
         $page = 1;
         $total = 0;
         do {
-            $result = $this->customerReader->getScopeCustomers($scope, $page, $customerCheckpoint, $orderCheckpoint);
-            $customers = $result->getCustomers();
+            $searchCriteria = $this->buildCustomerSearchCriteria($page, $scope, $checkpoint);
+            $result = $this->customerRepository->getList($searchCriteria);
+            $customers = $result->getItems();
+            $pageSize = 0;
             if (!empty($customers)) {
-                $total += count($customers);
+                $pageSize = count($customers);
+                $total += $pageSize;
                 $this->autopilotClient->importContacts($scope, $customers);
-                $page = $result->getNextPage();
+                $page += 1;
             }
-        } while ($result->hasMore());
+        } while ($pageSize === self::PAGE_SIZE);
         return $total;
+    }
+
+
+    private function buildCustomerSearchCriteria(int $page, Scope $scope, ?DateTime $checkpoint = null)
+    {
+        if ($page < 1) {
+            $page = 1;
+        }
+        $this->searchCriteriaBuilder
+            ->setPageSize(self::PAGE_SIZE)
+            ->setCurrentPage($page);
+
+        if ($scope->getType() === ScopeInterface::SCOPE_WEBSITE) {
+            $this->searchCriteriaBuilder->addFilter(CustomerInterface::WEBSITE_ID, $scope->getId());
+        } else {
+            $this->searchCriteriaBuilder->addFilter(CustomerInterface::STORE_ID, $scope->getId());
+            $this->searchCriteriaBuilder->addFilter(CustomerInterface::WEBSITE_ID, $scope->getWebsiteId());
+        }
+
+        if (!empty($checkpoint)) {
+            $this->searchCriteriaBuilder->addFilter(CustomerInterface::UPDATED_AT, $checkpoint, "gt");
+        }
+
+        return $this->searchCriteriaBuilder->create();
     }
 }

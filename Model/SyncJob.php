@@ -37,7 +37,7 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
      */
     public function getId()
     {
-        return $this->getData(self::ID);
+        return (int)$this->getData(self::ID);
     }
 
     /**
@@ -85,7 +85,7 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
      */
     public function getScopeId()
     {
-        return $this->getData(self::SCOPE_ID);
+        return (int)$this->getData(self::SCOPE_ID);
     }
 
     /**

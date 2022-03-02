@@ -4,11 +4,10 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Helper;
 
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\Data\CustomerDataInterface;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Magento\Customer\Api\AddressRepositoryInterface;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\Data\AddressInterface;
+use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Api\Data\RegionInterface;
 use Magento\Customer\Api\GroupRepositoryInterface;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
@@ -32,7 +31,6 @@ class Data extends AbstractHelper
     private TimezoneInterface $time;
     private CustomerMetadataInterface $customerMetadata;
     private Subscriber $subscriber;
-    private AddressRepositoryInterface $addressRepository;
 
     public function __construct(
         Context $context,
@@ -41,8 +39,7 @@ class Data extends AbstractHelper
         TimezoneInterface $time,
         CustomerMetadataInterface $customerMetadata,
         Subscriber $subscriber,
-        AutopilotLoggerInterface $logger,
-        AddressRepositoryInterface $addressRepository
+        AutopilotLoggerInterface $logger
     ) {
         parent::__construct($context);
         $this->_request = $context->getRequest();
@@ -52,7 +49,6 @@ class Data extends AbstractHelper
         $this->time = $time;
         $this->customerMetadata = $customerMetadata;
         $this->subscriber = $subscriber;
-        $this->addressRepository = $addressRepository;
     }
 
     /**
@@ -85,20 +81,19 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param CustomerDataInterface $customerData
+     * @param CustomerInterface $customer
      * @param ConfigScopeInterface $scope
      * @return array
-     * @throws LocalizedException
      */
-    public function getCustomerFields(CustomerDataInterface $customerData, ConfigScopeInterface $scope): array
+    public function getCustomerFields(CustomerInterface $customer, ConfigScopeInterface $scope): array
     {
-        $customer = $customerData->getCustomer();
         $sub = $this->subscriber->loadByCustomer((int)$customer->getId(), (int)$customer->getWebsiteId());
         $isSubscribed = $sub->isSubscribed();
         if (!$scope->isNonSubscribedCustomerSyncEnabled() && !$isSubscribed) {
             return [];
         }
         $data = [
+            'id' => (int)$customer->getId(),
             'prefix' => $customer->getPrefix(),
             'first_name' => $customer->getFirstname(),
             'middle_name' => $customer->getMiddlename(),
@@ -110,7 +105,6 @@ class Data extends AbstractHelper
             'created_in' => $customer->getCreatedIn(),
             'dob' => $this->formatDate($customer->getDob()),
             'is_subscribed' => $isSubscribed,
-            'orders' => $this->getOrderFields($customerData->getOrders()),
         ];
 
         try {
@@ -170,6 +164,7 @@ class Data extends AbstractHelper
         $result = [];
         foreach ($orders as $order) {
             $orderData = [
+                'id' => $order->getEntityId(),
                 'status' => $order->getStatus(),
                 'created_at' => $this->formatDate($order->getCreatedAt()),
                 'updated_at' => $this->formatDate($order->getUpdatedAt()),
@@ -203,17 +198,6 @@ class Data extends AbstractHelper
                 'shipping_description' => $order->getShippingDescription(),
                 'items' => $this->getOrderItemFields($order->getItems()),
             ];
-            $addressId = $order->getBillingAddressId();
-            if ($addressId !== null) {
-                $address = $this->addressRepository->getById($addressId);
-                $orderData["billing_address"] = $this->getAddressFields($address);
-            }
-
-            $addressId = $order->getQuoteAddressId();
-            if ($addressId !== null) {
-                $address = $this->addressRepository->getById($addressId);
-                $orderData["quote_address"] = $this->getAddressFields($address);
-            }
 
             $result[] = $orderData;
         }

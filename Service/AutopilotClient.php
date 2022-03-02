@@ -1,8 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Api;
+namespace Autopilot\AP3Connector\Service;
 
+use Autopilot\AP3Connector\Api\AutopilotClientInterface;
+use Autopilot\AP3Connector\Api\ConfigScopeInterface;
+use Autopilot\AP3Connector\Api\RoutesInterface;
 use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
@@ -36,7 +39,7 @@ class AutopilotClient implements AutopilotClientInterface
     /**
      * @inheirtDoc
      */
-    public function importContacts(ConfigScopeInterface $scope, $customers)
+    public function importContacts(ConfigScopeInterface $scope, array $customers)
     {
         $url = $this->helper->getAutopilotURL(RoutesInterface::AP_IMPORT_CONTACTS);
         $apiKey = $scope->getAPIKey();

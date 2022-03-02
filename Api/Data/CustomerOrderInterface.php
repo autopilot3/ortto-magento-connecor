@@ -3,15 +3,19 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Api\Data;
 
-use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 
-interface CustomerDataInterface
+interface CustomerOrderInterface
 {
     /**
-     * @return CustomerInterface
+     * @return int
      */
-    public function getCustomer(): CustomerInterface;
+    public function getCustomerId(): int;
+
+    /**
+     * @return string
+     */
+    public function getCustomerEmail(): string;
 
     /**
      * @return OrderInterface[]

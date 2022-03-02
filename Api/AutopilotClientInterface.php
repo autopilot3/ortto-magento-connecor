@@ -3,16 +3,16 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Api;
 
-use Autopilot\AP3Connector\Api\Data\CustomerDataInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
 use JsonException;
+use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\Exception\LocalizedException;
 
 interface AutopilotClientInterface
 {
     /**
      * @param ConfigScopeInterface $scope
-     * @param CustomerDataInterface[] $customers
+     * @param CustomerInterface[] $customers
      * @return ImportContactResponseInterface|null
      * @throws JsonException|AutopilotException|LocalizedException
      */
