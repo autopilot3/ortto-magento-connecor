@@ -86,6 +86,14 @@ class SyncCustomers
          * @var ScopeConfigInterface[]
          */
         $processedScopes = [];
+        $checkpointCollection = $this->checkpointCollectionFactory->create();
+        if (!($checkpointCollection instanceof CheckpointCollection)) {
+            $this->logger->error(new Exception("Invalid checkpoint collection type"));
+            return;
+        }
+
+        $now = $this->helper->now();
+
         $jobCollection = $this->jobCollectionFactory->create();
         if ($jobCollection instanceof JobCollection) {
             $jobs = $jobCollection->getQueuedJobs(JobCategory::CUSTOMER);
@@ -94,7 +102,7 @@ class SyncCustomers
             } else {
                 foreach ($jobs as $job) {
                     $jobId = $job->getId();
-                    $this->logger->debug(sprintf('Processing customer synchronization job ID %s', $jobId));
+                    $this->logger->info(sprintf('Processing customer synchronization job ID %s', $jobId));
                     $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
                     try {
                         $scope->load($job->getScopeType(), $job->getScopeId());
@@ -107,6 +115,18 @@ class SyncCustomers
                         $result = $this->exportAllCustomers($scope, $jobCollection, $jobId);
                         $processedScopes[] = $scope;
                         $jobCollection->markAsDone($jobId, $result->toJSON());
+                        $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $now, $scope);
+                        $total = $result->getContactsTotal();
+                        if ($total > 0) {
+                            $this->logger->info(
+                                sprintf(
+                                    "%d customer(s) have been manually exported. Checkpoint's been updated to %s.",
+                                    $total,
+                                    $now->format(Config::DATE_TIME_FORMAT)
+                                ),
+                                $scope->toArray()
+                            );
+                        }
                     } catch (Exception $e) {
                         try {
                             $metadata = "";
@@ -124,12 +144,6 @@ class SyncCustomers
             }
         } else {
             $this->logger->error(new Exception("Invalid job collection type"));
-        }
-
-        $checkpointCollection = $this->checkpointCollectionFactory->create();
-        if (!($checkpointCollection instanceof CheckpointCollection)) {
-            $this->logger->error(new Exception("Invalid checkpoint collection type"));
-            return;
         }
 
         $scopes = $this->scopeManager->getActiveScopes();
@@ -153,21 +167,21 @@ class SyncCustomers
                 continue;
             }
 
-            $now = $this->helper->now();
-
             try {
-                $this->logger->debug("Checking customer export checkpoint", $scope->toArray());
+                $this->logger->info("Checking customer export checkpoint", $scope->toArray());
                 $customerCheckpoint = $checkpointCollection->getCheckpoint(JobCategory::CUSTOMER, $scope);
                 $total = $this->exportUpdatedCustomers($scope, $customerCheckpoint->getCheckedAt());
                 $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $now, $scope);
-                $this->logger->debug(
-                    sprintf(
-                        "%d customer(s) exported. Checkpoints updated to %s.",
-                        $total,
-                        $now->format(Config::DATE_TIME_FORMAT)
-                    ),
-                    $scope->toArray()
-                );
+                if ($total > 0) {
+                    $this->logger->info(
+                        sprintf(
+                            "%d customer(s) exported. Checkpoint's been updated to %s.",
+                            $total,
+                            $now->format(Config::DATE_TIME_FORMAT)
+                        ),
+                        $scope->toArray()
+                    );
+                }
             } catch (Exception $e) {
                 $this->logger->error($e, sprintf("Failed to export %s customers", $scope->toString()));
             }
@@ -198,15 +212,7 @@ class SyncCustomers
                 $page += 1;
                 $contacts = $importResult->getContacts();
                 if (!empty($contacts)) {
-                    foreach ($customers as $customer) {
-                        $contactId = $contacts[$customer->getId()];
-                        if (isset($contactId)) {
-                            $attributes = $customer->getExtensionAttributes();
-                            $attributes->setAutopilotContactId($contactId);
-                            $customer->setExtensionAttributes($attributes);
-                            $this->customerRepository->save($customer);
-                        }
-                    }
+                    $this->updateCustomerAttributes($customers, $contacts);
                 }
                 $jobCollection->updateStats($jobId, $result->getTotalCount(), $pageSize, $total->toJSON());
             }
@@ -234,9 +240,13 @@ class SyncCustomers
             $pageSize = 0;
             if (!empty($customers)) {
                 $pageSize = count($customers);
-                $total += $pageSize;
-                $this->autopilotClient->importContacts($scope, $customers);
+                $importResult = $this->autopilotClient->importContacts($scope, $customers);
+                $total += $importResult->getContactsTotal();
                 $page += 1;
+                $contacts = $importResult->getContacts();
+                if (!empty($contacts)) {
+                    $this->updateCustomerAttributes($customers, $contacts);
+                }
             }
         } while ($pageSize === self::PAGE_SIZE);
         return $total;
@@ -264,5 +274,26 @@ class SyncCustomers
         }
 
         return $this->searchCriteriaBuilder->create();
+    }
+
+    /**
+     * @param array $customers
+     * @param array $contacts
+     * @return void
+     * @throws LocalizedException
+     * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Exception\State\InputMismatchException
+     */
+    private function updateCustomerAttributes(array $customers, array $contacts): void
+    {
+        foreach ($customers as $customer) {
+            $contactId = $contacts[$customer->getId()];
+            if (isset($contactId)) {
+                $attributes = $customer->getExtensionAttributes();
+                $attributes->setAutopilotContactId($contactId);
+                $customer->setExtensionAttributes($attributes);
+                $this->customerRepository->save($customer);
+            }
+        }
     }
 }
