@@ -33,6 +33,8 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\State\InvalidTransitionException;
+use Magento\Framework\Phrase;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -221,8 +223,17 @@ class SyncOrders
     private function exportAllOrders(Scope $scope, JobCollection $jobCollection, int $jobId)
     {
         $jobValidationCallback = function () use ($jobCollection, $jobId) {
-            $job = $jobCollection->getJobById($jobId);
-            return $job->getStatus() === Status::IN_PROGRESS;
+            try {
+                $job = $jobCollection->getJobById($jobId);
+                $valid = $job->getStatus() === Status::IN_PROGRESS;
+                if ($valid) {
+                    $this->logger->warn("Order synchronization job (ID: $jobId) has been changed.");
+                }
+                return $valid;
+            } catch (Exception $e) {
+                $this->logger->error($e, "Failed to check order synchronization job status (ID: $jobId)");
+            }
+            return false;
         };
 
         $stateUpdateCallback = function (int $total, int $processed, string $metadata) use ($jobCollection, $jobId) {
@@ -238,9 +249,7 @@ class SyncOrders
      * @param null $updateState
      * @param DateTime|null $checkpoint
      * @return ImportOrderResponse
-     * @throws AutopilotException
-     * @throws JsonException
-     * @throws LocalizedException
+     * @throws AutopilotException|InvalidTransitionException|JsonException|LocalizedException
      */
     private function exportOrders(Scope $scope, $validate = null, $updateState = null, ?DateTime $checkpoint = null)
     {
@@ -250,7 +259,7 @@ class SyncOrders
         $toExport = [];
         do {
             if ($validate !== null && !$validate()) {
-                throw new Exception("Job status changed");
+                return $total;
             }
             $customersResult = $this->getCustomers($currentCustomerPage);
             /** @var int $customersTotal */

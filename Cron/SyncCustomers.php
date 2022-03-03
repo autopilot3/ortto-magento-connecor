@@ -199,7 +199,7 @@ class SyncCustomers
         do {
             $job = $jobCollection->getJobById($jobId);
             if ($job->getStatus() !== Status::IN_PROGRESS) {
-                throw new NoSuchEntityException(new Phrase("Job status changed"));
+                throw new NoSuchEntityException(new Phrase("Customer synchronization job status changed (ID: $jobId)"));
             }
 
             $result = $this->customerRepository->getList($this->buildCustomerSearchCriteria($page, $scope));
