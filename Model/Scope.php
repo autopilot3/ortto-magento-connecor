@@ -22,6 +22,8 @@ class Scope implements ConfigScopeInterface
     private string $code;
     private bool $isExplicit;
     private int $websiteId;
+    /** @var int[] */
+    private array $storeIds;
 
     private EncryptorInterface $encryptor;
     private ScopeConfigInterface $scopeConfig;
@@ -64,6 +66,12 @@ class Scope implements ConfigScopeInterface
                     $count++;
                 }
             }
+            $stores = $this->storeManager->getStores();
+            foreach ($stores as $s) {
+                if ((int)$s->getWebsiteId() === $id) {
+                    $this->storeIds[] = (int)$s->getId();
+                }
+            }
         } else {
             $store = $this->storeManager->getStore($this->id);
             $this->websiteId = (int)$store->getWebsiteId();
@@ -77,6 +85,7 @@ class Scope implements ConfigScopeInterface
             $this->name = $store->getName();
             $this->code = $store->getCode();
             $stores = $this->storeManager->getStores();
+            $this->storeIds[] = $id;
             $count = 0;
             foreach ($stores as $s) {
                 if ($s->getCode() === $this->code) {
@@ -200,6 +209,9 @@ class Scope implements ConfigScopeInterface
         return $this->encryptor->decrypt($encrypted);
     }
 
+    /**
+     * @inheirtDoc
+     */
     public function equals(ConfigScopeInterface $scope): bool
     {
         return $this->type === $scope->getType() && $this->code === $scope->getCode();
@@ -213,8 +225,19 @@ class Scope implements ConfigScopeInterface
         return $this->websiteId;
     }
 
+    /**
+     * @inheirtDoc
+     */
     public function toString(): string
     {
         return sprintf("%s:%s:%d", $this->type, $this->code, $this->id);
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function getStoreIds(): array
+    {
+        return $this->storeIds;
     }
 }

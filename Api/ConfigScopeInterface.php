@@ -60,6 +60,14 @@ interface ConfigScopeInterface
     public function getAPIKey(): string;
 
     /**
+     * Returns all the store IDs under a website if scope type == 'website', otherwise (type == 'store')
+     * only the ID of the current store will be included.
+     *
+     * @return int[]
+     */
+    public function getStoreIds(): array;
+
+    /**
      * @return string
      */
     public function getAccessToken(): string;

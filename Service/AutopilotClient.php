@@ -10,6 +10,7 @@ use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
 use Autopilot\AP3Connector\Model\ImportContactResponse;
+use Autopilot\AP3Connector\Model\ImportOrderResponse;
 use Exception;
 use JsonException;
 use Magento\Framework\HTTP\ClientInterface;
@@ -60,6 +61,33 @@ class AutopilotClient implements AutopilotClientInterface
         return new ImportContactResponse($response);
     }
 
+    /**
+     * @inheirtDoc
+     */
+    public function importOrders(ConfigScopeInterface $scope, array $orders)
+    {
+        $url = $this->helper->getAutopilotURL(RoutesInterface::AP_IMPORT_ORDERS);
+        $apiKey = $scope->getAPIKey();
+        $payload = [];
+        foreach ($orders as $order) {
+            $data = $this->helper->getCustomerFields($order, $scope);
+            if (empty($data)) {
+                continue;
+            }
+            $data['scope'] = $scope->toArray();
+            $payload[] = $data;
+        }
+        if (empty($payload)) {
+            $this->logger->debug("No order to export");
+            return new ImportOrderResponse();
+        }
+        $response = $this->postJSON($url, $apiKey, $payload);
+        return new ImportOrderResponse($response);
+    }
+
+    /**
+     * @inheirtDoc
+     */
     public function updateAccessToken(ConfigScopeInterface $scope)
     {
         try {

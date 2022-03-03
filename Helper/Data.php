@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Helper;
 
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
+use Autopilot\AP3Connector\Api\Data\CustomerOrderInterface;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\Data\AddressInterface;
@@ -155,11 +156,23 @@ class Data extends AbstractHelper
     }
 
     /**
+     * @param CustomerOrderInterface $customer
+     * @return array
+     */
+    public function getCustomerOrderFields(CustomerOrderInterface $customer): array
+    {
+        return [
+            CustomerOrderInterface::CUSTOMER_ID => $customer->getCustomerId(),
+            CustomerOrderInterface::CUSTOMER_EMAIL => $customer->getCustomerEmail(),
+            CustomerOrderInterface::CUSTOMER_ORDERS => $this->getOrdersFields($customer->getOrders()),
+        ];
+    }
+
+    /**
      * @param OrderInterface[] $orders
      * @return array
-     * @throws LocalizedException
      */
-    private function getOrderFields(array $orders): array
+    private function getOrdersFields(array $orders): array
     {
         $result = [];
         foreach ($orders as $order) {

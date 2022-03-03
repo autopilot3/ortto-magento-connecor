@@ -98,7 +98,7 @@ class SyncCustomers
         if ($jobCollection instanceof JobCollection) {
             $jobs = $jobCollection->getQueuedJobs(JobCategory::CUSTOMER);
             if (empty($jobs)) {
-                $this->logger->debug("No sync jobs were queued");
+                $this->logger->debug("No customer sync job was queued");
             } else {
                 foreach ($jobs as $job) {
                     $jobId = $job->getId();

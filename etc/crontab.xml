@@ -6,5 +6,9 @@
              method="execute">
             <schedule>* * * * *</schedule>
         </job>
+        <job name="autopilot_ap3connector_sync_orders" instance="Autopilot\AP3Connector\Cron\SyncOrders"
+             method="execute">
+            <schedule>* * * * *</schedule>
+        </job>
     </group>
 </config>
