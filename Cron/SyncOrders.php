@@ -40,6 +40,12 @@ use Autopilot\AP3Connector\Model\CustomerOrderFactory;
 
 class SyncOrders
 {
+    private const CUSTOMER_PAGE_SIZE = 100;
+    private const ORDER_PAGE_SIZE = 50;
+    private const ITEMS_KEY = 'items';
+    private const TOTAL_KEY = 'total';
+    private const CUSTOMER_ID = 'entity_id';
+
     private AutopilotLoggerInterface $logger;
     private AutopilotClientInterface $autopilotClient;
     private JobCollectionFactory $jobCollectionFactory;
@@ -56,13 +62,7 @@ class SyncOrders
     private CustomerAttrCollectionFactory $attrCollectionFactory;
     private CustomerCollectionFactory $customerCollectionFactory;
     private CustomerOrderFactory $customerOrderFactory;
-
-    private const CUSTOMER_PAGE_SIZE = 100;
-    private const ORDER_PAGE_SIZE = 50;
-    private const ITEMS_KEY = 'items';
-    private const TOTAL_KEY = 'total';
     private SortOrderBuilder $sortOrderBuilder;
-
 
     public function __construct(
         AutopilotLoggerInterface $logger,
@@ -119,55 +119,56 @@ class SyncOrders
         $now = $this->helper->now();
 
         $jobCollection = $this->jobCollectionFactory->create();
-        if ($jobCollection instanceof JobCollection) {
-            $jobs = $jobCollection->getQueuedJobs(JobCategory::ORDER);
-            if (empty($jobs)) {
-                $this->logger->debug("No order sync job was queued");
-            } else {
-                foreach ($jobs as $job) {
-                    $jobId = $job->getId();
-                    $this->logger->info(sprintf('Processing order synchronization job ID %s', $jobId));
-                    $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
-                    try {
-                        $scope->load($job->getScopeType(), $job->getScopeId());
-                        if (!$scope->isConnected()) {
-                            $this->logger->warn("Job scope is not connected to Autopilot", $scope->toArray());
-                            $jobCollection->markAsFailed($jobId, "Not connected to Autopilot");
-                            continue;
-                        }
-                        $jobCollection->markAsInProgress($jobId);
-                        $result = $this->exportAllOrders($scope, $jobCollection, $jobId);
-                        $processedScopes[] = $scope;
-                        $jobCollection->markAsDone($jobId, $result->toJSON());
-                        $checkpointCollection->setCheckpoint(JobCategory::ORDER, $now, $scope);
-                        $total = $result->getOrdersTotal();
-                        if ($total > 0) {
-                            $this->logger->info(
-                                sprintf(
-                                    "%d order(s) have been manually exported. Checkpoint's been updated to %s.",
-                                    $total,
-                                    $now->format(Config::DATE_TIME_FORMAT)
-                                ),
-                                $scope->toArray()
-                            );
-                        }
-                    } catch (Exception $e) {
-                        try {
-                            $metadata = "";
-                            if (!empty($result)) {
-                                $metadata = $result->toJSON();
-                            }
-                            $jobCollection->markAsFailed($job->getId(), $e->getMessage(), $metadata);
-                        } catch (NoSuchEntityException $nfe) {
-                            $this->logger->error($nfe, "Failed to mark the job as failed");
-                        }
-                        $this->logger->error($e, "Failed to process order synchronization job");
+
+        if (!($jobCollection instanceof JobCollection)) {
+            $this->logger->error(new Exception("Invalid job collection type"));
+            return;
+        }
+        $jobs = $jobCollection->getQueuedJobs(JobCategory::ORDER);
+        if (empty($jobs)) {
+            $this->logger->debug("No order sync job was queued");
+        } else {
+            foreach ($jobs as $job) {
+                $jobId = $job->getId();
+                $this->logger->info(sprintf('Processing order synchronization job ID %s', $jobId));
+                $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
+                try {
+                    $scope->load($job->getScopeType(), $job->getScopeId());
+                    if (!$scope->isConnected()) {
+                        $this->logger->warn("Job scope is not connected to Autopilot", $scope->toArray());
+                        $jobCollection->markAsFailed($jobId, "Not connected to Autopilot");
                         continue;
                     }
+                    $jobCollection->markAsInProgress($jobId);
+                    $result = $this->exportAllOrders($scope, $jobCollection, $jobId);
+                    $processedScopes[] = $scope;
+                    $jobCollection->markAsDone($jobId, $result->toJSON());
+                    $checkpointCollection->setCheckpoint(JobCategory::ORDER, $now, $scope);
+                    $total = $result->getOrdersTotal();
+                    if ($total > 0) {
+                        $this->logger->info(
+                            sprintf(
+                                "%d order(s) have been manually exported. Checkpoint's been updated to %s.",
+                                $total,
+                                $now->format(Config::DATE_TIME_FORMAT)
+                            ),
+                            $scope->toArray()
+                        );
+                    }
+                } catch (Exception $e) {
+                    try {
+                        $metadata = "";
+                        if (!empty($result)) {
+                            $metadata = $result->toJSON();
+                        }
+                        $jobCollection->markAsFailed($job->getId(), $e->getMessage(), $metadata);
+                    } catch (NoSuchEntityException $nfe) {
+                        $this->logger->error($nfe, "Failed to mark the job as failed");
+                    }
+                    $this->logger->error($e, "Failed to process order synchronization job");
+                    continue;
                 }
             }
-        } else {
-            $this->logger->error(new Exception("Invalid job collection type"));
         }
 
         $scopes = $this->scopeManager->getActiveScopes();
@@ -306,16 +307,16 @@ class SyncOrders
     {
         $attrCollection = $this->attrCollectionFactory->create();
         $attributes = $attrCollection->getAll($page, self::CUSTOMER_PAGE_SIZE);
-        $orderIds = [];
+        $customerIds = [];
         foreach ($attributes as $attr) {
-            $orderIds[] = $attr->getCustomerId();
+            $customerIds[] = $attr->getCustomerId();
         }
         $collection = $this->customerCollectionFactory->create();
         $collection->setCurPage($page)
             ->setPageSize(self::CUSTOMER_PAGE_SIZE)
-            ->addFieldToSelect(CustomerInterface::ID)
+            ->addFieldToSelect(self::CUSTOMER_ID)
             ->addFieldToSelect(CustomerInterface::EMAIL)
-            ->addFieldToFilter(CustomerInterface::ID, ['in' => $orderIds]);
+            ->addFieldToFilter(self::CUSTOMER_ID, ['in' => $customerIds]);
         return [
             self::ITEMS_KEY => $collection->getItems(),
             self::TOTAL_KEY => $collection->getSize(),
@@ -331,7 +332,7 @@ class SyncOrders
      */
     private function getCustomerOrders(
         int $page,
-        CustomerInterface $customer,
+        $customer,
         ConfigScopeInterface $scope,
         ?DateTime $checkpoint = null
     ) {

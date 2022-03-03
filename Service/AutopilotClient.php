@@ -70,7 +70,7 @@ class AutopilotClient implements AutopilotClientInterface
         $apiKey = $scope->getAPIKey();
         $payload = [];
         foreach ($orders as $order) {
-            $data = $this->helper->getCustomerFields($order, $scope);
+            $data = $this->helper->getCustomerOrderFields($order);
             if (empty($data)) {
                 continue;
             }
