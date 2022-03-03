@@ -1,0 +1,24 @@
+<?php
+
+use Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncOrders;
+
+/**
+ * @var $block SyncOrders
+ */
+?>
+<div>
+    <button
+        data-mage-init='{"Autopilot_AP3Connector/js/post_data":
+            {
+                "url":"<?= $block->getAjaxURL() ?>",
+                "scope_type": "<?= $block->getEscapedAttrScopeType() ?>",
+                "scope_id": "<?= $block->getEscapedAttrScopeID() ?>",
+                "client_id": "<?= $block->getEscapedAttrClientID() ?>"
+            }
+        }'
+        id="sync-orders">
+        <span><?= /* @noEscape */
+            $block->getButtonLabel() ?>
+        </span>
+    </button>
+</div>

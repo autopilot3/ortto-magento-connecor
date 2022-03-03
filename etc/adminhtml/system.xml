@@ -53,7 +53,7 @@
             <resource>Autopilot_AP3Connector::config</resource>
             <group id="customer" translate="label" sortOrder="2" showInDefault="0" showInWebsite="1"
                    showInStore="1">
-                <label>Customer</label>
+                <label>Customers</label>
                 <field id="non_subscribed_enabled" translate="label" sortOrder="1" type="select" showInDefault="0"
                        showInWebsite="1"
                        showInStore="1">
@@ -69,6 +69,20 @@
                        showInWebsite="1">
                     <label>Sync Customers</label>
                     <frontend_model>Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncCustomers</frontend_model>
+                </field>
+            </group>
+            <group id="order" translate="label" sortOrder="3" showInDefault="0" showInWebsite="1"
+                   showInStore="1">
+                <label>Orders</label>
+                <field id="auto_sync_enabled" translate="label" sortOrder="2" type="select" showInDefault="0"
+                       showInWebsite="1" showInStore="1">
+                    <label>Automatic Sync</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
+                       showInWebsite="1">
+                    <label>Sync Orders</label>
+                    <frontend_model>Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncOrders</frontend_model>
                 </field>
             </group>
         </section>

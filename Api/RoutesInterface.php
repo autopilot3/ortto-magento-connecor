@@ -7,6 +7,7 @@ interface RoutesInterface
 {
     // Magento Routes
     const MG_SYNC_CUSTOMERS = "autopilot/sync/customers";
+    const MG_SYNC_ORDERS = "autopilot/sync/orders";
 
     // Autopilot Routes
     const AP_AUTHENTICATE = "/-/installation/auth";
