@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+  <table name="autopilot_sync_jobs" resource="default" engine="innodb" comment="Autopilot Cron Job History">
+    <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Job Id"/>
+    <column xsi:type="varchar" name="category" nullable="false" length="64" comment="Scope ID"/>
+    <column xsi:type="varchar" name="scope_type" nullable="false" length="12" comment="Scope Type"/>
+    <column xsi:type="int" name="scope_id" padding="11" unsigned="false" nullable="false" identity="false" comment="Scope ID"/>
+    <column xsi:type="varchar" name="status" nullable="false" length="24" comment="Job status"/>
+    <column xsi:type="datetime" name="created_at" on_update="false" nullable="false" comment="Created at"/>
+    <column xsi:type="datetime" name="started_at" on_update="false" nullable="true" comment="Started at"/>
+    <column xsi:type="datetime" name="finished_at" on_update="false" nullable="true" comment="Finished at"/>
+    <column xsi:type="int" name="count" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Number of records processed"/>
+    <column xsi:type="int" name="total" padding="10" unsigned="true" nullable="false" identity="false" default="0" comment="Number of total records"/>
+    <column xsi:type="text" name="error" nullable="true" comment="Error"/>
+    <column xsi:type="text" name="metadata" nullable="true" comment="Metadata"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="id"/>
+    </constraint>
+    <index referenceId="CATEGORY_STATUS_INDEX" indexType="btree">
+      <column name="category"/>
+      <column name="status"/>
+    </index>
+  </table>
+  <table name="autopilot_cron_checkpoint" resource="default" engine="innodb" comment="Autopilot Cron Job Checkpoint">
+    <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Job Id"/>
+    <column xsi:type="varchar" name="category" nullable="false" length="64" comment="Scope ID"/>
+    <column xsi:type="varchar" name="scope_type" nullable="false" length="12" comment="Scope Type"/>
+    <column xsi:type="int" name="scope_id" padding="11" unsigned="false" nullable="false" identity="false" comment="Scope ID"/>
+    <column xsi:type="datetime" name="last_checked_at" on_update="false" nullable="true" comment="Last checked at"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="id"/>
+    </constraint>
+    <constraint xsi:type="unique" referenceId="SCOPE_CATEGORY_UNIQUE_INDEX">
+      <column name="scope_type"/>
+      <column name="scope_id"/>
+      <column name="category"/>
+    </constraint>
+  </table>
+  <table name="autopilot_customer_attributes" resource="default" engine="innodb" comment="Autopilot customer attributes">
+    <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="Entity id"/>
+    <column xsi:type="int" name="customer_id" padding="10" unsigned="true" nullable="false" identity="false" comment="Customer Id"/>
+    <column xsi:type="varchar" name="contact_id" nullable="false" length="32" comment="Autopilot contact Id"/>
+    <constraint xsi:type="primary" referenceId="PRIMARY">
+      <column name="id"/>
+    </constraint>
+    <constraint xsi:type="unique" referenceId="CUSTOMER_CONTACT_UNIQUE_INDEX">
+      <column name="customer_id"/>
+      <column name="contact_id"/>
+    </constraint>
+    <constraint xsi:type="foreign" referenceId="autopilot_customer_attributes_fk" table="autopilot_customer_attributes" column="customer_id" referenceTable="customer_entity" referenceColumn="entity_id" onDelete="CASCADE"/>
+  </table>
+</schema>

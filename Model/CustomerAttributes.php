@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Model;
 
 use Autopilot\AP3Connector\Api\Data\CustomerAttributesInterface;
-use Autopilot\AP3Connector\Setup\SchemaInterface;
+use Autopilot\AP3Connector\Api\SchemaInterface;
+use Autopilot\AP3Connector\Model\ResourceModel\CustomerAttributes as ResourceModel;
 use Magento\Framework\DataObject\IdentityInterface;
 use Magento\Framework\Model\AbstractModel;
-use Autopilot\AP3Connector\Model\ResourceModel\CustomerAttributes as ResourceModel;
 
 class CustomerAttributes extends AbstractModel implements CustomerAttributesInterface, IdentityInterface
 {

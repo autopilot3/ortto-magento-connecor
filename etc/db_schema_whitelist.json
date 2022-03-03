@@ -1,0 +1,49 @@
+{
+    "autopilot_sync_jobs": {
+        "column": {
+            "id": true,
+            "category": true,
+            "scope_type": true,
+            "scope_id": true,
+            "status": true,
+            "created_at": true,
+            "started_at": true,
+            "finished_at": true,
+            "count": true,
+            "total": true,
+            "error": true,
+            "metadata": true
+        },
+        "index": {
+            "AUTOPILOT_SYNC_JOBS_CATEGORY_STATUS": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "autopilot_cron_checkpoint": {
+        "column": {
+            "id": true,
+            "category": true,
+            "scope_type": true,
+            "scope_id": true,
+            "last_checked_at": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "AUTOPILOT_CRON_CHECKPOINT_SCOPE_TYPE_SCOPE_ID_CATEGORY": true
+        }
+    },
+    "autopilot_customer_attributes": {
+        "column": {
+            "id": true,
+            "customer_id": true,
+            "contact_id": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "AUTOPILOT_CUSTOMER_ATTRIBUTES_CUSTOMER_ID_CONTACT_ID": true,
+            "AUTOPILOT_CSTR_ATTRS_CSTR_ID_CSTR_ENTT_ENTT_ID": true
+        }
+    }
+}

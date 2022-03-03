@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Model\ResourceModel;
 
 use Autopilot\AP3Connector\Api\Data\CustomerAttributesInterface;
-use Autopilot\AP3Connector\Setup\SchemaInterface;
+use Autopilot\AP3Connector\Api\SchemaInterface;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 class CustomerAttributes extends AbstractDb
