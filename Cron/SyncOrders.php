@@ -123,7 +123,7 @@ class SyncOrders
         $jobCollection = $this->jobCollectionFactory->create();
 
         if (!($jobCollection instanceof JobCollection)) {
-            $this->logger->error(new Exception("Invalid job collection type"));
+            $this->logger->error(new Exception("Invalid synchronization job type"));
             return;
         }
         $jobs = $jobCollection->getQueuedJobs(JobCategory::ORDER);
@@ -133,9 +133,8 @@ class SyncOrders
             foreach ($jobs as $job) {
                 $jobId = $job->getId();
                 $this->logger->info(sprintf('Processing order synchronization job ID %s', $jobId));
-                $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
                 try {
-                    $scope->load($job->getScopeType(), $job->getScopeId());
+                    $scope = $this->scopeManager->initialiseScope($job->getScopeType(), $job->getScopeId());
                     if (!$scope->isConnected()) {
                         $this->logger->warn("Job scope is not connected to Autopilot", $scope->toArray());
                         $jobCollection->markAsFailed($jobId, "Not connected to Autopilot");
@@ -267,33 +266,34 @@ class SyncOrders
             /** @var CustomerInterface[] $customers */
             $customers = $customersResult[self::ITEMS_KEY];
             $customerPageSize = 0;
-            if (!empty($customers)) {
-                $customerPageSize = count($customers);
-                $currentCustomerPage++;
-                foreach ($customers as $customer) {
-                    $currentOrdersPage = 1;
-                    do {
-                        $customerOrders = $this->getCustomerOrders($currentOrdersPage, $customer, $scope, $checkpoint);
-                        if (empty($customerOrders)) {
-                            $total->incrSkipped();
-                            break;
-                        }
-                        $orders = $customerOrders->getOrders();
-                        $ordersPageSize = count($orders);
-                        $currentOrdersPage++;
-                        $toExport[] = $customerOrders;
+            if (empty($customers)) {
+                break;
+            }
+            $customerPageSize = count($customers);
+            $currentCustomerPage++;
+            foreach ($customers as $customer) {
+                $currentOrdersPage = 1;
+                do {
+                    $customerOrders = $this->getCustomerOrders($currentOrdersPage, $customer, $scope, $checkpoint);
+                    if (empty($customerOrders)) {
+                        $total->incrSkipped();
+                        break;
+                    }
+                    $orders = $customerOrders->getOrders();
+                    $ordersPageSize = count($orders);
+                    $currentOrdersPage++;
+                    $toExport[] = $customerOrders;
 
-                        // Customer has too many orders. Let's export what we have and flush the cache.
-                        if ($ordersPageSize == self::ORDER_PAGE_SIZE) {
-                            $importResult = $this->autopilotClient->importOrders($scope, $toExport);
-                            $total->incr($importResult);
-                            if ($updateState !== null) {
-                                $updateState($customersTotal, $customerPageSize, $total->toJSON());
-                            }
-                            $toExport = [];
+                    // Customer has too many orders. Let's export what we have and flush the cache.
+                    if ($ordersPageSize == self::ORDER_PAGE_SIZE) {
+                        $importResult = $this->autopilotClient->importOrders($scope, $toExport);
+                        $total->incr($importResult);
+                        if ($updateState !== null) {
+                            $updateState($customersTotal, $customerPageSize, $total->toJSON());
                         }
-                    } while ($ordersPageSize == self::ORDER_PAGE_SIZE);
-                }
+                        $toExport = [];
+                    }
+                } while ($ordersPageSize == self::ORDER_PAGE_SIZE);
             }
         } while ($customerPageSize === self::CUSTOMER_PAGE_SIZE);
 

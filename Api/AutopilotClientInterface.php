@@ -19,7 +19,6 @@ interface AutopilotClientInterface
      */
     public function importContacts(ConfigScopeInterface $scope, array $customers);
 
-
     /**
      * @param ConfigScopeInterface $scope
      * @param CustomerOrderInterface[] $orders

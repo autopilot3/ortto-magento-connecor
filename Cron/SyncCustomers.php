@@ -25,8 +25,10 @@ use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\State\InputMismatchException;
 use Magento\Framework\Phrase;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -46,7 +48,6 @@ class SyncCustomers
     private CustomerRepositoryInterface $customerRepository;
 
     const PAGE_SIZE = 100;
-
 
     public function __construct(
         AutopilotLoggerInterface $logger,
@@ -95,55 +96,55 @@ class SyncCustomers
         $now = $this->helper->now();
 
         $jobCollection = $this->jobCollectionFactory->create();
-        if ($jobCollection instanceof JobCollection) {
-            $jobs = $jobCollection->getQueuedJobs(JobCategory::CUSTOMER);
-            if (empty($jobs)) {
-                $this->logger->debug("No customer sync job was queued");
-            } else {
-                foreach ($jobs as $job) {
-                    $jobId = $job->getId();
-                    $this->logger->info(sprintf('Processing customer synchronization job ID %s', $jobId));
-                    $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
-                    try {
-                        $scope->load($job->getScopeType(), $job->getScopeId());
-                        if (!$scope->isConnected()) {
-                            $this->logger->warn("Job scope is not connected to Autopilot", $scope->toArray());
-                            $jobCollection->markAsFailed($jobId, "Not connected to Autopilot");
-                            continue;
-                        }
-                        $jobCollection->markAsInProgress($jobId);
-                        $result = $this->exportAllCustomers($scope, $jobCollection, $jobId);
-                        $processedScopes[] = $scope;
-                        $jobCollection->markAsDone($jobId, $result->toJSON());
-                        $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $now, $scope);
-                        $total = $result->getContactsTotal();
-                        if ($total > 0) {
-                            $this->logger->info(
-                                sprintf(
-                                    "%d customer(s) have been manually exported. Checkpoint's been updated to %s.",
-                                    $total,
-                                    $now->format(Config::DATE_TIME_FORMAT)
-                                ),
-                                $scope->toArray()
-                            );
-                        }
-                    } catch (Exception $e) {
-                        try {
-                            $metadata = "";
-                            if (!empty($result)) {
-                                $metadata = $result->toJSON();
-                            }
-                            $jobCollection->markAsFailed($job->getId(), $e->getMessage(), $metadata);
-                        } catch (NoSuchEntityException $nfe) {
-                            $this->logger->error($nfe, "Failed to mark the job as failed");
-                        }
-                        $this->logger->error($e, "Failed to process customer synchronization job");
+
+        if (!($jobCollection instanceof JobCollection)) {
+            $this->logger->error(new Exception("Invalid synchronization job type"));
+            return;
+        }
+        $jobs = $jobCollection->getQueuedJobs(JobCategory::CUSTOMER);
+        if (empty($jobs)) {
+            $this->logger->debug("No customer sync job was queued");
+        } else {
+            foreach ($jobs as $job) {
+                $jobId = $job->getId();
+                $this->logger->info(sprintf('Processing customer synchronization job ID %s', $jobId));
+                try {
+                    $scope = $this->scopeManager->initialiseScope($job->getScopeType(), $job->getScopeId());
+                    if (!$scope->isConnected()) {
+                        $this->logger->warn("Job scope is not connected to Autopilot", $scope->toArray());
+                        $jobCollection->markAsFailed($jobId, "Not connected to Autopilot");
                         continue;
                     }
+                    $jobCollection->markAsInProgress($jobId);
+                    $result = $this->exportAllCustomers($scope, $jobCollection, $jobId);
+                    $processedScopes[] = $scope;
+                    $jobCollection->markAsDone($jobId, $result->toJSON());
+                    $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $now, $scope);
+                    $total = $result->getContactsTotal();
+                    if ($total > 0) {
+                        $this->logger->info(
+                            sprintf(
+                                "%d customer(s) have been manually exported. Checkpoint's been updated to %s.",
+                                $total,
+                                $now->format(Config::DATE_TIME_FORMAT)
+                            ),
+                            $scope->toArray()
+                        );
+                    }
+                } catch (Exception $e) {
+                    try {
+                        $metadata = "";
+                        if (!empty($result)) {
+                            $metadata = $result->toJSON();
+                        }
+                        $jobCollection->markAsFailed($job->getId(), $e->getMessage(), $metadata);
+                    } catch (NoSuchEntityException $nfe) {
+                        $this->logger->error($nfe, "Failed to mark the job as failed");
+                    }
+                    $this->logger->error($e, "Failed to process customer synchronization job");
+                    continue;
                 }
             }
-        } else {
-            $this->logger->error(new Exception("Invalid job collection type"));
         }
 
         $scopes = $this->scopeManager->getActiveScopes();
@@ -209,7 +210,7 @@ class SyncCustomers
                 $pageSize = count($customers);
                 $importResult = $this->autopilotClient->importContacts($scope, $customers);
                 $total->incr($importResult);
-                $page += 1;
+                ++$page;
                 $contacts = $importResult->getContacts();
                 if (!empty($contacts)) {
                     $this->updateCustomerAttributes($customers, $contacts);
@@ -242,7 +243,7 @@ class SyncCustomers
                 $pageSize = count($customers);
                 $importResult = $this->autopilotClient->importContacts($scope, $customers);
                 $total += $importResult->getContactsTotal();
-                $page += 1;
+                ++$page;
                 $contacts = $importResult->getContacts();
                 if (!empty($contacts)) {
                     $this->updateCustomerAttributes($customers, $contacts);
@@ -251,7 +252,6 @@ class SyncCustomers
         } while ($pageSize === self::PAGE_SIZE);
         return $total;
     }
-
 
     private function buildCustomerSearchCriteria(int $page, Scope $scope, ?DateTime $checkpoint = null)
     {
@@ -280,9 +280,7 @@ class SyncCustomers
      * @param array $customers
      * @param array $contacts
      * @return void
-     * @throws LocalizedException
-     * @throws \Magento\Framework\Exception\InputException
-     * @throws \Magento\Framework\Exception\State\InputMismatchException
+     * @throws InputException|InputMismatchException|LocalizedException
      */
     private function updateCustomerAttributes(array $customers, array $contacts): void
     {

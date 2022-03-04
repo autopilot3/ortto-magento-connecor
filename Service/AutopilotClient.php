@@ -5,6 +5,7 @@ namespace Autopilot\AP3Connector\Service;
 
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
+use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
 use Autopilot\AP3Connector\Api\RoutesInterface;
 use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
@@ -21,11 +22,13 @@ class AutopilotClient implements AutopilotClientInterface
     private Data $helper;
 
     private AutopilotLoggerInterface $logger;
+    private ConfigurationReaderInterface $config;
 
     public function __construct(
         ClientInterface $curl,
         Data $helper,
-        AutopilotLoggerInterface $logger
+        AutopilotLoggerInterface $logger,
+        ConfigurationReaderInterface $config
     ) {
         // In Seconds
         $curl->setOption(CURLOPT_TIMEOUT, 10);
@@ -35,6 +38,7 @@ class AutopilotClient implements AutopilotClientInterface
         $this->curl = $curl;
         $this->helper = $helper;
         $this->logger = $logger;
+        $this->config = $config;
     }
 
     /**
@@ -43,7 +47,7 @@ class AutopilotClient implements AutopilotClientInterface
     public function importContacts(ConfigScopeInterface $scope, array $customers)
     {
         $url = $this->helper->getAutopilotURL(RoutesInterface::AP_IMPORT_CONTACTS);
-        $apiKey = $scope->getAPIKey();
+
         $payload = [];
         foreach ($customers as $customer) {
             $data = $this->helper->getCustomerFields($customer, $scope);
@@ -57,7 +61,7 @@ class AutopilotClient implements AutopilotClientInterface
             $this->logger->debug("No customer to export");
             return new ImportContactResponse();
         }
-        $response = $this->postJSON($url, $apiKey, $payload);
+        $response = $this->postJSON($url, $scope, $payload);
         return new ImportContactResponse($response);
     }
 
@@ -67,7 +71,6 @@ class AutopilotClient implements AutopilotClientInterface
     public function importOrders(ConfigScopeInterface $scope, array $orders)
     {
         $url = $this->helper->getAutopilotURL(RoutesInterface::AP_IMPORT_ORDERS);
-        $apiKey = $scope->getAPIKey();
         $payload = [];
         foreach ($orders as $order) {
             $data = $this->helper->getCustomerOrderFields($order);
@@ -81,7 +84,7 @@ class AutopilotClient implements AutopilotClientInterface
             $this->logger->debug("No order to export");
             return new ImportOrderResponse();
         }
-        $response = $this->postJSON($url, $apiKey, $payload);
+        $response = $this->postJSON($url, $scope, $payload);
         return new ImportOrderResponse($response);
     }
 
@@ -91,22 +94,22 @@ class AutopilotClient implements AutopilotClientInterface
     public function updateAccessToken(ConfigScopeInterface $scope)
     {
         try {
-            $isActive = $scope->isActive();
+            $isActive = $this->config->isActive($scope->getType(), $scope->getId());
             if (!$isActive) {
                 return;
             }
 
-            $apiKey = $scope->getAPIKey();
+            $apiKey = $this->config->getAPIKey($scope->getType(), $scope->getId());
             if (empty($apiKey)) {
                 return;
             }
 
             $this->postJSON(
                 $this->helper->getAutopilotURL(RoutesInterface::AP_UPDATE_ACCESS_TOKEN),
-                $apiKey,
+                $scope,
                 [
                     'scope' => $scope->getCode(),
-                    'access_token' => $scope->getAccessToken(),
+                    'access_token' => $this->config->getAccessToken($scope->getType(), $scope->getId()),
                 ]
             );
         } catch (Exception $e) {
@@ -116,17 +119,18 @@ class AutopilotClient implements AutopilotClientInterface
 
     /**
      * @param string $url
-     * @param string $apiKey
+     * @param ConfigScopeInterface $scope
      * @param array $request
      * @return array
      * @throws AutopilotException
      * @throws JsonException
      */
-    private function postJSON(string $url, string $apiKey, array $request)
+    private function postJSON(string $url, ConfigScopeInterface $scope, array $request)
     {
         $this->logger->debug('POST: ' . $url, ['request' => $request]);
-        $this->curl->addHeader("Content-Type", "application/json");
+        $apiKey = $this->config->getAPIKey($scope->getType(), $scope->getId());
         $this->curl->setCredentials($this->helper->getClientId(), $apiKey);
+        $this->curl->addHeader("Content-Type", "application/json");
         $payload = json_encode($request, JSON_THROW_ON_ERROR);
         $this->curl->post($url, $payload);
         $status = $this->curl->getStatus();

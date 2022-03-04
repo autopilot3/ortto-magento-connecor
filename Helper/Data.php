@@ -351,7 +351,6 @@ class Data extends AbstractHelper
         return Config::EMPTY_DATE_TIME;
     }
 
-
     /**
      * @return \DateTime
      */

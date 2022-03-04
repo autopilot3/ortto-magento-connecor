@@ -16,4 +16,11 @@ interface ScopeManagerInterface
      * @return ConfigScopeInterface
      */
     public function getCurrentConfigurationScope(string $scopeType = '', int $scopeId = null): ConfigScopeInterface;
+
+    /**
+     * @param string $type Scope type (website/store)
+     * @param int $id Scope Id
+     * @return ConfigScopeInterface
+     */
+    public function initialiseScope(string $type, int $id): ConfigScopeInterface;
 }

@@ -10,10 +10,14 @@ use Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncCustomers;
     <button
         data-mage-init='{"Autopilot_AP3Connector/js/post_data":
             {
-                "url":"<?= $block->getAjaxURL() ?>",
-                "scope_type": "<?= $block->getEscapedAttrScopeType() ?>",
-                "scope_id": "<?= $block->getEscapedAttrScopeID() ?>",
-                "client_id": "<?= $block->getEscapedAttrClientID() ?>"
+                "url":"<?= /* @noEscape */
+        $block->getAjaxURL() ?>",
+                "scope_type": "<?= /* @noEscape */
+        $block->getEscapedAttrScopeType() ?>",
+                "scope_id": "<?= /* @noEscape */
+        $block->getEscapedAttrScopeID() ?>",
+                "client_id": "<?= /* @noEscape */
+        $block->getEscapedAttrClientID() ?>"
             }
         }'
         id="sync-customers">

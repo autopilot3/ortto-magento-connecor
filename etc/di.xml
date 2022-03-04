@@ -33,11 +33,11 @@
     <preference for="Autopilot\AP3Connector\Api\Data\CouponInterface"
                 type="Autopilot\AP3Connector\Model\Data\Coupon"/>
     <preference for="Autopilot\AP3Connector\Api\ScopeManagerInterface"
-                type="Autopilot\AP3Connector\Helper\ScopeManager"/>
+                type="Autopilot\AP3Connector\Service\ScopeManager"/>
     <preference for="Autopilot\AP3Connector\Api\AutopilotClientInterface"
                 type="Autopilot\AP3Connector\Service\AutopilotClient"/>
-    <preference for="Autopilot\AP3Connector\Api\ConfigScopeInterface"
-                type="Autopilot\AP3Connector\Model\Scope"/>
+    <preference for="Autopilot\AP3Connector\Api\ConfigurationReaderInterface"
+                type="Autopilot\AP3Connector\Service\ConfigurationReader"/>
     <preference for="Autopilot\AP3Connector\Api\Data\SyncJobInterface"
                 type="Autopilot\AP3Connector\Model\SyncJob"/>
     <preference for="Autopilot\AP3Connector\Api\Data\CronCheckpointInterface"
