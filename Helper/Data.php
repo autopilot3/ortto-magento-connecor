@@ -6,6 +6,7 @@ namespace Autopilot\AP3Connector\Helper;
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Api\Data\CustomerOrderInterface;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
+use DateTime;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
@@ -21,6 +22,7 @@ use Magento\Newsletter\Model\Subscriber;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
+use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
 
 class Data extends AbstractHelper
 {
@@ -32,6 +34,7 @@ class Data extends AbstractHelper
     private TimezoneInterface $time;
     private CustomerMetadataInterface $customerMetadata;
     private Subscriber $subscriber;
+    private ConfigurationReaderInterface $config;
 
     public function __construct(
         Context $context,
@@ -40,7 +43,8 @@ class Data extends AbstractHelper
         TimezoneInterface $time,
         CustomerMetadataInterface $customerMetadata,
         Subscriber $subscriber,
-        AutopilotLoggerInterface $logger
+        AutopilotLoggerInterface $logger,
+        ConfigurationReaderInterface $config
     ) {
         parent::__construct($context);
         $this->_request = $context->getRequest();
@@ -50,6 +54,7 @@ class Data extends AbstractHelper
         $this->time = $time;
         $this->customerMetadata = $customerMetadata;
         $this->subscriber = $subscriber;
+        $this->config = $config;
     }
 
     /**
@@ -90,7 +95,7 @@ class Data extends AbstractHelper
     {
         $sub = $this->subscriber->loadByCustomer((int)$customer->getId(), (int)$customer->getWebsiteId());
         $isSubscribed = $sub->isSubscribed();
-        if (!$scope->isNonSubscribedCustomerSyncEnabled() && !$isSubscribed) {
+        if (!$this->config->isNonSubscribedCustomerSyncEnabled($scope->getType(), $scope->getId()) && !$isSubscribed) {
             return [];
         }
         $data = [
@@ -352,9 +357,9 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    public function now(): \DateTime
+    public function now(): DateTime
     {
         return $this->time->date();
     }
