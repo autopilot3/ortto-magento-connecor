@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Model;
 
 use Autopilot\AP3Connector\Api\Data\CronCheckpointInterface;
+use Autopilot\AP3Connector\Api\SchemaInterface;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint as ResourceModel;
-use Autopilot\AP3Connector\Setup\SchemaInterface;
 use DateTime;
 use Magento\Framework\DataObject\IdentityInterface;
 use Magento\Framework\Model\AbstractModel;

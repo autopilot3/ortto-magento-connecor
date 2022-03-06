@@ -9,6 +9,7 @@ use Autopilot\AP3Connector\Api\Data\CronCheckpointInterface as Checkpoint;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint as ResourceModel;
 use Autopilot\AP3Connector\Model\CronCheckpointFactory;
 use Autopilot\AP3Connector\Model\CronCheckpoint as Model;
+use DateTime;
 use Magento\Framework\Data\Collection\Db\FetchStrategyInterface;
 use Magento\Framework\Data\Collection\EntityFactoryInterface;
 use Magento\Framework\DB\Adapter\AdapterInterface;
@@ -31,7 +32,6 @@ class Collection extends AbstractCollection
         EntityFactoryInterface $entityFactory,
         LoggerInterface $logger,
         FetchStrategyInterface $fetchStrategy,
-        TimezoneInterface $time,
         ManagerInterface $eventManager,
         CronCheckpointFactory $cronCheckpointFactory,
         AdapterInterface $connection = null,
@@ -39,7 +39,6 @@ class Collection extends AbstractCollection
     ) {
         parent::__construct($entityFactory, $logger, $fetchStrategy, $eventManager, $connection, $resource);
         $this->cronCheckpointFactory = $cronCheckpointFactory;
-        $this->time = $time;
     }
 
     /**
@@ -73,11 +72,12 @@ class Collection extends AbstractCollection
 
     /**
      * @param string $category
+     * @param DateTime $date
      * @param ConfigScopeInterface $scope
      * @return CronCheckpointInterface
      * @throws Exception
      */
-    public function setCheckpoint(string $category, ConfigScopeInterface $scope)
+    public function setCheckpoint(string $category, DateTime $date, ConfigScopeInterface $scope)
     {
         $checkpoint = $this->get($category, $scope);
         if (empty($checkpoint)) {
@@ -87,7 +87,7 @@ class Collection extends AbstractCollection
             $checkpoint->setScopeId($scope->getId());
             $this->addItem($checkpoint);
         }
-        $checkpoint->setCheckedAt($this->time->date());
+        $checkpoint->setCheckedAt($date);
         $this->save();
         return $checkpoint;
     }

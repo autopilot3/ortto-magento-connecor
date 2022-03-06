@@ -6,6 +6,9 @@
             <customer>
                 <auto_sync_enabled>1</auto_sync_enabled>
             </customer>
+            <order>
+                <auto_sync_enabled>1</auto_sync_enabled>
+            </order>
         </ap_sync>
     </default>
 </config>

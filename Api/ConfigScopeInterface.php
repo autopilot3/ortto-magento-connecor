@@ -3,10 +3,6 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Api;
 
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Exception\NotFoundException;
-
 interface ConfigScopeInterface
 {
     /**
@@ -15,9 +11,21 @@ interface ConfigScopeInterface
     public function getId(): int;
 
     /**
+     * @param int $id
+     * @return $this
+     */
+    public function setId(int $id);
+
+    /**
      * @return string
      */
     public function getType(): string;
+
+    /**
+     * @param string $type
+     * @return $this
+     */
+    public function setType(string $type);
 
     /**
      * @return string
@@ -25,9 +33,21 @@ interface ConfigScopeInterface
     public function getName(): string;
 
     /**
+     * @param string $name
+     * @return $this
+     */
+    public function setName(string $name);
+
+    /**
      * @return string
      */
     public function getCode(): string;
+
+    /**
+     * @param string $code
+     * @return $this
+     */
+    public function setCode(string $code);
 
     /**
      * @return array
@@ -37,47 +57,40 @@ interface ConfigScopeInterface
     /**
      * @return bool
      */
-    public function isActive(): bool;
-
-    /**
-     * @return bool
-     */
-    public function isAutoCustomerSyncEnabled(): bool;
-
-    /**
-     * @return bool
-     */
-    public function isNonSubscribedCustomerSyncEnabled(): bool;
-
-    /**
-     * @return bool
-     */
     public function isConnected(): bool;
 
     /**
-     * @return string
+     * @param bool $connected
+     * @return $this
      */
-    public function getAPIKey(): string;
+    public function setIsConnected(bool $connected);
 
     /**
-     * @return string
+     * Returns all the store IDs under a website if scope type == 'website', otherwise (type == 'store')
+     * only the ID of the current store will be included.
+     *
+     * @return int[]
      */
-    public function getAccessToken(): string;
+    public function getStoreIds(): array;
+
+    /**
+     * @param int $id
+     * @return $this
+     */
+    public function addStoreId(int $id);
 
     public function equals(ConfigScopeInterface $scope): bool;
-
-    /**
-     * @param string $type
-     * @param int $id
-     * @return void
-     * @throws LocalizedException|NotFoundException|NoSuchEntityException
-     */
-    public function load(string $type, int $id);
 
     /**
      * @return int
      */
     public function getWebsiteId(): int;
+
+    /**
+     * @param int $id
+     * @return $this
+     */
+    public function setWebsiteId(int $id);
 
     /**
      * @return string

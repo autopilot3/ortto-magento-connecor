@@ -16,7 +16,7 @@ use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Autopilot\AP3Connector\Api\JobCategoryInterface as JobCategory;
 
-class Customers extends Action
+class Orders extends Action
 {
     /**
      * Authorization level of a basic admin session
@@ -51,7 +51,7 @@ class Customers extends Action
     {
         $request = $this->getRequest();
         $params = $request->getParams();
-        $this->logger->debug("Request received: " . $this->getUrl(RoutesInterface::MG_SYNC_CUSTOMERS), $params);
+        $this->logger->debug("Request received: " . $this->getUrl(RoutesInterface::MG_SYNC_ORDERS), $params);
         $scope = $this->scopeManager->getCurrentConfigurationScope($params['scope_type'], (int)$params['scope_id']);
         $result = $this->jsonFactory->create();
 
@@ -67,21 +67,21 @@ class Customers extends Action
 
         $jobCollection = $this->jobCollectionFactory->create();
         if ($jobCollection instanceof JobCollection) {
-            $job = $jobCollection->getActiveScopeJob(JobCategory::CUSTOMER, $scope);
+            $job = $jobCollection->getActiveScopeJob(JobCategory::ORDER, $scope);
             if ($job) {
                 $msg = sprintf('Another job is already in "%s" state [Job ID=%d].', $job->getStatus(), $job->getId());
                 $result->setData($this->helper->getErrorResponse($msg));
                 return $result;
             }
             try {
-                $jobCollection->enqueueNewScopeJob(JobCategory::CUSTOMER, $scope);
+                $jobCollection->enqueueNewScopeJob(JobCategory::ORDER, $scope);
             } catch (Exception $e) {
-                $this->logger->error($e, "Failed to enqueue a new customer sync job");
+                $this->logger->error($e, "Failed to enqueue a new order sync job");
                 $result->setData($this->helper->getErrorResponse("Failed to add a new job to the queue!"));
                 return $result;
             }
             $result->setData([
-                'message' => "A new customer synchronization job has been queued.",
+                'message' => "A new order synchronization job has been queued.",
             ]);
             return $result;
         }

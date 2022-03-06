@@ -4,11 +4,10 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Cron;
 
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
-use Autopilot\AP3Connector\Api\CustomerReaderInterface;
-
 use Autopilot\AP3Connector\Api\JobCategoryInterface as JobCategory;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Helper\Config;
+use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
 use Autopilot\AP3Connector\Model\ImportContactResponse;
@@ -21,10 +20,17 @@ use DateTime;
 use Exception;
 use Autopilot\AP3Connector\Api\JobStatusInterface as Status;
 use JsonException;
+use Magento\Customer\Api\CustomerRepositoryInterface;
+use Magento\Customer\Api\Data\CustomerInterface;
+use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Exception\State\InputMismatchException;
 use Magento\Framework\Phrase;
+use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 class SyncCustomers
@@ -37,7 +43,11 @@ class SyncCustomers
     private EncryptorInterface $encryptor;
     private ScopeConfigInterface $scopeConfig;
     private StoreManagerInterface $storeManager;
-    private CustomerReaderInterface $customerReader;
+    private Data $helper;
+    private SearchCriteriaBuilder $searchCriteriaBuilder;
+    private CustomerRepositoryInterface $customerRepository;
+
+    const PAGE_SIZE = 100;
 
     public function __construct(
         AutopilotLoggerInterface $logger,
@@ -48,7 +58,9 @@ class SyncCustomers
         EncryptorInterface $encryptor,
         ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManager,
-        CustomerReaderInterface $customerReader
+        SearchCriteriaBuilder $searchCriteriaBuilder,
+        CustomerRepositoryInterface $customerRepository,
+        Data $helper
     ) {
         $this->logger = $logger;
         $this->autopilotClient = $autopilotClient;
@@ -57,8 +69,10 @@ class SyncCustomers
         $this->encryptor = $encryptor;
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
-        $this->customerReader = $customerReader;
         $this->checkpointCollectionFactory = $checkpointCollectionFactory;
+        $this->helper = $helper;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->customerRepository = $customerRepository;
     }
 
     /**
@@ -73,50 +87,64 @@ class SyncCustomers
          * @var ScopeConfigInterface[]
          */
         $processedScopes = [];
-        $jobCollection = $this->jobCollectionFactory->create();
-        if ($jobCollection instanceof JobCollection) {
-            $jobs = $jobCollection->getQueuedJobs(JobCategory::CUSTOMER);
-            if (empty($jobs)) {
-                $this->logger->debug("No sync jobs were queued");
-            } else {
-                foreach ($jobs as $job) {
-                    $jobId = $job->getId();
-                    $this->logger->debug(sprintf('Processing customer synchronization job ID %s', $jobId));
-                    $scope = new Scope($this->encryptor, $this->scopeConfig, $this->storeManager);
-                    try {
-                        $scope->load($job->getScopeType(), $job->getScopeId());
-                        if (!$scope->isConnected()) {
-                            $this->logger->warn("Job scope is not connected to Autopilot", $scope->toArray());
-                            $jobCollection->markAsFailed($jobId, "Not connected to Autopilot");
-                            continue;
-                        }
-                        $jobCollection->markAsInProgress($jobId);
-                        $result = $this->exportAllCustomers($scope, $jobCollection, $jobId);
-                        $processedScopes[] = $scope;
-                        $jobCollection->markAsDone($jobId, $result->toJSON());
-                    } catch (Exception $e) {
-                        try {
-                            $metadata = "";
-                            if (!empty($result)) {
-                                $metadata = $result->toJSON();
-                            }
-                            $jobCollection->markAsFailed($job->getId(), $e->getMessage(), $metadata);
-                        } catch (NoSuchEntityException $nfe) {
-                            $this->logger->error($nfe, "Failed to mark the job as failed");
-                        }
-                        $this->logger->error($e, "Failed to process customer synchronization job");
-                        continue;
-                    }
-                }
-            }
-        } else {
-            $this->logger->error(new Exception("Invalid job collection type"));
-        }
-
         $checkpointCollection = $this->checkpointCollectionFactory->create();
         if (!($checkpointCollection instanceof CheckpointCollection)) {
             $this->logger->error(new Exception("Invalid checkpoint collection type"));
             return;
+        }
+
+        $now = $this->helper->now();
+
+        $jobCollection = $this->jobCollectionFactory->create();
+
+        if (!($jobCollection instanceof JobCollection)) {
+            $this->logger->error(new Exception("Invalid synchronization job type"));
+            return;
+        }
+        $jobs = $jobCollection->getQueuedJobs(JobCategory::CUSTOMER);
+        if (empty($jobs)) {
+            $this->logger->debug("No customer sync job was queued");
+        } else {
+            foreach ($jobs as $job) {
+                $jobId = $job->getId();
+                $this->logger->info(sprintf('Processing customer synchronization job ID %s', $jobId));
+                try {
+                    $scope = $this->scopeManager->initialiseScope($job->getScopeType(), $job->getScopeId());
+                    if (!$scope->isConnected()) {
+                        $this->logger->warn("Job scope is not connected to Autopilot", $scope->toArray());
+                        $jobCollection->markAsFailed($jobId, "Not connected to Autopilot");
+                        continue;
+                    }
+                    $jobCollection->markAsInProgress($jobId);
+                    $result = $this->exportAllCustomers($scope, $jobCollection, $jobId);
+                    $processedScopes[] = $scope;
+                    $jobCollection->markAsDone($jobId, $result->toJSON());
+                    $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $now, $scope);
+                    $total = $result->getContactsTotal();
+                    if ($total > 0) {
+                        $this->logger->info(
+                            sprintf(
+                                "%d customer(s) have been manually exported. Checkpoint's been updated to %s.",
+                                $total,
+                                $now->format(Config::DATE_TIME_FORMAT)
+                            ),
+                            $scope->toArray()
+                        );
+                    }
+                } catch (Exception $e) {
+                    try {
+                        $metadata = "";
+                        if (!empty($result)) {
+                            $metadata = $result->toJSON();
+                        }
+                        $jobCollection->markAsFailed($job->getId(), $e->getMessage(), $metadata);
+                    } catch (NoSuchEntityException $nfe) {
+                        $this->logger->error($nfe, "Failed to mark the job as failed");
+                    }
+                    $this->logger->error($e, "Failed to process customer synchronization job");
+                    continue;
+                }
+            }
         }
 
         $scopes = $this->scopeManager->getActiveScopes();
@@ -141,18 +169,20 @@ class SyncCustomers
             }
 
             try {
-                $this->logger->debug("Checking customer export checkpoint", $scope->toArray());
-                $checkpoint = $checkpointCollection->getCheckpoint(JobCategory::CUSTOMER, $scope);
-                $total = $this->exportUpdatedCustomers($scope, $checkpoint->getCheckedAt());
-                $checkpoint = $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $scope);
-                $this->logger->debug(
-                    sprintf(
-                        "%d customer(s) exported. Checkpoint has been updated to %s",
-                        $total,
-                        $checkpoint->getCheckedAt()->format(Config::DATE_TIME_FORMAT)
-                    ),
-                    $scope->toArray()
-                );
+                $this->logger->info("Checking customer export checkpoint", $scope->toArray());
+                $customerCheckpoint = $checkpointCollection->getCheckpoint(JobCategory::CUSTOMER, $scope);
+                $total = $this->exportUpdatedCustomers($scope, $customerCheckpoint->getCheckedAt());
+                $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $now, $scope);
+                if ($total > 0) {
+                    $this->logger->info(
+                        sprintf(
+                            "%d customer(s) exported. Checkpoint's been updated to %s.",
+                            $total,
+                            $now->format(Config::DATE_TIME_FORMAT)
+                        ),
+                        $scope->toArray()
+                    );
+                }
             } catch (Exception $e) {
                 $this->logger->error($e, sprintf("Failed to export %s customers", $scope->toString()));
             }
@@ -161,7 +191,7 @@ class SyncCustomers
 
     /**
      * @return ImportContactResponse
-     * @throws JsonException|AutopilotException|NoSuchEntityException
+     * @throws JsonException|AutopilotException|NoSuchEntityException|LocalizedException
      */
     private function exportAllCustomers(Scope $scope, JobCollection $jobCollection, int $jobId)
     {
@@ -170,41 +200,98 @@ class SyncCustomers
         do {
             $job = $jobCollection->getJobById($jobId);
             if ($job->getStatus() !== Status::IN_PROGRESS) {
-                throw new NoSuchEntityException(new Phrase("Job status changed"));
+                throw new NoSuchEntityException(new Phrase("Customer synchronization job status changed (ID: $jobId)"));
             }
 
-            $result = $this->customerReader->getScopeCustomers($scope, $page);
-            $customers = $result->getCustomers();
+            $result = $this->customerRepository->getList($this->buildCustomerSearchCriteria($page, $scope));
+            $customers = $result->getItems();
+            $pageSize = 0;
             if (!empty($customers)) {
+                $pageSize = count($customers);
                 $importResult = $this->autopilotClient->importContacts($scope, $customers);
                 $total->incr($importResult);
-                $page = $result->getCurrentPage() + 1;
-                $jobCollection->updateStats($jobId, $result->getTotal(), count($customers), $total->toJSON());
+                ++$page;
+                $contacts = $importResult->getContacts();
+                if (!empty($contacts)) {
+                    $this->updateCustomerAttributes($customers, $contacts);
+                }
+                $jobCollection->updateStats($jobId, $result->getTotalCount(), $pageSize, $total->toJSON());
             }
-        } while ($result->hasMore());
+        } while ($pageSize === self::PAGE_SIZE);
         return $total;
     }
 
     /**
      * @param Scope $scope
-     * @param ?DateTime $lastCheckedAt
+     * @param ?DateTime $checkpoint
      * @return int
      * @throws AutopilotException
-     * @throws JsonException
+     * @throws JsonException|LocalizedException
      */
-    private function exportUpdatedCustomers(Scope $scope, ?DateTime $lastCheckedAt): int
-    {
+    private function exportUpdatedCustomers(
+        Scope $scope,
+        ?DateTime $checkpoint = null
+    ): int {
         $page = 1;
         $total = 0;
         do {
-            $result = $this->customerReader->getScopeCustomers($scope, $page, $lastCheckedAt);
-            $customers = $result->getCustomers();
+            $searchCriteria = $this->buildCustomerSearchCriteria($page, $scope, $checkpoint);
+            $result = $this->customerRepository->getList($searchCriteria);
+            $customers = $result->getItems();
+            $pageSize = 0;
             if (!empty($customers)) {
-                $total += count($customers);
-                $this->autopilotClient->importContacts($scope, $customers);
-                $page = $result->getCurrentPage() + 1;
+                $pageSize = count($customers);
+                $importResult = $this->autopilotClient->importContacts($scope, $customers);
+                $total += $importResult->getContactsTotal();
+                ++$page;
+                $contacts = $importResult->getContacts();
+                if (!empty($contacts)) {
+                    $this->updateCustomerAttributes($customers, $contacts);
+                }
             }
-        } while ($result->hasMore());
+        } while ($pageSize === self::PAGE_SIZE);
         return $total;
+    }
+
+    private function buildCustomerSearchCriteria(int $page, Scope $scope, ?DateTime $checkpoint = null)
+    {
+        if ($page < 1) {
+            $page = 1;
+        }
+        $this->searchCriteriaBuilder
+            ->setPageSize(self::PAGE_SIZE)
+            ->setCurrentPage($page);
+
+        if ($scope->getType() === ScopeInterface::SCOPE_WEBSITE) {
+            $this->searchCriteriaBuilder->addFilter(CustomerInterface::WEBSITE_ID, $scope->getId());
+        } else {
+            $this->searchCriteriaBuilder->addFilter(CustomerInterface::STORE_ID, $scope->getId());
+            $this->searchCriteriaBuilder->addFilter(CustomerInterface::WEBSITE_ID, $scope->getWebsiteId());
+        }
+
+        if (!empty($checkpoint)) {
+            $this->searchCriteriaBuilder->addFilter(CustomerInterface::UPDATED_AT, $checkpoint, "gt");
+        }
+
+        return $this->searchCriteriaBuilder->create();
+    }
+
+    /**
+     * @param array $customers
+     * @param array $contacts
+     * @return void
+     * @throws InputException|InputMismatchException|LocalizedException
+     */
+    private function updateCustomerAttributes(array $customers, array $contacts): void
+    {
+        foreach ($customers as $customer) {
+            $contactId = $contacts[$customer->getId()];
+            if (isset($contactId)) {
+                $attributes = $customer->getExtensionAttributes();
+                $attributes->setAutopilotContactId($contactId);
+                $customer->setExtensionAttributes($attributes);
+                $this->customerRepository->save($customer);
+            }
+        }
     }
 }

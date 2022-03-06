@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Model;
 
 use Autopilot\AP3Connector\Api\Data\SyncJobInterface;
+use Autopilot\AP3Connector\Api\SchemaInterface;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob as ResourceModel;
-use Autopilot\AP3Connector\Setup\SchemaInterface;
 use DateTime;
 use Magento\Framework\DataObject\IdentityInterface;
 use Magento\Framework\Model\AbstractModel;
@@ -37,7 +37,7 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
      */
     public function getId()
     {
-        return $this->getData(self::ID);
+        return (int)$this->getData(self::ID);
     }
 
     /**
@@ -85,7 +85,7 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
      */
     public function getScopeId()
     {
-        return $this->getData(self::SCOPE_ID);
+        return (int)$this->getData(self::SCOPE_ID);
     }
 
     /**

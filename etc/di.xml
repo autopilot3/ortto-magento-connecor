@@ -14,27 +14,32 @@
             <argument name="logger" xsi:type="object">AutopilotLogger</argument>
         </arguments>
     </type>
-    <type name="Autopilot\AP3Connector\Api\AutopilotClient">
+    <type name="Autopilot\AP3Connector\Service\AutopilotClient">
         <arguments>
             <argument name="curl" xsi:type="object">Magento\Framework\HTTP\Client\Curl</argument>
         </arguments>
     </type>
+    <type name="Magento\Customer\Api\CustomerRepositoryInterface">
+        <plugin name="customer_attributes_plugin" type="Autopilot\AP3Connector\Plugin\CustomerRepositoryPlugin"/>
+    </type>
+    <type name="Magento\Customer\Api\Data\CustomerInterface">
+        <plugin name="customer_attributes_loader_plugin"
+                type="Autopilot\AP3Connector\Plugin\LoadCustomerAttributesPlugin"/>
+    </type>
     <preference for="Autopilot\AP3Connector\Logger\AutopilotLoggerInterface"
                 type="Autopilot\AP3Connector\Logger\Logger"/>
     <preference for="Autopilot\AP3Connector\Api\CouponRepositoryInterface"
-                type="Autopilot\AP3Connector\Api\CouponRepository"/>
+                type="Autopilot\AP3Connector\Model\ResourceModel\CouponRepository"/>
     <preference for="Autopilot\AP3Connector\Api\Data\CouponInterface"
                 type="Autopilot\AP3Connector\Model\Data\Coupon"/>
     <preference for="Autopilot\AP3Connector\Api\ScopeManagerInterface"
-                type="Autopilot\AP3Connector\Helper\ScopeManager"/>
+                type="Autopilot\AP3Connector\Service\ScopeManager"/>
     <preference for="Autopilot\AP3Connector\Api\AutopilotClientInterface"
-                type="Autopilot\AP3Connector\Api\AutopilotClient"/>
-    <preference for="Autopilot\AP3Connector\Api\ConfigScopeInterface"
-                type="Autopilot\AP3Connector\Model\Scope"/>
+                type="Autopilot\AP3Connector\Service\AutopilotClient"/>
+    <preference for="Autopilot\AP3Connector\Api\ConfigurationReaderInterface"
+                type="Autopilot\AP3Connector\Service\ConfigurationReader"/>
     <preference for="Autopilot\AP3Connector\Api\Data\SyncJobInterface"
                 type="Autopilot\AP3Connector\Model\SyncJob"/>
     <preference for="Autopilot\AP3Connector\Api\Data\CronCheckpointInterface"
                 type="Autopilot\AP3Connector\Model\CronCheckpoint"/>
-    <preference for="Autopilot\AP3Connector\Api\CustomerReaderInterface"
-                type="Autopilot\AP3Connector\Api\CustomerReader"/>
 </config>
