@@ -19,10 +19,11 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Newsletter\Model\Subscriber;
+use Magento\Sales\Api\Data\OrderAddressInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
-use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
+use Magento\Sales\Model\Order;
 
 class Data extends AbstractHelper
 {
@@ -100,15 +101,15 @@ class Data extends AbstractHelper
         }
         $data = [
             'id' => (int)$customer->getId(),
-            'prefix' => $customer->getPrefix(),
-            'first_name' => $customer->getFirstname(),
-            'middle_name' => $customer->getMiddlename(),
-            'last_name' => $customer->getLastname(),
-            'suffix' => $customer->getSuffix(),
-            'email' => $customer->getEmail(),
+            'prefix' => (string)$customer->getPrefix(),
+            'first_name' => (string)$customer->getFirstname(),
+            'middle_name' => (string)$customer->getMiddlename(),
+            'last_name' => (string)$customer->getLastname(),
+            'suffix' => (string)$customer->getSuffix(),
+            'email' => (string)$customer->getEmail(),
             'created_at' => $this->formatDate($customer->getCreatedAt()),
             'updated_at' => $this->formatDate($customer->getUpdatedAt()),
-            'created_in' => $customer->getCreatedIn(),
+            'created_in' => (string)$customer->getCreatedIn(),
             'dob' => $this->formatDate($customer->getDob()),
             'is_subscribed' => $isSubscribed,
         ];
@@ -182,76 +183,92 @@ class Data extends AbstractHelper
         $result = [];
         foreach ($orders as $order) {
             $orderData = [
-                'id' => $order->getEntityId(),
-                'status' => $order->getStatus(),
+                'id' => (int)$order->getEntityId(),
+                'is_virtual' => (bool)$order->getIsVirtual(),
+                'status' => (string)$order->getStatus(),
                 'created_at' => $this->formatDate($order->getCreatedAt()),
                 'updated_at' => $this->formatDate($order->getUpdatedAt()),
                 'ip_address' => $order->getRemoteIp(),
-                'total_canceled' => $order->getTotalCanceled(),
-                'total_due' => $order->getTotalDue(),
-                'total_invoiced' => $order->getTotalInvoiced(),
-                'total_offline_refunded' => $order->getTotalOfflineRefunded(),
-                'total_online_refunded' => $order->getTotalOnlineRefunded(),
-                'grand_total' => $order->getGrandTotal(),
-                'subtotal' => $order->getSubtotal(),
-                'total_paid' => $order->getTotalPaid(),
-                'base_total_canceled' => $order->getBaseTotalCanceled(),
-                'base_total_due' => $order->getBaseTotalDue(),
-                'base_total_invoiced' => $order->getBaseTotalInvoiced(),
-                'base_total_offline_refunded' => $order->getBaseTotalOfflineRefunded(),
-                'base_total_online_refunded' => $order->getBaseTotalOnlineRefunded(),
-                'base_grand_total' => $order->getBaseGrandTotal(),
-                'base_total_paid' => $order->getBaseTotalPaid(),
-                'base_currency_code' => $order->getBaseCurrencyCode(),
-                'global_currency_code' => $order->getGlobalCurrencyCode(),
-                'order_currency_code' => $order->getOrderCurrencyCode(),
-                'shipping_amount' => $order->getShippingAmount(),
-                'shipping_tax_amount' => $order->getShippingTaxAmount(),
-                'shipping_incl_tax' => $order->getShippingInclTax(),
-                'shipping_invoiced' => $order->getShippingInvoiced(),
-                'shipping_refunded' => $order->getShippingRefunded(),
-                'shipping_canceled' => $order->getShippingCanceled(),
-                'payment_authorization_amount' => $order->getPaymentAuthorizationAmount(),
-                'payment' => $this->getPaymentFields($order->getPayment()),
-                'shipping_description' => $order->getShippingDescription(),
+                'total_canceled' => (float)$order->getTotalCanceled(),
+                'total_due' => (float)$order->getTotalDue(),
+                'total_invoiced' => (float)$order->getTotalInvoiced(),
+                'total_offline_refunded' => (float)$order->getTotalOfflineRefunded(),
+                'total_online_refunded' => (float)$order->getTotalOnlineRefunded(),
+                'grand_total' => (float)$order->getGrandTotal(),
+                'subtotal' => (float)$order->getSubtotal(),
+                'total_paid' => (float)$order->getTotalPaid(),
+                'base_total_canceled' => (float)$order->getBaseTotalCanceled(),
+                'base_total_due' => (float)$order->getBaseTotalDue(),
+                'base_total_invoiced' => (float)$order->getBaseTotalInvoiced(),
+                'base_total_offline_refunded' => (float)$order->getBaseTotalOfflineRefunded(),
+                'base_total_online_refunded' => (float)$order->getBaseTotalOnlineRefunded(),
+                'base_grand_total' => (float)$order->getBaseGrandTotal(),
+                'base_total_paid' => (float)$order->getBaseTotalPaid(),
+                'base_currency_code' => (string)$order->getBaseCurrencyCode(),
+                'global_currency_code' => (string)$order->getGlobalCurrencyCode(),
+                'order_currency_code' => (string)$order->getOrderCurrencyCode(),
+                'shipping_amount' => (float)$order->getShippingAmount(),
+                'base_shipping_amount' => (float)$order->getBaseShippingAmount(),
+                'shipping_tax_amount' => (float)$order->getShippingTaxAmount(),
+                'base_shipping_tax_amount' => (float)$order->getBaseShippingTaxAmount(),
+                'shipping_incl_tax' => (float)$order->getShippingInclTax(),
+                'base_shipping_incl_tax' => (float)$order->getBaseShippingInclTax(),
+                'shipping_invoiced' => (float)$order->getShippingInvoiced(),
+                'base_shipping_invoiced' => (float)$order->getBaseShippingInvoiced(),
+                'shipping_refunded' => (float)$order->getShippingRefunded(),
+                'base_shipping_refunded' => (float)$order->getBaseShippingRefunded(),
+                'shipping_canceled' => (float)$order->getShippingCanceled(),
+                'base_shipping_canceled' => (float)$order->getBaseShippingCanceled(),
+                'tax_amount' => (float)$order->getTaxAmount(),
+                'base_tax_amount' => (float)$order->getBaseTaxAmount(),
+                'tax_cancelled' => (float)$order->getTaxCanceled(),
+                'base_tax_cancelled' => (float)$order->getBaseTaxCanceled(),
+                'tax_invoiced' => (float)$order->getTaxInvoiced(),
+                'base_tax_invoiced' => (float)$order->getBaseTaxInvoiced(),
+                'tax_refunded' => (float)$order->getTaxRefunded(),
+                'base_tax_refunded' => (float)$order->getBaseTaxRefunded(),
+                'subtotal_incl_tax' => (float)$order->getSubtotalInclTax(),
+                'discount_amount' => (float)$order->getDiscountAmount(),
+                'base_discount_amount' => (float)$order->getBaseDiscountAmount(),
+                'discount_refunded' => (float)$order->getDiscountRefunded(),
+                'base_discount_refunded' => (float)$order->getBaseDiscountRefunded(),
+                'discount_cancelled' => (float)$order->getDiscountCanceled(),
+                'base_discount_cancelled' => (float)$order->getBaseDiscountCanceled(),
+                'discount_invoiced' => (float)$order->getDiscountInvoiced(),
+                'base_discount_invoiced' => (float)$order->getBaseDiscountInvoiced(),
+                'base_discount_description' => (string)$order->getDiscountDescription(),
+                'shipping_discount' => (float)$order->getShippingDiscountAmount(),
+                'base_shipping_discount' => (float)$order->getBaseShippingDiscountAmount(),
+                'coupon_code' => (string)$order->getCouponCode(),
+                'protect_code' => (string)$order->getProtectCode(),
                 'items' => $this->getOrderItemFields($order->getItems()),
             ];
 
+            $payment = $order->getPayment();
+            if ($payment !== null) {
+                $orderData['payment_method'] = (string)$payment->getMethod();
+                $orderData['last_transaction_id'] = (string)$payment->getLastTransId();
+            }
+
+            if ($order instanceof Order) {
+                $addresses = $order->getAddresses();
+                foreach ($addresses as $address) {
+                    switch ($address->getAddressType()) {
+                        case "shipping":
+                            if (!$order->getIsVirtual()) {
+                                $orderData["shipping_address"] = $this->getOrderAddressFields($address);
+                            }
+                            break;
+                        case "billing":
+                            $orderData["billing_address"] = $this->getOrderAddressFields($address);
+                            break;
+                    }
+
+                }
+            }
             $result[] = $orderData;
         }
         return $result;
-    }
-
-    /**
-     * @param OrderPaymentInterface $payment
-     * @return array
-     */
-    private function getPaymentFields(OrderPaymentInterface $payment): array
-    {
-        if (empty($payment)) {
-            return [];
-        }
-        return [
-            'method' => $payment->getMethod(),
-            'additional_data' => $payment->getAdditionalData(),
-            'account_status' => $payment->getAccountStatus(),
-            'amount_paid' => $payment->getAmountPaid(),
-            'amount_refunded' => $payment->getAmountRefunded(),
-            'amount_ordered' => $payment->getAmountOrdered(),
-            'address_status' => $payment->getAddressStatus(),
-            'amount_authorized' => $payment->getAmountAuthorized(),
-            'anet_trans_method' => $payment->getAnetTransMethod(),
-            'cc_last_4' => $payment->getCcLast4(),
-            'cc_owner' => $payment->getCcOwner(),
-            'cc_transaction_id' => $payment->getCcTransId(),
-            'cc_type' => $payment->getCcType(),
-            'last_transaction_id' => $payment->getLastTransId(),
-            'po_number' => $payment->getPoNumber(),
-            'e_check_account_name' => $payment->getEcheckAccountName(),
-            'e_check_account_type' => $payment->getEcheckAccountType(),
-            'e_check_bank_name' => $payment->getEcheckBankName(),
-            'e_check_type' => $payment->getEcheckType(),
-        ];
     }
 
     /**
@@ -266,62 +283,68 @@ class Data extends AbstractHelper
         $result = [];
         foreach ($items as $item) {
             $result[] = [
-                'name' => $item->getName(),
-                'description' => $item->getDescription(),
+                'name' => (string)$item->getName(),
+                'description' => (string)$item->getDescription(),
                 'created_at' => $this->formatDate($item->getCreatedAt()),
                 'updated_at' => $this->formatDate($item->getUpdatedAt()),
-                'amount_refunded' => $item->getAmountRefunded(),
-                'base_amount_refunded' => $item->getBaseAmountRefunded(),
-                'base_cost' => $item->getBaseCost(),
-                'additional_data' => $item->getAdditionalData(),
-                'base_discount' => $item->getBaseDiscountAmount(),
-                'discount_percent' => $item->getDiscountPercent(),
-                'discount_invoiced' => $item->getDiscountInvoiced(),
-                'discount_refunded' => $item->getDiscountRefunded(),
-                'base_discount_invoiced' => $item->getBaseDiscountInvoiced(),
-                'base_discount_amount' => $item->getBaseDiscountAmount(),
-                'base_discount_refunded' => $item->getBaseDiscountRefunded(),
-                'price' => $item->getPrice(),
-                'base_price' => $item->getBasePrice(),
-                'original_price' => $item->getOriginalPrice(),
-                'base_original_price' => $item->getBaseOriginalPrice(),
-                'product_type' => $item->getProductType(),
-                'qty_ordered' => $item->getQtyOrdered(),
-                'qty_back_ordered' => $item->getQtyBackordered(),
-                'qty_refunded' => $item->getQtyRefunded(),
-                'qty_returned' => $item->getQtyReturned(),
-                'qty_canceled' => $item->getQtyCanceled(),
-                'qty_shipped' => $item->getQtyShipped(),
-                'gty_invoiced' => $item->getQtyInvoiced(),
-                'total' => $item->getRowTotal(),
-                'sku' => $item->getSku(),
-                'tax_amount' => $item->getTaxAmount(),
-                'tax_percent' => $item->getTaxPercent(),
+                'amount_refunded' => (float)$item->getAmountRefunded(),
+                'base_amount_refunded' => (float)$item->getBaseAmountRefunded(),
+                'base_cost' => (float)$item->getBaseCost(),
+                'additional_data' => (string)$item->getAdditionalData(),
+                'base_discount' => (float)$item->getBaseDiscountAmount(),
+                'discount_percent' => (float)$item->getDiscountPercent(),
+                'discount_invoiced' => (float)$item->getDiscountInvoiced(),
+                'discount_refunded' => (float)$item->getDiscountRefunded(),
+                'base_discount_invoiced' => (float)$item->getBaseDiscountInvoiced(),
+                'base_discount_amount' => (float)$item->getBaseDiscountAmount(),
+                'base_discount_refunded' => (float)$item->getBaseDiscountRefunded(),
+                'price' => (float)$item->getPrice(),
+                'base_price' => (float)$item->getBasePrice(),
+                'original_price' => (float)$item->getOriginalPrice(),
+                'base_original_price' => (float)$item->getBaseOriginalPrice(),
+                'product_type' => (string)$item->getProductType(),
+                'qty_ordered' => (float)$item->getQtyOrdered(),
+                'qty_back_ordered' => (float)$item->getQtyBackordered(),
+                'qty_refunded' => (float)$item->getQtyRefunded(),
+                'qty_returned' => (float)$item->getQtyReturned(),
+                'qty_canceled' => (float)$item->getQtyCanceled(),
+                'qty_shipped' => (float)$item->getQtyShipped(),
+                'gty_invoiced' => (float)$item->getQtyInvoiced(),
+                'total' => (float)$item->getRowTotal(),
+                'sku' => (string)$item->getSku(),
+                'tax_amount' => (float)$item->getTaxAmount(),
+                'tax_percent' => (float)$item->getTaxPercent(),
             ];
         }
         return $result;
     }
 
-    private function getAddressFields(AddressInterface $address): array
+    /**
+     * @param OrderAddressInterface $address
+     * @return array
+     */
+    private function getOrderAddressFields(OrderAddressInterface $address): array
     {
         $data = [
-            'city' => $address->getCity(),
+            'city' => (string)$address->getCity(),
             'street_lines' => $address->getStreet(),
-            'post_code' => $address->getPostcode(),
-            'prefix' => $address->getPrefix(),
-            'first_name' => $address->getFirstname(),
-            'middle_name' => $address->getMiddlename(),
-            'last_name' => $address->getLastname(),
-            'suffix' => $address->getSuffix(),
-            'company' => $address->getCompany(),
-            'vat' => $address->getVatId(),
+            'post_code' => (string)$address->getPostcode(),
+            'prefix' => (string)$address->getPrefix(),
+            'first_name' => (string)$address->getFirstname(),
+            'middle_name' => (string)$address->getMiddlename(),
+            'last_name' => (string)$address->getLastname(),
+            'suffix' => (string)$address->getSuffix(),
+            'company' => (string)$address->getCompany(),
+            'vat' => (string)$address->getVatId(),
+            'phone' => (string)$address->getTelephone(),
+            'fax' => (string)$address->getFax(),
         ];
 
         $region = $address->getRegion();
         if ($region instanceof RegionInterface) {
             $data['region'] = [
-                'code' => $region->getRegionCode(),
-                'name' => $region->getRegion(),
+                'code' => (string)$region->getRegionCode(),
+                'name' => (string)$region->getRegion(),
             ];
         }
 
@@ -329,10 +352,56 @@ class Data extends AbstractHelper
             $country = $this->countryRepository->getCountryInfo($address->getCountryId());
             if (!empty($country)) {
                 $data['country'] = [
-                    'name_en' => $country->getFullNameEnglish(),
-                    'name_local' => $country->getFullNameLocale(),
-                    'abbr2' => $country->getTwoLetterAbbreviation(),
-                    'abbr3' => $country->getThreeLetterAbbreviation(),
+                    'name_en' => (string)$country->getFullNameEnglish(),
+                    'name_local' => (string)$country->getFullNameLocale(),
+                    'abbr2' => (string)$country->getTwoLetterAbbreviation(),
+                    'abbr3' => (string)$country->getThreeLetterAbbreviation(),
+                ];
+            }
+        } catch (NoSuchEntityException $e) {
+            $this->logger->error($e, 'Failed to fetch country details');
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param AddressInterface $address
+     * @return array
+     */
+    private function getAddressFields(AddressInterface $address): array
+    {
+        $data = [
+            'city' => (string)$address->getCity(),
+            'street_lines' => $address->getStreet(),
+            'post_code' => (string)$address->getPostcode(),
+            'prefix' => (string)$address->getPrefix(),
+            'first_name' => (string)$address->getFirstname(),
+            'middle_name' => (string)$address->getMiddlename(),
+            'last_name' => (string)$address->getLastname(),
+            'suffix' => (string)$address->getSuffix(),
+            'company' => (string)$address->getCompany(),
+            'vat' => (string)$address->getVatId(),
+            'phone' => (string)$address->getTelephone(),
+            'fax' => (string)$address->getFax(),
+        ];
+
+        $region = $address->getRegion();
+        if ($region instanceof RegionInterface) {
+            $data['region'] = [
+                'code' => (string)$region->getRegionCode(),
+                'name' => (string)$region->getRegion(),
+            ];
+        }
+
+        try {
+            $country = $this->countryRepository->getCountryInfo($address->getCountryId());
+            if (!empty($country)) {
+                $data['country'] = [
+                    'name_en' => (string)$country->getFullNameEnglish(),
+                    'name_local' => (string)$country->getFullNameLocale(),
+                    'abbr2' => (string)$country->getTwoLetterAbbreviation(),
+                    'abbr3' => (string)$country->getThreeLetterAbbreviation(),
                 ];
             }
         } catch (NoSuchEntityException $e) {
