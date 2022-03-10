@@ -16,6 +16,7 @@ class Config extends AbstractHelper
 
     const XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED = "ap_sync/customer/auto_sync_enabled";
     const XML_PATH_SYNC_CUSTOMER_NON_SUBSCRIBED_ENABLED = "ap_sync/customer/non_subscribed_enabled";
+    const XML_PATH_SYNC_ANONYMOUS_ORDERS_ENABLED = "ap_sync/order/anonymous_enabled";
 
     // "2006-01-02T15:04:05Z07:00"
     const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';

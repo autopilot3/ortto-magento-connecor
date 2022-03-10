@@ -4,13 +4,14 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Cron;
 
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
+use Autopilot\AP3Connector\Api\ImportResponseInterface;
 use Autopilot\AP3Connector\Api\JobCategoryInterface as JobCategory;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
-use Autopilot\AP3Connector\Model\ImportContactResponse;
+use Autopilot\AP3Connector\Model\ImportResponse;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
 use AutoPilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
@@ -24,14 +25,10 @@ use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Encryption\EncryptorInterface;
-use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Exception\State\InputMismatchException;
 use Magento\Framework\Phrase;
 use Magento\Store\Model\ScopeInterface;
-use Magento\Store\Model\StoreManagerInterface;
 
 class SyncCustomers
 {
@@ -40,9 +37,6 @@ class SyncCustomers
     private JobCollectionFactory $jobCollectionFactory;
     private CheckpointCollectionFactory $checkpointCollectionFactory;
     private ScopeManagerInterface $scopeManager;
-    private EncryptorInterface $encryptor;
-    private ScopeConfigInterface $scopeConfig;
-    private StoreManagerInterface $storeManager;
     private Data $helper;
     private SearchCriteriaBuilder $searchCriteriaBuilder;
     private CustomerRepositoryInterface $customerRepository;
@@ -55,9 +49,6 @@ class SyncCustomers
         JobCollectionFactory $jobCollectionFactory,
         CheckpointCollectionFactory $checkpointCollectionFactory,
         ScopeManagerInterface $scopeManager,
-        EncryptorInterface $encryptor,
-        ScopeConfigInterface $scopeConfig,
-        StoreManagerInterface $storeManager,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         CustomerRepositoryInterface $customerRepository,
         Data $helper
@@ -66,9 +57,6 @@ class SyncCustomers
         $this->autopilotClient = $autopilotClient;
         $this->jobCollectionFactory = $jobCollectionFactory;
         $this->scopeManager = $scopeManager;
-        $this->encryptor = $encryptor;
-        $this->scopeConfig = $scopeConfig;
-        $this->storeManager = $storeManager;
         $this->checkpointCollectionFactory = $checkpointCollectionFactory;
         $this->helper = $helper;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
@@ -120,7 +108,7 @@ class SyncCustomers
                     $processedScopes[] = $scope;
                     $jobCollection->markAsDone($jobId, $result->toJSON());
                     $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $now, $scope);
-                    $total = $result->getContactsTotal();
+                    $total = $result->getUpdatedTotal() + $result->getCreatedTotal();
                     if ($total > 0) {
                         $this->logger->info(
                             sprintf(
@@ -190,13 +178,13 @@ class SyncCustomers
     }
 
     /**
-     * @return ImportContactResponse
+     * @return ImportResponseInterface
      * @throws JsonException|AutopilotException|NoSuchEntityException|LocalizedException
      */
     private function exportAllCustomers(Scope $scope, JobCollection $jobCollection, int $jobId)
     {
         $page = 1;
-        $total = new ImportContactResponse();
+        $total = new ImportResponse();
         do {
             $job = $jobCollection->getJobById($jobId);
             if ($job->getStatus() !== Status::IN_PROGRESS) {
@@ -211,10 +199,6 @@ class SyncCustomers
                 $importResult = $this->autopilotClient->importContacts($scope, $customers);
                 $total->incr($importResult);
                 ++$page;
-                $contacts = $importResult->getContacts();
-                if (!empty($contacts)) {
-                    $this->updateCustomerAttributes($customers, $contacts);
-                }
                 $jobCollection->updateStats($jobId, $result->getTotalCount(), $pageSize, $total->toJSON());
             }
         } while ($pageSize === self::PAGE_SIZE);
@@ -242,12 +226,8 @@ class SyncCustomers
             if (!empty($customers)) {
                 $pageSize = count($customers);
                 $importResult = $this->autopilotClient->importContacts($scope, $customers);
-                $total += $importResult->getContactsTotal();
+                $total += $importResult->getCreatedTotal() + $importResult->getUpdatedTotal();
                 ++$page;
-                $contacts = $importResult->getContacts();
-                if (!empty($contacts)) {
-                    $this->updateCustomerAttributes($customers, $contacts);
-                }
             }
         } while ($pageSize === self::PAGE_SIZE);
         return $total;
@@ -274,24 +254,5 @@ class SyncCustomers
         }
 
         return $this->searchCriteriaBuilder->create();
-    }
-
-    /**
-     * @param array $customers
-     * @param array $contacts
-     * @return void
-     * @throws InputException|InputMismatchException|LocalizedException
-     */
-    private function updateCustomerAttributes(array $customers, array $contacts): void
-    {
-        foreach ($customers as $customer) {
-            $contactId = $contacts[$customer->getId()];
-            if (isset($contactId)) {
-                $attributes = $customer->getExtensionAttributes();
-                $attributes->setAutopilotContactId($contactId);
-                $customer->setExtensionAttributes($attributes);
-                $this->customerRepository->save($customer);
-            }
-        }
     }
 }

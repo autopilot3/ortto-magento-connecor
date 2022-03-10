@@ -29,6 +29,13 @@ interface ConfigurationReaderInterface
     /**
      * @param string $scopeType
      * @param int $scopeId
+     * @return bool
+     */
+    public function isAnonymousOrderSyncEnabled(string $scopeType, int $scopeId): bool;
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
      * @return string
      */
     public function getAPIKey(string $scopeType, int $scopeId): string;

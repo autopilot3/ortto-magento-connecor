@@ -57,7 +57,7 @@
                 <field id="non_subscribed_enabled" translate="label" sortOrder="1" type="select" showInDefault="0"
                        showInWebsite="1"
                        showInStore="1">
-                    <label>Sync non-subscribed contacts</label>
+                    <label>Sync Non-subscribed Contacts</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="auto_sync_enabled" translate="label" sortOrder="2" type="select" showInDefault="0"
@@ -74,9 +74,14 @@
             <group id="order" translate="label" sortOrder="3" showInDefault="0" showInWebsite="1"
                    showInStore="1">
                 <label>Orders</label>
-                <field id="auto_sync_enabled" translate="label" sortOrder="2" type="select" showInDefault="0"
+                <field id="auto_sync_enabled" translate="label" sortOrder="1" type="select" showInDefault="0"
                        showInWebsite="1" showInStore="1">
                     <label>Automatic Sync</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <field id="anonymous_enabled" translate="label" sortOrder="2" type="select" showInDefault="0"
+                       showInWebsite="1" showInStore="1">
+                    <label>Sync Anonymous Orders</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
                 <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
