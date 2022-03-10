@@ -93,4 +93,16 @@ class ConfigurationReader implements ConfigurationReaderInterface
         $this->accessToken = $this->encryptor->decrypt($encrypted);
         return $this->accessToken;
     }
+
+    /**
+     * @inheirtDoc
+     */
+    public function isAnonymousOrderSyncEnabled(string $scopeType, int $scopeId): bool
+    {
+        return (bool)$this->scopeConfig->getValue(
+            Config::XML_PATH_SYNC_ANONYMOUS_ORDERS_ENABLED,
+            $scopeType,
+            $scopeId
+        );
+    }
 }

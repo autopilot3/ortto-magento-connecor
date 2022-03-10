@@ -10,14 +10,15 @@ use Autopilot\AP3Connector\Api\RoutesInterface;
 use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
-use Autopilot\AP3Connector\Model\ImportContactResponse;
-use Autopilot\AP3Connector\Model\ImportOrderResponse;
+use Autopilot\AP3Connector\Model\ImportResponse;
 use Exception;
 use JsonException;
 use Magento\Framework\HTTP\ClientInterface;
 
 class AutopilotClient implements AutopilotClientInterface
 {
+    private const CUSTOMERS = 'customers';
+
     private ClientInterface $curl;
     private Data $helper;
 
@@ -54,15 +55,14 @@ class AutopilotClient implements AutopilotClientInterface
             if (empty($data)) {
                 continue;
             }
-            $data['scope'] = $scope->toArray();
             $payload[] = $data;
         }
         if (empty($payload)) {
             $this->logger->debug("No customer to export");
-            return new ImportContactResponse();
+            return new ImportResponse();
         }
-        $response = $this->postJSON($url, $scope, $payload);
-        return new ImportContactResponse($response);
+        $response = $this->postJSON($url, $scope, [self::CUSTOMERS => $payload]);
+        return new ImportResponse($response);
     }
 
     /**
@@ -71,21 +71,13 @@ class AutopilotClient implements AutopilotClientInterface
     public function importOrders(ConfigScopeInterface $scope, array $orders)
     {
         $url = $this->helper->getAutopilotURL(RoutesInterface::AP_IMPORT_ORDERS);
-        $payload = [];
-        foreach ($orders as $order) {
-            $data = $this->helper->getCustomerOrderFields($order);
-            if (empty($data)) {
-                continue;
-            }
-            $data['scope'] = $scope->toArray();
-            $payload[] = $data;
-        }
+        $payload = $this->helper->getOrdersFields($orders, $scope);
         if (empty($payload)) {
             $this->logger->debug("No order to export");
-            return new ImportOrderResponse();
+            return new ImportResponse();
         }
-        $response = $this->postJSON($url, $scope, $payload);
-        return new ImportOrderResponse($response);
+        $response = $this->postJSON($url, $scope, [self::CUSTOMERS => $payload]);
+        return new ImportResponse($response);
     }
 
     /**
@@ -131,6 +123,7 @@ class AutopilotClient implements AutopilotClientInterface
         $apiKey = $this->config->getAPIKey($scope->getType(), $scope->getId());
         $this->curl->setCredentials($this->helper->getClientId(), $apiKey);
         $this->curl->addHeader("Content-Type", "application/json");
+        $request['scope'] = $scope->toArray();
         $payload = json_encode($request, JSON_THROW_ON_ERROR);
         $this->curl->post($url, $payload);
         $status = $this->curl->getStatus();

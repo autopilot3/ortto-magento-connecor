@@ -5,16 +5,14 @@ namespace Autopilot\AP3Connector\Cron;
 
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\Data\CustomerOrderInterface;
+use Autopilot\AP3Connector\Api\ImportResponseInterface;
 use Autopilot\AP3Connector\Api\JobCategoryInterface as JobCategory;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
-use Autopilot\AP3Connector\Model\CustomerOrder;
-use Autopilot\AP3Connector\Model\ImportOrderResponse;
-use AutoPilot\AP3Connector\Model\ResourceModel\CustomerAttributes\CollectionFactory as CustomerAttrCollectionFactory;
+use Autopilot\AP3Connector\Model\ImportResponse;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
 use AutoPilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
@@ -24,46 +22,31 @@ use DateTime;
 use Exception;
 use Autopilot\AP3Connector\Api\JobStatusInterface as Status;
 use JsonException;
-use Magento\Customer\Api\Data\CustomerInterface;
-use Magento\Customer\Model\ResourceModel\Customer\CollectionFactory as CustomerCollectionFactory;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Api\SortOrderBuilder;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\State\InvalidTransitionException;
-use Magento\Framework\Phrase;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderSearchResultInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Store\Model\StoreManagerInterface;
-use Autopilot\AP3Connector\Model\CustomerOrderFactory;
 
 class SyncOrders
 {
-    private const CUSTOMER_PAGE_SIZE = 100;
-    private const ORDER_PAGE_SIZE = 50;
-    private const ITEMS_KEY = 'items';
-    private const TOTAL_KEY = 'total';
-    private const CUSTOMER_ID = 'entity_id';
+    private const PAGE_SIZE = 100;
 
     private AutopilotLoggerInterface $logger;
     private AutopilotClientInterface $autopilotClient;
     private JobCollectionFactory $jobCollectionFactory;
     private CheckpointCollectionFactory $checkpointCollectionFactory;
     private ScopeManagerInterface $scopeManager;
-    private EncryptorInterface $encryptor;
-    private ScopeConfigInterface $scopeConfig;
-    private StoreManagerInterface $storeManager;
     private Data $helper;
 
     private SearchCriteriaBuilder $searchCriteriaBuilder;
     private OrderRepositoryInterface $orderRepository;
 
-    private CustomerAttrCollectionFactory $attrCollectionFactory;
-    private CustomerCollectionFactory $customerCollectionFactory;
-    private CustomerOrderFactory $customerOrderFactory;
     private SortOrderBuilder $sortOrderBuilder;
 
     public function __construct(
@@ -72,14 +55,8 @@ class SyncOrders
         JobCollectionFactory $jobCollectionFactory,
         CheckpointCollectionFactory $checkpointCollectionFactory,
         ScopeManagerInterface $scopeManager,
-        EncryptorInterface $encryptor,
-        ScopeConfigInterface $scopeConfig,
-        StoreManagerInterface $storeManager,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         OrderRepositoryInterface $orderRepository,
-        CustomerAttrCollectionFactory $attrCollectionFactory,
-        CustomerCollectionFactory $customerCollectionFactory,
-        CustomerOrderFactory $customerOrderFactory,
         SortOrderBuilder $sortOrderBuilder,
         Data $helper
     ) {
@@ -87,16 +64,10 @@ class SyncOrders
         $this->autopilotClient = $autopilotClient;
         $this->jobCollectionFactory = $jobCollectionFactory;
         $this->scopeManager = $scopeManager;
-        $this->encryptor = $encryptor;
-        $this->scopeConfig = $scopeConfig;
-        $this->storeManager = $storeManager;
         $this->checkpointCollectionFactory = $checkpointCollectionFactory;
         $this->helper = $helper;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->orderRepository = $orderRepository;
-        $this->attrCollectionFactory = $attrCollectionFactory;
-        $this->customerCollectionFactory = $customerCollectionFactory;
-        $this->customerOrderFactory = $customerOrderFactory;
         $this->sortOrderBuilder = $sortOrderBuilder;
     }
 
@@ -145,7 +116,7 @@ class SyncOrders
                     $processedScopes[] = $scope;
                     $jobCollection->markAsDone($jobId, $result->toJSON());
                     $checkpointCollection->setCheckpoint(JobCategory::ORDER, $now, $scope);
-                    $total = $result->getOrdersTotal();
+                    $total = $result->getCreatedTotal() + $result->getUpdatedTotal();
                     if ($total > 0) {
                         $this->logger->info(
                             sprintf(
@@ -198,7 +169,7 @@ class SyncOrders
                 $orderCheckpoint = $checkpointCollection->getCheckpoint(JobCategory::ORDER, $scope);
                 $result = $this->exportOrders($scope, null, null, $orderCheckpoint->getCheckedAt());
                 $checkpointCollection->setCheckpoint(JobCategory::ORDER, $now, $scope);
-                $total = $result->getOrdersTotal();
+                $total = $result->getCreatedTotal() + $result->getUpdatedTotal();
                 if ($total > 0) {
                     $this->logger->info(
                         sprintf(
@@ -216,7 +187,7 @@ class SyncOrders
     }
 
     /**
-     * @return ImportOrderResponse
+     * @return ImportResponseInterface
      * @throws Exception|JsonException|AutopilotException|NoSuchEntityException|LocalizedException
      */
     private function exportAllOrders(Scope $scope, JobCollection $jobCollection, int $jobId)
@@ -247,123 +218,57 @@ class SyncOrders
      * @param null $validate
      * @param null $updateState
      * @param DateTime|null $checkpoint
-     * @return ImportOrderResponse
+     * @return ImportResponseInterface
      * @throws AutopilotException|InvalidTransitionException|JsonException|LocalizedException
      */
     private function exportOrders(Scope $scope, $validate = null, $updateState = null, ?DateTime $checkpoint = null)
     {
-        $currentCustomerPage = 1;
-        $total = new ImportOrderResponse();
-        /** @var CustomerOrderInterface[] $toExport */
-        $toExport = [];
+        $page = 1;
+        $total = new ImportResponse();
         do {
             if ($validate !== null && !$validate()) {
                 return $total;
             }
-            $customersResult = $this->getCustomers($currentCustomerPage);
-            /** @var int $customersTotal */
-            $customersTotal = $customersResult[self::TOTAL_KEY];
-            /** @var CustomerInterface[] $customers */
-            $customers = $customersResult[self::ITEMS_KEY];
-            $customerPageSize = 0;
-            if (empty($customers)) {
-                break;
+            $result = $this->getOrders($page, $scope, $checkpoint);
+            $pageSize = 0;
+            if (!empty($result)) {
+                $orders = $result->getItems();
+                if (empty($orders)) {
+                    return $total;
+                }
+                $pageSize = count($orders);
+                $page++;
+                $importResult = $this->autopilotClient->importOrders($scope, $orders);
+                $total->incr($importResult);
+                if ($updateState !== null) {
+                    $updateState($result->getTotalCount(), $pageSize, $total->toJSON());
+                }
             }
-            $customerPageSize = count($customers);
-            $currentCustomerPage++;
-            foreach ($customers as $customer) {
-                $currentOrdersPage = 1;
-                do {
-                    $customerOrders = $this->getCustomerOrders($currentOrdersPage, $customer, $scope, $checkpoint);
-                    if (empty($customerOrders)) {
-                        $total->incrSkipped();
-                        break;
-                    }
-                    $orders = $customerOrders->getOrders();
-                    $ordersPageSize = count($orders);
-                    $currentOrdersPage++;
-                    $toExport[] = $customerOrders;
-
-                    // Customer has too many orders. Let's export what we have and flush the cache.
-                    if ($ordersPageSize == self::ORDER_PAGE_SIZE) {
-                        $importResult = $this->autopilotClient->importOrders($scope, $toExport);
-                        $total->incr($importResult);
-                        if ($updateState !== null) {
-                            $updateState($customersTotal, $customerPageSize, $total->toJSON());
-                        }
-                        $toExport = [];
-                    }
-                } while ($ordersPageSize == self::ORDER_PAGE_SIZE);
-            }
-        } while ($customerPageSize === self::CUSTOMER_PAGE_SIZE);
-
-        if (!empty($toExport)) {
-            $importResult = $this->autopilotClient->importOrders($scope, $toExport);
-            $total->incr($importResult);
-            if ($updateState !== null) {
-                $updateState($customersTotal, $customerPageSize, $total->toJSON());
-            }
-        }
+        } while ($pageSize == self::PAGE_SIZE);
 
         return $total;
     }
 
     /**
      * @param int $page
-     * @return array
-     */
-    private function getCustomers(int $page)
-    {
-        $attrCollection = $this->attrCollectionFactory->create();
-        $attributes = $attrCollection->getAll($page, self::CUSTOMER_PAGE_SIZE);
-        $customerIds = [];
-        foreach ($attributes as $attr) {
-            $customerIds[] = $attr->getCustomerId();
-        }
-        $collection = $this->customerCollectionFactory->create();
-        $collection->setCurPage($page)
-            ->setPageSize(self::CUSTOMER_PAGE_SIZE)
-            ->addFieldToSelect(self::CUSTOMER_ID)
-            ->addFieldToSelect(CustomerInterface::EMAIL)
-            ->addFieldToFilter(self::CUSTOMER_ID, ['in' => $customerIds]);
-        return [
-            self::ITEMS_KEY => $collection->getItems(),
-            self::TOTAL_KEY => $collection->getSize(),
-        ];
-    }
-
-    /**
-     * @param int $page
-     * @param CustomerInterface $customer
      * @param ConfigScopeInterface $scope
      * @param DateTime|null $checkpoint
-     * @return CustomerOrder|false
+     * @return OrderSearchResultInterface
      */
-    private function getCustomerOrders(
+    private function getOrders(
         int $page,
-        $customer,
         ConfigScopeInterface $scope,
         ?DateTime $checkpoint = null
     ) {
-        $this->searchCriteriaBuilder->setPageSize(self::ORDER_PAGE_SIZE)
+        $this->searchCriteriaBuilder->setPageSize(self::PAGE_SIZE)
             ->setCurrentPage($page)
             ->addFilter(OrderInterface::STORE_ID, $scope->getStoreIds(), 'in');
 
         if (!empty($checkpoint)) {
             $this->searchCriteriaBuilder->addFilter(OrderInterface::UPDATED_AT, $checkpoint, 'gt');
         }
-        $customerId = (int)$customer->getId();
-        $this->searchCriteriaBuilder->addFilter(OrderInterface::CUSTOMER_ID, $customerId);
         $sortOrder = $this->sortOrderBuilder->setField(OrderInterface::CREATED_AT)->setDirection(SortOrder::SORT_ASC);
         $this->searchCriteriaBuilder->addSortOrder($sortOrder->create());
-        $orders = $this->orderRepository->getList($this->searchCriteriaBuilder->create())->getItems();
-        if (empty($orders)) {
-            return false;
-        }
-        $result = $this->customerOrderFactory->create();
-        $result->setCustomerId($customerId);
-        $result->setCustomerEmail($customer->getEmail());
-        $result->setOrders($orders);
-        return $result;
+        return $this->orderRepository->getList($this->searchCriteriaBuilder->create());
     }
 }

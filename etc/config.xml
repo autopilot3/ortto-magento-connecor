@@ -8,6 +8,7 @@
             </customer>
             <order>
                 <auto_sync_enabled>1</auto_sync_enabled>
+                <anonymous_enabled>1</anonymous_enabled>
             </order>
         </ap_sync>
     </default>
