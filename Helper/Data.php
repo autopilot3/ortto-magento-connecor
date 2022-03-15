@@ -235,6 +235,7 @@ class Data extends AbstractHelper
             'is_virtual' => $order->getIsVirtual(),
             'number' => (string)$order->getIncrementId(),
             'status' => (string)$order->getStatus(),
+            'state' => (string)$order->getState(),
             'created_at' => $this->formatDate($order->getCreatedAt()),
             'updated_at' => $this->formatDate($order->getUpdatedAt()),
             'ip_address' => $order->getRemoteIp(),
@@ -292,6 +293,7 @@ class Data extends AbstractHelper
             'base_shipping_discount' => (float)$order->getBaseShippingDiscountAmount(),
             'coupon_code' => (string)$order->getCouponCode(),
             'protect_code' => (string)$order->getProtectCode(),
+            'canceled_at' => $this->getOrderCancellationDate($order),
             'items' => $this->getOrderItemFields($order->getItems()),
         ];
 
@@ -341,7 +343,24 @@ class Data extends AbstractHelper
                 }
             }
         }
+
         return $fields;
+    }
+
+    private function getOrderCancellationDate(OrderInterface $order): string
+    {
+        $status = (string)$order->getStatus();
+        if ($status !== Order::STATE_CANCELED) {
+            return Config::EMPTY_DATE_TIME;
+        }
+        $attr = $order->getExtensionAttributes();
+        if (!empty($attr)) {
+            $canceledAt = $attr->getAutopilotCanceledAt();
+            if (!empty($canceledAt)) {
+                return $this->formatDate($canceledAt);
+            }
+        }
+        return $this->formatDate($order->getCreatedAt());
     }
 
     /**
@@ -514,6 +533,19 @@ class Data extends AbstractHelper
 
         $this->logger->warn("Invalid time value", ["value" => $value]);
         return Config::EMPTY_DATE_TIME;
+    }
+
+    /**
+     * @param DateTime|null $value
+     * @return string
+     */
+    public function formatDateTime($value): string
+    {
+        if (empty($value)) {
+            return Config::EMPTY_DATE_TIME;
+        }
+
+        return $value->format(Config::DATE_TIME_FORMAT);
     }
 
     /**

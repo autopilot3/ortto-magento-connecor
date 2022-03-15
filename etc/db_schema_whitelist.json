@@ -34,16 +34,16 @@
             "AUTOPILOT_CRON_CHECKPOINT_SCOPE_TYPE_SCOPE_ID_CATEGORY": true
         }
     },
-    "autopilot_customer_attributes": {
+    "autopilot_order_attributes": {
         "column": {
-            "id": true,
-            "customer_id": true,
-            "contact_id": true
+            "entity_id": true,
+            "order_id": true,
+            "canceled_at": true
         },
         "constraint": {
             "PRIMARY": true,
-            "AUTOPILOT_CUSTOMER_ATTRIBUTES_CUSTOMER_ID_CONTACT_ID": true,
-            "AUTOPILOT_CSTR_ATTRS_CSTR_ID_CSTR_ENTT_ENTT_ID": true
+            "AUTOPILOT_ORDER_ATTRIBUTES_ORDER_ID": true,
+            "AUTOPILOT_ORDER_ATTRIBUTES_ORDER_ID_SALES_ORDER_ENTITY_ID": true
         }
     }
 }

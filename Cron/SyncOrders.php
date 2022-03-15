@@ -196,7 +196,7 @@ class SyncOrders
             try {
                 $job = $jobCollection->getJobById($jobId);
                 $valid = $job->getStatus() === Status::IN_PROGRESS;
-                if ($valid) {
+                if (!$valid) {
                     $this->logger->warn("Order synchronization job (ID: $jobId) has been changed.");
                 }
                 return $valid;
