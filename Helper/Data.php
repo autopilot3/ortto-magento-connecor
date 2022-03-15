@@ -23,6 +23,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Newsletter\Model\Subscriber;
 use Magento\Sales\Api\Data\OrderAddressInterface;
+use Magento\Sales\Api\Data\OrderExtensionInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
@@ -232,6 +233,7 @@ class Data extends AbstractHelper
         $fields = [
             'id' => (int)$order->getEntityId(),
             'is_virtual' => $order->getIsVirtual(),
+            'number' => (string)$order->getIncrementId(),
             'status' => (string)$order->getStatus(),
             'created_at' => $this->formatDate($order->getCreatedAt()),
             'updated_at' => $this->formatDate($order->getUpdatedAt()),
@@ -299,9 +301,31 @@ class Data extends AbstractHelper
             $fields['last_transaction_id'] = (string)$payment->getLastTransId();
         }
 
+        $extensionAttrs = $order->getExtensionAttributes();
+        if ($extensionAttrs instanceof OrderExtensionInterface) {
+            $ext = [];
+            $amz = $extensionAttrs->getAmazonOrderReferenceId();
+            if (!empty($amz)) {
+                $ext['amazon_reference_id'] = (int)$amz->getOrderId();
+            }
+
+            $gift = $extensionAttrs->getGiftMessage();
+
+            if (!empty($gift)) {
+                $ext['gift'] = [
+                    'message' => (string)$gift->getMessage(),
+                    'sender' => (string)$gift->getSender(),
+                    'recipient' => (string)$gift->getRecipient(),
+                ];
+            }
+
+            if (!empty($ext)) {
+                $fields['extension'] = $ext;
+            }
+        }
+
         if ($order instanceof Order) {
             $addresses = $order->getAddresses();
-
             foreach ($addresses as $address) {
                 switch ($address->getAddressType()) {
                     case "shipping":
