@@ -6,6 +6,8 @@ namespace Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint;
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Api\Data\CronCheckpointInterface;
 use Autopilot\AP3Connector\Api\Data\CronCheckpointInterface as Checkpoint;
+use Autopilot\AP3Connector\Api\SchemaInterface;
+use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint as ResourceModel;
 use Autopilot\AP3Connector\Model\CronCheckpointFactory;
 use Autopilot\AP3Connector\Model\CronCheckpoint as Model;
@@ -16,7 +18,6 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
-use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Psr\Log\LoggerInterface;
 use Exception;
 
@@ -26,7 +27,6 @@ class Collection extends AbstractCollection
     protected $_idFieldName = "id";
 
     private CronCheckpointFactory $cronCheckpointFactory;
-    private TimezoneInterface $time;
 
     public function __construct(
         EntityFactoryInterface $entityFactory,
@@ -74,22 +74,18 @@ class Collection extends AbstractCollection
      * @param string $category
      * @param DateTime $date
      * @param ConfigScopeInterface $scope
-     * @return CronCheckpointInterface
      * @throws Exception
      */
     public function setCheckpoint(string $category, DateTime $date, ConfigScopeInterface $scope)
     {
-        $checkpoint = $this->get($category, $scope);
-        if (empty($checkpoint)) {
-            $checkpoint = $this->cronCheckpointFactory->create();
-            $checkpoint->setCategory($category);
-            $checkpoint->setScopeType($scope->getType());
-            $checkpoint->setScopeId($scope->getId());
-            $this->addItem($checkpoint);
-        }
-        $checkpoint->setCheckedAt($date);
-        $this->save();
-        return $checkpoint;
+        $table = $this->getTable(SchemaInterface::TABLE_CRON_CHECKPOINT);
+        $data = [
+            Checkpoint::CATEGORY => $category,
+            Checkpoint::SCOPE_TYPE => $scope->getType(),
+            Checkpoint::SCOPE_ID => $scope->getId(),
+            Checkpoint::LAST_CHECKED_AT => $date->format(Config::DB_DATE_TIME_FORMAT),
+        ];
+        $this->getConnection()->insertOnDuplicate($table, $data, [Checkpoint::LAST_CHECKED_AT]);
     }
 
     /**
@@ -99,7 +95,7 @@ class Collection extends AbstractCollection
      */
     private function get(string $category, ConfigScopeInterface $scope)
     {
-        $result = $this->addFieldToSelect('*')
+        $result = $this->addFieldToSelect("*")
             ->addFieldToFilter(Checkpoint::CATEGORY, $category)
             ->addFieldToFilter(Checkpoint::SCOPE_TYPE, $scope->getType())
             ->addFieldToFilter(Checkpoint::SCOPE_ID, $scope->getId())
@@ -108,7 +104,6 @@ class Collection extends AbstractCollection
         if ($result->getSize()) {
             return $result->getFirstItem();
         }
-
         return false;
     }
 }

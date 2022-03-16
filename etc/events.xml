@@ -2,7 +2,11 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="order_cancel_after">
-        <observer name="order_status_change"
-                  instance="\Autopilot\AP3Connector\Observer\OrderAfterCancel"/>
+        <observer name="order_cancel_after_global"
+                  instance="\Autopilot\AP3Connector\Observer\OrderCanceledAfter"/>
+    </event>
+    <event name="sales_order_place_after">
+        <observer name="sales_order_place_after_global"
+                  instance="\Autopilot\AP3Connector\Observer\OrderPlacedAfter"/>
     </event>
 </config>

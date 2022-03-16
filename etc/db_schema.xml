@@ -9,9 +9,9 @@
         <column xsi:type="int" name="scope_id" padding="11" unsigned="false" nullable="false" identity="false"
                 comment="Scope ID"/>
         <column xsi:type="varchar" name="status" nullable="false" length="24" comment="Job status"/>
-        <column xsi:type="datetime" name="created_at" on_update="false" nullable="false" comment="Created at"/>
-        <column xsi:type="datetime" name="started_at" on_update="false" nullable="true" comment="Started at"/>
-        <column xsi:type="datetime" name="finished_at" on_update="false" nullable="true" comment="Finished at"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" comment="Created at"/>
+        <column xsi:type="timestamp" name="started_at" on_update="false" nullable="true" comment="Started at"/>
+        <column xsi:type="timestamp" name="finished_at" on_update="false" nullable="true" comment="Finished at"/>
         <column xsi:type="int" name="count" padding="10" unsigned="true" nullable="false" identity="false" default="0"
                 comment="Number of records processed"/>
         <column xsi:type="int" name="total" padding="10" unsigned="true" nullable="false" identity="false" default="0"
@@ -33,7 +33,8 @@
         <column xsi:type="varchar" name="scope_type" nullable="false" length="12" comment="Scope Type"/>
         <column xsi:type="int" name="scope_id" padding="11" unsigned="false" nullable="false" identity="false"
                 comment="Scope ID"/>
-        <column xsi:type="datetime" name="last_checked_at" on_update="false" nullable="true" comment="Last checked at"/>
+        <column xsi:type="timestamp" name="last_checked_at" on_update="false" nullable="true"
+                comment="Last checked at"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
         </constraint>
@@ -49,7 +50,7 @@
                 comment="Entity id"/>
         <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="false" identity="false"
                 comment="Order Id"/>
-        <column xsi:type="datetime" name="canceled_at" nullable="true" comment="Order canceled at"/>
+        <column xsi:type="timestamp" name="canceled_at" nullable="true" comment="Order canceled at"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="entity_id"/>
         </constraint>

@@ -15,10 +15,12 @@ class Config extends AbstractHelper
     const XML_PATH_ACCESS_TOKEN = "ap_general/authentication/access_token";
 
     const XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED = "ap_sync/customer/auto_sync_enabled";
+    const XML_PATH_SYNC_ORDER_AUTO_ENABLED = "ap_sync/order/auto_sync_enabled";
     const XML_PATH_SYNC_CUSTOMER_NON_SUBSCRIBED_ENABLED = "ap_sync/customer/non_subscribed_enabled";
     const XML_PATH_SYNC_ANONYMOUS_ORDERS_ENABLED = "ap_sync/order/anonymous_enabled";
 
     // "2006-01-02T15:04:05Z07:00"
     const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';
+    const DB_DATE_TIME_FORMAT = 'Y-m-d H:i:s';
     const EMPTY_DATE_TIME = "0001-01-01T00:00:00Z";
 }
