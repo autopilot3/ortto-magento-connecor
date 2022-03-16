@@ -47,7 +47,7 @@ class Collection extends AbstractCollection
         $table = $this->getTable(SchemaInterface::TABLE_ORDER_ATTRIBUTES);
         $data = [
             OrderAttributesInterface::ORDER_ID => $orderId,
-            OrderAttributesInterface::CANCELED_AT => $dateTime->format(Config::DATE_TIME_FORMAT),
+            OrderAttributesInterface::CANCELED_AT => $dateTime->format(Config::DB_DATE_TIME_FORMAT),
         ];
         $this->getConnection()->insertOnDuplicate($table, $data, [OrderAttributesInterface::CANCELED_AT]);
     }

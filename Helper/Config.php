@@ -20,5 +20,6 @@ class Config extends AbstractHelper
 
     // "2006-01-02T15:04:05Z07:00"
     const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';
+    const DB_DATE_TIME_FORMAT = 'Y-m-d H:i:s';
     const EMPTY_DATE_TIME = "0001-01-01T00:00:00Z";
 }

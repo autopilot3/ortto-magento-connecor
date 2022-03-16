@@ -17,22 +17,6 @@ interface CronCheckpointInterface
     const LAST_CHECKED_AT = "last_checked_at";
 
     /**
-     * Getter for Id.
-     *
-     * @return mixed
-     */
-    public function getId();
-
-    /**
-     * Setter for Id.
-     *
-     * @param mixed
-     *
-     * @return $this
-     */
-    public function setId($value);
-
-    /**
      * Getter for Category.
      *
      * @return string
@@ -83,7 +67,7 @@ interface CronCheckpointInterface
     /**
      * Getter for CheckedAt.
      *
-     * @return DateTime|null
+     * @return string|null
      */
     public function getCheckedAt();
 

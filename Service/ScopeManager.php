@@ -11,7 +11,6 @@ use Autopilot\AP3Connector\Model\Scope;
 use Autopilot\AP3Connector\Model\ScopeFactory;
 use Exception;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\InvalidArgumentException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -25,7 +24,6 @@ use Magento\Store\Model\StoreManagerInterface;
 class ScopeManager implements ScopeManagerInterface
 {
     private StoreManagerInterface $storeManager;
-    private EncryptorInterface $encryptor;
     private AutopilotLoggerInterface $logger;
     private ConfigurationReaderInterface $configReader;
     private ScopeFactory $scopeFactory;
@@ -33,14 +31,12 @@ class ScopeManager implements ScopeManagerInterface
 
     public function __construct(
         StoreManagerInterface $storeManager,
-        EncryptorInterface $encryptor,
         AutopilotLoggerInterface $logger,
         ConfigurationReaderInterface $configReader,
         ScopeFactory $scopeFactory,
         RequestInterface $request
     ) {
         $this->storeManager = $storeManager;
-        $this->encryptor = $encryptor;
         $this->logger = $logger;
         $this->configReader = $configReader;
         $this->scopeFactory = $scopeFactory;

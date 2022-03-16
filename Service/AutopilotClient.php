@@ -71,7 +71,7 @@ class AutopilotClient implements AutopilotClientInterface
     public function importOrders(ConfigScopeInterface $scope, array $orders)
     {
         $url = $this->helper->getAutopilotURL(RoutesInterface::AP_IMPORT_ORDERS);
-        $payload = $this->helper->getOrdersFields($orders, $scope);
+        $payload = $this->helper->getCustomerWithOrderFields($orders, $scope);
         if (empty($payload)) {
             $this->logger->debug("No order to export");
             return new ImportResponse();
@@ -126,13 +126,13 @@ class AutopilotClient implements AutopilotClientInterface
         $request['scope'] = $scope->toArray();
         $payload = json_encode($request, JSON_THROW_ON_ERROR);
         $this->curl->post($url, $payload);
-        $status = $this->curl->getStatus();
-        $response = $this->curl->getBody();
+        $status = (int)$this->curl->getStatus();
+        $response = (string)$this->curl->getBody();
         if (empty($response)) {
             $response = "{}";
         }
         $this->logger->debug('POST: ' . $url, ['response' => $response,]);
-        if ($status != 200) {
+        if ($status !== 200) {
             throw new AutopilotException($url, "POST", $status, $payload, $response);
         }
         return json_decode($response, true, 512, JSON_THROW_ON_ERROR);

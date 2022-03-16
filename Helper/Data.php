@@ -5,6 +5,10 @@ namespace Autopilot\AP3Connector\Helper;
 
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
+use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
+use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
+use AutoPilot\AP3Connector\Model\ResourceModel\CronCheckpoint\CollectionFactory as CheckpointCollectionFactory;
+use AutoPilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
 use DateTime;
 use Exception;
 use Magento\Catalog\Api\Data\ProductInterface;
@@ -29,6 +33,7 @@ use Magento\Sales\Api\Data\OrderItemInterface;
 use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
 use Magento\Sales\Model\Order;
 use Magento\Catalog\Helper\Image;
+use Magento\Store\Model\ScopeInterface;
 
 class Data extends AbstractHelper
 {
@@ -47,6 +52,8 @@ class Data extends AbstractHelper
     private ConfigurationReaderInterface $config;
     private ProductRepository $productRepository;
     private Image $imageHelper;
+    private CheckpointCollectionFactory $checkpointCollectionFactory;
+    private JobCollectionFactory $jobCollectionFactory;
 
     public function __construct(
         Context $context,
@@ -58,6 +65,8 @@ class Data extends AbstractHelper
         AutopilotLoggerInterface $logger,
         ConfigurationReaderInterface $config,
         ProductRepository $productRepository,
+        CheckpointCollectionFactory $checkpointCollectionFactory,
+        JobCollectionFactory $jobCollectionFactory,
         Image $imageHelper
     ) {
         parent::__construct($context);
@@ -71,6 +80,8 @@ class Data extends AbstractHelper
         $this->config = $config;
         $this->productRepository = $productRepository;
         $this->imageHelper = $imageHelper;
+        $this->checkpointCollectionFactory = $checkpointCollectionFactory;
+        $this->jobCollectionFactory = $jobCollectionFactory;
     }
 
     /**
@@ -147,7 +158,6 @@ class Data extends AbstractHelper
             foreach ($addresses as $address) {
                 if ($address->isDefaultBilling()) {
                     $data[self::BILLING_ADDRESS] = $this->getAddressFields($address);
-                    continue;
                 }
                 if ($address->isDefaultShipping()) {
                     $data[self::SHIPPING_ADDRESS] = $this->getAddressFields($address);
@@ -172,7 +182,7 @@ class Data extends AbstractHelper
      * @param ConfigScopeInterface $scope
      * @return array
      */
-    public function getOrdersFields(array $orders, ConfigScopeInterface $scope): array
+    public function getCustomerWithOrderFields(array $orders, ConfigScopeInterface $scope): array
     {
         $isAnonymousOrderEnabled = $this->config->isAnonymousOrderSyncEnabled($scope->getType(), $scope->getId());
         $nonSubscribedEnabled = $this->config->isNonSubscribedCustomerSyncEnabled($scope->getType(), $scope->getId());
@@ -551,9 +561,17 @@ class Data extends AbstractHelper
     /**
      * @return DateTime
      */
-    public function now(): DateTime
+    public function nowInClientTimezone(): DateTime
     {
         return $this->time->date();
+    }
+
+    /**
+     * @return DateTime
+     */
+    public function now(): DateTime
+    {
+        return date_create();
     }
 
     public function getErrorResponse(string $message): array
@@ -562,5 +580,39 @@ class Data extends AbstractHelper
             'error' => true,
             'message' => $message,
         ];
+    }
+
+    /**
+     * @return CheckpointCollection
+     * @throws Exception
+     */
+    public function createCheckpointCollection()
+    {
+        $collection = $this->checkpointCollectionFactory->create();
+        if ($collection instanceof CheckpointCollection) {
+            return $collection;
+        }
+        throw new Exception("Invalid checkpoint collection type");
+    }
+
+    /**
+     * @return JobCollection
+     * @throws Exception
+     */
+    public function createJobCollection()
+    {
+        $collection = $this->jobCollectionFactory->create();
+        if ($collection instanceof JobCollection) {
+            return $collection;
+        }
+        throw new Exception("Invalid job collection type");
+    }
+
+    public function shouldExportCustomer(ConfigScopeInterface $scope, CustomerInterface $customer): bool
+    {
+        if ($scope->getType() == ScopeInterface::SCOPE_WEBSITE) {
+            return $customer->getWebsiteId() == $scope->getId();
+        }
+        return $customer->getStoreId() == $scope->getId() && $customer->getWebsiteId() == $scope->getWebsiteId();
     }
 }

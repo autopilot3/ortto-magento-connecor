@@ -5,6 +5,7 @@ namespace Autopilot\AP3Connector\Model;
 
 use Autopilot\AP3Connector\Api\Data\CronCheckpointInterface;
 use Autopilot\AP3Connector\Api\SchemaInterface;
+use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint as ResourceModel;
 use DateTime;
 use Magento\Framework\DataObject\IdentityInterface;
@@ -35,22 +36,6 @@ class CronCheckpoint extends AbstractModel implements CronCheckpointInterface, I
     /**
      * @inheritDoc
      */
-    public function getId()
-    {
-        return $this->getData(self::ID);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setId($value)
-    {
-        return $this->setData(self::ID, $value);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getCategory()
     {
         return $this->getData(self::CATEGORY);
@@ -61,7 +46,8 @@ class CronCheckpoint extends AbstractModel implements CronCheckpointInterface, I
      */
     public function setCategory(string $category)
     {
-        return $this->setData(self::CATEGORY, $category);
+        $this->setData(self::CATEGORY, $category);
+        return $this;
     }
 
     /**
@@ -77,7 +63,8 @@ class CronCheckpoint extends AbstractModel implements CronCheckpointInterface, I
      */
     public function setScopeType(string $scopeType)
     {
-        return $this->setData(self::SCOPE_TYPE, $scopeType);
+        $this->setData(self::SCOPE_TYPE, $scopeType);
+        return $this;
     }
 
     /**
@@ -93,7 +80,8 @@ class CronCheckpoint extends AbstractModel implements CronCheckpointInterface, I
      */
     public function setScopeId(int $scopeId)
     {
-        return $this->setData(self::SCOPE_ID, $scopeId);
+        $this->setData(self::SCOPE_ID, $scopeId);
+        return $this;
     }
 
     /**
@@ -104,11 +92,11 @@ class CronCheckpoint extends AbstractModel implements CronCheckpointInterface, I
         $value = $this->getData(self::LAST_CHECKED_AT);
         switch (true) {
             case $value instanceof DateTime:
-                return $value;
+                return $value->format(Config::DB_DATE_TIME_FORMAT);
             case is_string($value):
-                return date_create($value);
+                return date(Config::DB_DATE_TIME_FORMAT, strtotime($value));
             default:
-                return date_create("1800-1-1");
+                return date(Config::DB_DATE_TIME_FORMAT, 0);
         }
     }
 
@@ -117,6 +105,7 @@ class CronCheckpoint extends AbstractModel implements CronCheckpointInterface, I
      */
     public function setCheckedAt(DateTime $checkedAt)
     {
-        return $this->setData(self::LAST_CHECKED_AT, $checkedAt);
+        $this->setData(self::LAST_CHECKED_AT, $checkedAt);
+        return $this;
     }
 }
