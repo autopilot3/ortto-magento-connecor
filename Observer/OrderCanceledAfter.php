@@ -58,17 +58,18 @@ class OrderCanceledAfter implements ObserverInterface
 
         $scopes = $this->scopeManager->getActiveScopes();
         foreach ($scopes as $scope) {
-            if (array_contains($scope->getStoreIds(), (int)$order->getStoreId())) {
-                try {
-                    $this->autopilotClient->importOrders($scope, [$order]);
-                } catch (Exception $e) {
-                    $msg = sprintf(
-                        'Failed to export the cancelled order ID %d to %s',
-                        (int)$order->getEntityId(),
-                        $scope->getCode()
-                    );
-                    $this->logger->error($e, $msg);
-                }
+            if (!$this->helper->shouldExportOrder($scope, $order)) {
+                continue;
+            }
+            try {
+                $this->autopilotClient->importOrders($scope, [$order]);
+            } catch (Exception $e) {
+                $msg = sprintf(
+                    'Failed to export the cancelled order ID %d to %s',
+                    (int)$order->getEntityId(),
+                    $scope->getCode()
+                );
+                $this->logger->error($e, $msg);
             }
         }
     }

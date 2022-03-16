@@ -14,7 +14,7 @@ use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Autopilot\AP3Connector\Api\JobCategoryInterface as JobCategory;
+use Autopilot\AP3Connector\Api\SyncCategoryInterface as JobCategory;
 
 class Customers extends Action
 {

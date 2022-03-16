@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Service;
 
 use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
+use Autopilot\AP3Connector\Api\SyncCategoryInterface;
 use Autopilot\AP3Connector\Helper\Config;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
@@ -53,13 +54,24 @@ class ConfigurationReader implements ConfigurationReaderInterface
     /**
      * @inheirtDoc
      */
-    public function isAutoCustomerSyncEnabled(string $scopeType, int $scopeId): bool
+    public function isAutoSyncEnabled(string $scopeType, int $scopeId, string $category): bool
     {
-        return (bool)$this->scopeConfig->getValue(
-            Config::XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED,
-            $scopeType,
-            $scopeId
-        );
+        switch ($category) {
+            case SyncCategoryInterface::CUSTOMER:
+                return (bool)$this->scopeConfig->getValue(
+                    Config::XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED,
+                    $scopeType,
+                    $scopeId
+                );
+            case SyncCategoryInterface::ORDER:
+                return (bool)$this->scopeConfig->getValue(
+                    Config::XML_PATH_SYNC_ORDER_AUTO_ENABLED,
+                    $scopeType,
+                    $scopeId
+                );
+            default:
+                return false;
+        }
     }
 
     /**

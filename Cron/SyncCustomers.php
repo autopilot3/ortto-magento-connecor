@@ -4,8 +4,9 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Cron;
 
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
+use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
 use Autopilot\AP3Connector\Api\ImportResponseInterface;
-use Autopilot\AP3Connector\Api\JobCategoryInterface as JobCategory;
+use Autopilot\AP3Connector\Api\SyncCategoryInterface as SyncCategory;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Helper\Data;
@@ -33,6 +34,7 @@ class SyncCustomers
     private Data $helper;
     private SearchCriteriaBuilder $searchCriteriaBuilder;
     private CustomerRepositoryInterface $customerRepository;
+    private ConfigurationReaderInterface $config;
 
     const PAGE_SIZE = 100;
 
@@ -42,6 +44,7 @@ class SyncCustomers
         ScopeManagerInterface $scopeManager,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         CustomerRepositoryInterface $customerRepository,
+        ConfigurationReaderInterface $config,
         Data $helper
     ) {
         $this->logger = $logger;
@@ -50,6 +53,7 @@ class SyncCustomers
         $this->helper = $helper;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->customerRepository = $customerRepository;
+        $this->config = $config;
     }
 
     /**
@@ -59,6 +63,7 @@ class SyncCustomers
      */
     public function execute(): void
     {
+        $category = SyncCategory::CUSTOMER;
         $this->logger->debug("Running customer synchronization CRON job");
         /**
          * @var ScopeConfigInterface[]
@@ -74,7 +79,7 @@ class SyncCustomers
             return;
         }
 
-        $jobs = $jobCollection->getQueuedJobs(JobCategory::CUSTOMER);
+        $jobs = $jobCollection->getQueuedJobs($category);
         if (empty($jobs)) {
             $this->logger->debug("No customer sync job was queued");
         } else {
@@ -92,7 +97,7 @@ class SyncCustomers
                     $result = $this->exportAllCustomers($scope, $jobId);
                     $processedScopes[] = $scope;
                     $jobCollection->markAsDone($jobId, $result->toJSON());
-                    $this->helper->createCheckpointCollection()->setCheckpoint(JobCategory::CUSTOMER, $now, $scope);
+                    $this->helper->createCheckpointCollection()->setCheckpoint($category, $now, $scope);
                     $total = $result->getUpdatedTotal() + $result->getCreatedTotal();
                     if ($total > 0) {
                         $this->logger->info(
@@ -142,11 +147,18 @@ class SyncCustomers
             }
 
             try {
+                if (!$this->config->isAutoSyncEnabled($scope->getType(), $scope->getId(), $category)) {
+                    $this->logger->debug(
+                        sprintf("Automatic %s sync is not enabled", $category),
+                        $scope->toArray()
+                    );
+                    continue;
+                }
                 $this->logger->info("Checking customer export checkpoint", $scope->toArray());
                 $checkpointCollection = $this->helper->createCheckpointCollection();
-                $customerCheckpoint = $checkpointCollection->getCheckpoint(JobCategory::CUSTOMER, $scope);
+                $customerCheckpoint = $checkpointCollection->getCheckpoint($category, $scope);
                 $total = $this->exportUpdatedCustomers($scope, $customerCheckpoint->getCheckedAt());
-                $checkpointCollection->setCheckpoint(JobCategory::CUSTOMER, $now, $scope);
+                $checkpointCollection->setCheckpoint($category, $now, $scope);
                 if ($total > 0) {
                     $this->logger->info(
                         sprintf(

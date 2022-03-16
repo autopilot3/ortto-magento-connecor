@@ -15,9 +15,10 @@ interface ConfigurationReaderInterface
     /**
      * @param string $scopeType
      * @param int $scopeId
+     * @param string $category
      * @return bool
      */
-    public function isAutoCustomerSyncEnabled(string $scopeType, int $scopeId): bool;
+    public function isAutoSyncEnabled(string $scopeType, int $scopeId, string $category): bool;
 
     /**
      * @param string $scopeType

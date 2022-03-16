@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Helper;
 
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
+use Autopilot\AP3Connector\Api\SyncCategoryInterface;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
@@ -610,9 +611,28 @@ class Data extends AbstractHelper
 
     public function shouldExportCustomer(ConfigScopeInterface $scope, CustomerInterface $customer): bool
     {
+        if (!$this->config->isAutoSyncEnabled($scope->getType(), $scope->getId(), SyncCategoryInterface::CUSTOMER)) {
+            $this->logger->debug(
+                sprintf("Automatic %s synchronisation is off", SyncCategoryInterface::CUSTOMER),
+                $scope->toArray()
+            );
+            return false;
+        }
         if ($scope->getType() == ScopeInterface::SCOPE_WEBSITE) {
             return $customer->getWebsiteId() == $scope->getId();
         }
         return $customer->getStoreId() == $scope->getId() && $customer->getWebsiteId() == $scope->getWebsiteId();
+    }
+
+    public function shouldExportOrder(ConfigScopeInterface $scope, OrderInterface $order): bool
+    {
+        if (!$this->config->isAutoSyncEnabled($scope->getType(), $scope->getId(), SyncCategoryInterface::ORDER)) {
+            $this->logger->debug(
+                sprintf("Automatic %s synchronisation is off", SyncCategoryInterface::ORDER),
+                $scope->toArray()
+            );
+            return false;
+        }
+        return array_contains($scope->getStoreIds(), (int)$order->getStoreId());
     }
 }

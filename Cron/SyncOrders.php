@@ -5,8 +5,9 @@ namespace Autopilot\AP3Connector\Cron;
 
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
+use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
 use Autopilot\AP3Connector\Api\ImportResponseInterface;
-use Autopilot\AP3Connector\Api\JobCategoryInterface as JobCategory;
+use Autopilot\AP3Connector\Api\SyncCategoryInterface as SyncCategory;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Helper\Data;
@@ -35,12 +36,11 @@ class SyncOrders
     private AutopilotLoggerInterface $logger;
     private AutopilotClientInterface $autopilotClient;
     private ScopeManagerInterface $scopeManager;
-    private Data $helper;
-
     private SearchCriteriaBuilder $searchCriteriaBuilder;
     private OrderRepositoryInterface $orderRepository;
-
     private SortOrderBuilder $sortOrderBuilder;
+    private ConfigurationReaderInterface $config;
+    private Data $helper;
 
     public function __construct(
         AutopilotLoggerInterface $logger,
@@ -49,6 +49,7 @@ class SyncOrders
         SearchCriteriaBuilder $searchCriteriaBuilder,
         OrderRepositoryInterface $orderRepository,
         SortOrderBuilder $sortOrderBuilder,
+        ConfigurationReaderInterface $config,
         Data $helper
     ) {
         $this->logger = $logger;
@@ -58,6 +59,7 @@ class SyncOrders
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->orderRepository = $orderRepository;
         $this->sortOrderBuilder = $sortOrderBuilder;
+        $this->config = $config;
     }
 
     /**
@@ -67,6 +69,7 @@ class SyncOrders
      */
     public function execute(): void
     {
+        $category = SyncCategory::ORDER;
         $this->logger->debug("Running order synchronization CRON job");
         /**
          * @var ScopeConfigInterface[]
@@ -82,7 +85,7 @@ class SyncOrders
             return;
         }
 
-        $jobs = $jobCollection->getQueuedJobs(JobCategory::ORDER);
+        $jobs = $jobCollection->getQueuedJobs($category);
         if (empty($jobs)) {
             $this->logger->debug("No order sync job was queued");
         } else {
@@ -100,7 +103,7 @@ class SyncOrders
                     $result = $this->exportAllOrders($scope, $jobId);
                     $processedScopes[] = $scope;
                     $jobCollection->markAsDone($jobId, $result->toJSON());
-                    $this->helper->createCheckpointCollection()->setCheckpoint(JobCategory::ORDER, $now, $scope);
+                    $this->helper->createCheckpointCollection()->setCheckpoint($category, $now, $scope);
                     $total = $result->getCreatedTotal() + $result->getUpdatedTotal();
                     if ($total > 0) {
                         $msg = sprintf(
@@ -148,11 +151,18 @@ class SyncOrders
             }
 
             try {
+                if (!$this->config->isAutoSyncEnabled($scope->getType(), $scope->getId(), $category)) {
+                    $this->logger->debug(
+                        sprintf("Automatic %s sync is not enabled", $category),
+                        $scope->toArray()
+                    );
+                    continue;
+                }
                 $this->logger->info("Checking order export checkpoint", $scope->toArray());
                 $checkpointCollection = $this->helper->createCheckpointCollection();
-                $orderCheckpoint = $checkpointCollection->getCheckpoint(JobCategory::ORDER, $scope);
+                $orderCheckpoint = $checkpointCollection->getCheckpoint($category, $scope);
                 $result = $this->exportOrders($scope, null, null, $orderCheckpoint->getCheckedAt());
-                $checkpointCollection->setCheckpoint(JobCategory::ORDER, $now, $scope);
+                $checkpointCollection->setCheckpoint($category, $now, $scope);
                 $total = $result->getCreatedTotal() + $result->getUpdatedTotal();
                 if ($total > 0) {
                     $this->logger->info(
