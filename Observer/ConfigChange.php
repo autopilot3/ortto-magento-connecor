@@ -4,16 +4,13 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Observer;
 
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
-use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Exception;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Exception\NotFoundException;
 use Magento\Store\Model\ScopeInterface;
+use Autopilot\AP3Connector\Helper\To;
+use Exception;
 
 class ConfigChange implements ObserverInterface
 {
@@ -38,7 +35,7 @@ class ConfigChange implements ObserverInterface
 
         if (!empty($websiteId)) {
             $scopeType = ScopeInterface::SCOPE_WEBSITE;
-            $scopeId = (int)$websiteId;
+            $scopeId = To::int($websiteId);
         } else {
             $storeId = $event->getData('scope');
             if (empty($storeId)) {
@@ -46,7 +43,7 @@ class ConfigChange implements ObserverInterface
                 return;
             }
             $scopeType = ScopeInterface::SCOPE_STORE;
-            $scopeId = (int)$storeId;
+            $scopeId = To::int($storeId);
         }
 
         try {

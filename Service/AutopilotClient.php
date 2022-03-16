@@ -8,6 +8,7 @@ use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
 use Autopilot\AP3Connector\Api\RoutesInterface;
 use Autopilot\AP3Connector\Helper\Data;
+use Autopilot\AP3Connector\Helper\To;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
 use Autopilot\AP3Connector\Model\ImportResponse;
@@ -126,7 +127,7 @@ class AutopilotClient implements AutopilotClientInterface
         $request['scope'] = $scope->toArray();
         $payload = json_encode($request, JSON_THROW_ON_ERROR);
         $this->curl->post($url, $payload);
-        $status = (int)$this->curl->getStatus();
+        $status = To::int($this->curl->getStatus());
         $response = (string)$this->curl->getBody();
         if (empty($response)) {
             $response = "{}";

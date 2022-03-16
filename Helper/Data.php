@@ -121,13 +121,13 @@ class Data extends AbstractHelper
      */
     public function getCustomerFields(CustomerInterface $customer, ConfigScopeInterface $scope): array
     {
-        $sub = $this->subscriber->loadByCustomer((int)$customer->getId(), (int)$customer->getWebsiteId());
+        $sub = $this->subscriber->loadByCustomer(To::int($customer->getId()), To::int($customer->getWebsiteId()));
         $isSubscribed = $sub->isSubscribed();
         if (!$this->config->isNonSubscribedCustomerSyncEnabled($scope->getType(), $scope->getId()) && !$isSubscribed) {
             return [];
         }
         $data = [
-            'id' => (int)$customer->getId(),
+            'id' => To::int($customer->getId()),
             'prefix' => (string)$customer->getPrefix(),
             'first_name' => (string)$customer->getFirstname(),
             'middle_name' => (string)$customer->getMiddlename(),
@@ -189,11 +189,11 @@ class Data extends AbstractHelper
         $nonSubscribedEnabled = $this->config->isNonSubscribedCustomerSyncEnabled($scope->getType(), $scope->getId());
         $orderGroups = [];
         foreach ($orders as $order) {
-            $customerId = (int)$order->getCustomerId();
-            if ($customerId == 0 && !$isAnonymousOrderEnabled) {
+            $customerId = To::int($order->getCustomerId());
+            $customerEmail = To::email($order->getCustomerEmail());
+            if (($customerId == 0 && !$isAnonymousOrderEnabled) || empty($customerEmail)) {
                 continue;
             }
-            $customerEmail = (string)$order->getCustomerEmail();
             $key = sprintf("%d:%s", $customerId, $customerEmail);
             $orderFields = $this->getOrderFields($order);
             if (array_has($orderGroups, $key)) {
@@ -242,66 +242,66 @@ class Data extends AbstractHelper
     private function getOrderFields(OrderInterface $order): array
     {
         $fields = [
-            'id' => (int)$order->getEntityId(),
-            'is_virtual' => $order->getIsVirtual(),
+            'id' => To::int($order->getEntityId()),
+            'is_virtual' => To::bool($order->getIsVirtual()),
             'number' => (string)$order->getIncrementId(),
             'status' => (string)$order->getStatus(),
             'state' => (string)$order->getState(),
             'created_at' => $this->formatDate($order->getCreatedAt()),
             'updated_at' => $this->formatDate($order->getUpdatedAt()),
             'ip_address' => $order->getRemoteIp(),
-            'total_due' => (float)$order->getTotalDue(),
-            'base_total_due' => (float)$order->getBaseTotalDue(),
-            'total_invoiced' => (float)$order->getTotalInvoiced(),
-            'base_total_invoiced' => (float)$order->getBaseTotalInvoiced(),
-            'total_offline_refunded' => (float)$order->getTotalOfflineRefunded(),
-            'base_total_offline_refunded' => (float)$order->getBaseTotalOfflineRefunded(),
-            'total_online_refunded' => (float)$order->getTotalOnlineRefunded(),
-            'base_total_online_refunded' => (float)$order->getBaseTotalOnlineRefunded(),
-            'grand_total' => (float)$order->getGrandTotal(),
-            'base_grand_total' => (float)$order->getBaseGrandTotal(),
-            'subtotal' => (float)$order->getSubtotal(),
-            'base_subtotal' => (float)$order->getBaseSubtotal(),
-            'subtotal_incl_tax' => (float)$order->getSubtotalInclTax(),
-            'base_subtotal_incl_tax' => (float)$order->getBaseSubtotalInclTax(),
-            'total_paid' => (float)$order->getTotalPaid(),
-            'base_total_paid' => (float)$order->getBaseTotalPaid(),
-            'total_cancelled' => (float)$order->getTotalCanceled(),
-            'base_total_cancelled' => (float)$order->getBaseTotalCanceled(),
+            'total_due' => To::float($order->getTotalDue()),
+            'base_total_due' => To::float($order->getBaseTotalDue()),
+            'total_invoiced' => To::float($order->getTotalInvoiced()),
+            'base_total_invoiced' => To::float($order->getBaseTotalInvoiced()),
+            'total_offline_refunded' => To::float($order->getTotalOfflineRefunded()),
+            'base_total_offline_refunded' => To::float($order->getBaseTotalOfflineRefunded()),
+            'total_online_refunded' => To::float($order->getTotalOnlineRefunded()),
+            'base_total_online_refunded' => To::float($order->getBaseTotalOnlineRefunded()),
+            'grand_total' => To::float($order->getGrandTotal()),
+            'base_grand_total' => To::float($order->getBaseGrandTotal()),
+            'subtotal' => To::float($order->getSubtotal()),
+            'base_subtotal' => To::float($order->getBaseSubtotal()),
+            'subtotal_incl_tax' => To::float($order->getSubtotalInclTax()),
+            'base_subtotal_incl_tax' => To::float($order->getBaseSubtotalInclTax()),
+            'total_paid' => To::float($order->getTotalPaid()),
+            'base_total_paid' => To::float($order->getBaseTotalPaid()),
+            'total_cancelled' => To::float($order->getTotalCanceled()),
+            'base_total_cancelled' => To::float($order->getBaseTotalCanceled()),
             'base_currency_code' => (string)$order->getBaseCurrencyCode(),
             'global_currency_code' => (string)$order->getGlobalCurrencyCode(),
             'order_currency_code' => (string)$order->getOrderCurrencyCode(),
-            'shipping' => (float)$order->getShippingAmount(),
-            'base_shipping' => (float)$order->getBaseShippingAmount(),
-            'shipping_tax' => (float)$order->getShippingTaxAmount(),
-            'base_shipping_tax' => (float)$order->getBaseShippingTaxAmount(),
-            'shipping_incl_tax' => (float)$order->getShippingInclTax(),
-            'base_shipping_incl_tax' => (float)$order->getBaseShippingInclTax(),
-            'shipping_invoiced' => (float)$order->getShippingInvoiced(),
-            'base_shipping_invoiced' => (float)$order->getBaseShippingInvoiced(),
-            'shipping_refunded' => (float)$order->getShippingRefunded(),
-            'base_shipping_refunded' => (float)$order->getBaseShippingRefunded(),
-            'shipping_canceled' => (float)$order->getShippingCanceled(),
-            'base_shipping_canceled' => (float)$order->getBaseShippingCanceled(),
-            'tax' => (float)$order->getTaxAmount(),
-            'base_tax' => (float)$order->getBaseTaxAmount(),
-            'tax_cancelled' => (float)$order->getTaxCanceled(),
-            'base_tax_cancelled' => (float)$order->getBaseTaxCanceled(),
-            'tax_invoiced' => (float)$order->getTaxInvoiced(),
-            'base_tax_invoiced' => (float)$order->getBaseTaxInvoiced(),
-            'tax_refunded' => (float)$order->getTaxRefunded(),
-            'base_tax_refunded' => (float)$order->getBaseTaxRefunded(),
-            'discount' => (float)$order->getDiscountAmount(),
-            'base_discount' => (float)$order->getBaseDiscountAmount(),
-            'discount_refunded' => (float)$order->getDiscountRefunded(),
-            'base_discount_refunded' => (float)$order->getBaseDiscountRefunded(),
-            'discount_cancelled' => (float)$order->getDiscountCanceled(),
-            'base_discount_cancelled' => (float)$order->getBaseDiscountCanceled(),
-            'discount_invoiced' => (float)$order->getDiscountInvoiced(),
-            'base_discount_invoiced' => (float)$order->getBaseDiscountInvoiced(),
+            'shipping' => To::float($order->getShippingAmount()),
+            'base_shipping' => To::float($order->getBaseShippingAmount()),
+            'shipping_tax' => To::float($order->getShippingTaxAmount()),
+            'base_shipping_tax' => To::float($order->getBaseShippingTaxAmount()),
+            'shipping_incl_tax' => To::float($order->getShippingInclTax()),
+            'base_shipping_incl_tax' => To::float($order->getBaseShippingInclTax()),
+            'shipping_invoiced' => To::float($order->getShippingInvoiced()),
+            'base_shipping_invoiced' => To::float($order->getBaseShippingInvoiced()),
+            'shipping_refunded' => To::float($order->getShippingRefunded()),
+            'base_shipping_refunded' => To::float($order->getBaseShippingRefunded()),
+            'shipping_canceled' => To::float($order->getShippingCanceled()),
+            'base_shipping_canceled' => To::float($order->getBaseShippingCanceled()),
+            'tax' => To::float($order->getTaxAmount()),
+            'base_tax' => To::float($order->getBaseTaxAmount()),
+            'tax_cancelled' => To::float($order->getTaxCanceled()),
+            'base_tax_cancelled' => To::float($order->getBaseTaxCanceled()),
+            'tax_invoiced' => To::float($order->getTaxInvoiced()),
+            'base_tax_invoiced' => To::float($order->getBaseTaxInvoiced()),
+            'tax_refunded' => To::float($order->getTaxRefunded()),
+            'base_tax_refunded' => To::float($order->getBaseTaxRefunded()),
+            'discount' => To::float($order->getDiscountAmount()),
+            'base_discount' => To::float($order->getBaseDiscountAmount()),
+            'discount_refunded' => To::float($order->getDiscountRefunded()),
+            'base_discount_refunded' => To::float($order->getBaseDiscountRefunded()),
+            'discount_cancelled' => To::float($order->getDiscountCanceled()),
+            'base_discount_cancelled' => To::float($order->getBaseDiscountCanceled()),
+            'discount_invoiced' => To::float($order->getDiscountInvoiced()),
+            'base_discount_invoiced' => To::float($order->getBaseDiscountInvoiced()),
             'base_discount_description' => (string)$order->getDiscountDescription(),
-            'shipping_discount' => (float)$order->getShippingDiscountAmount(),
-            'base_shipping_discount' => (float)$order->getBaseShippingDiscountAmount(),
+            'shipping_discount' => To::float($order->getShippingDiscountAmount()),
+            'base_shipping_discount' => To::float($order->getBaseShippingDiscountAmount()),
             'coupon_code' => (string)$order->getCouponCode(),
             'protect_code' => (string)$order->getProtectCode(),
             'canceled_at' => $this->getOrderCancellationDate($order),
@@ -319,7 +319,7 @@ class Data extends AbstractHelper
             $ext = [];
             $amz = $extensionAttrs->getAmazonOrderReferenceId();
             if (!empty($amz)) {
-                $ext['amazon_reference_id'] = (int)$amz->getOrderId();
+                $ext['amazon_reference_id'] = To::int($amz->getOrderId());
             }
 
             $gift = $extensionAttrs->getGiftMessage();
@@ -410,35 +410,35 @@ class Data extends AbstractHelper
                 'description' => (string)$item->getDescription(),
                 'created_at' => $this->formatDate($item->getCreatedAt()),
                 'updated_at' => $this->formatDate($item->getUpdatedAt()),
-                'refunded' => (float)$item->getAmountRefunded(),
-                'base_refunded' => (float)$item->getBaseAmountRefunded(),
-                'base_cost' => (float)$item->getBaseCost(),
-                'discount' => (float)$item->getDiscountAmount(),
-                'base_discount' => (float)$item->getBaseDiscountAmount(),
-                'discount_percent' => (float)$item->getDiscountPercent(),
-                'discount_invoiced' => (float)$item->getDiscountInvoiced(),
-                'base_discount_invoiced' => (float)$item->getBaseDiscountInvoiced(),
-                'discount_refunded' => (float)$item->getDiscountRefunded(),
-                'base_discount_refunded' => (float)$item->getBaseDiscountRefunded(),
-                'total' => (float)$item->getRowTotal(),
-                'base_total' => (float)$item->getBaseRowTotal(),
-                'total_incl_tax' => (float)$item->getRowTotalInclTax(),
-                'base_total_incl_tax' => (float)$item->getBaseRowTotalInclTax(),
-                'price' => (float)$item->getPrice(),
-                'base_price' => (float)$item->getBasePrice(),
-                'original_price' => (float)$item->getOriginalPrice(),
-                'base_original_price' => (float)$item->getBaseOriginalPrice(),
-                'qty_ordered' => (float)$item->getQtyOrdered(),
-                'qty_back_ordered' => (float)$item->getQtyBackordered(),
-                'qty_refunded' => (float)$item->getQtyRefunded(),
-                'qty_returned' => (float)$item->getQtyReturned(),
-                'qty_cancelled' => (float)$item->getQtyCanceled(),
-                'qty_shipped' => (float)$item->getQtyShipped(),
-                'gty_invoiced' => (float)$item->getQtyInvoiced(),
-                'tax' => (float)$item->getTaxAmount(),
-                'base_tax' => (float)$item->getBaseTaxAmount(),
+                'refunded' => To::float($item->getAmountRefunded()),
+                'base_refunded' => To::float($item->getBaseAmountRefunded()),
+                'base_cost' => To::float($item->getBaseCost()),
+                'discount' => To::float($item->getDiscountAmount()),
+                'base_discount' => To::float($item->getBaseDiscountAmount()),
+                'discount_percent' => To::float($item->getDiscountPercent()),
+                'discount_invoiced' => To::float($item->getDiscountInvoiced()),
+                'base_discount_invoiced' => To::float($item->getBaseDiscountInvoiced()),
+                'discount_refunded' => To::float($item->getDiscountRefunded()),
+                'base_discount_refunded' => To::float($item->getBaseDiscountRefunded()),
+                'total' => To::float($item->getRowTotal()),
+                'base_total' => To::float($item->getBaseRowTotal()),
+                'total_incl_tax' => To::float($item->getRowTotalInclTax()),
+                'base_total_incl_tax' => To::float($item->getBaseRowTotalInclTax()),
+                'price' => To::float($item->getPrice()),
+                'base_price' => To::float($item->getBasePrice()),
+                'original_price' => To::float($item->getOriginalPrice()),
+                'base_original_price' => To::float($item->getBaseOriginalPrice()),
+                'qty_ordered' => To::float($item->getQtyOrdered()),
+                'qty_back_ordered' => To::float($item->getQtyBackordered()),
+                'qty_refunded' => To::float($item->getQtyRefunded()),
+                'qty_returned' => To::float($item->getQtyReturned()),
+                'qty_cancelled' => To::float($item->getQtyCanceled()),
+                'qty_shipped' => To::float($item->getQtyShipped()),
+                'gty_invoiced' => To::float($item->getQtyInvoiced()),
+                'tax' => To::float($item->getTaxAmount()),
+                'base_tax' => To::float($item->getBaseTaxAmount()),
                 'is_free_shipping' => $item->getFreeShipping(),
-                'tax_percent' => (float)$item->getTaxPercent(),
+                'tax_percent' => To::float($item->getTaxPercent()),
                 'additional_data' => (string)$item->getAdditionalData(),
             ];
         }
@@ -479,8 +479,8 @@ class Data extends AbstractHelper
                 $product,
                 'product_base_image'
             )->setImageFile($product->getImage())->getUrl(),
-            'price' => (float)$product->getPrice(),
-            'minimal_price' => (float)$product->getMinimalPrice(),
+            'price' => To::float($product->getPrice()),
+            'minimal_price' => To::float($product->getMinimalPrice()),
             'updated_at' => $this->formatDate($product->getUpdatedAt()),
             'created_at' => $this->formatDate($product->getCreatedAt()),
         ];
@@ -633,6 +633,6 @@ class Data extends AbstractHelper
             );
             return false;
         }
-        return array_contains($scope->getStoreIds(), (int)$order->getStoreId());
+        return array_contains($scope->getStoreIds(), To::int($order->getStoreId()));
     }
 }

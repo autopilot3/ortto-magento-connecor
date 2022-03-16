@@ -6,6 +6,7 @@ namespace Autopilot\AP3Connector\Controller\Adminhtml\Sync;
 use Autopilot\AP3Connector\Api\RoutesInterface;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Helper\Data;
+use Autopilot\AP3Connector\Helper\To;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use AutoPilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
 use AutoPilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
@@ -52,7 +53,7 @@ class Customers extends Action
         $request = $this->getRequest();
         $params = $request->getParams();
         $this->logger->debug("Request received: " . $this->getUrl(RoutesInterface::MG_SYNC_CUSTOMERS), $params);
-        $scope = $this->scopeManager->getCurrentConfigurationScope($params['scope_type'], (int)$params['scope_id']);
+        $scope = $this->scopeManager->getCurrentConfigurationScope($params['scope_type'], To::int($params['scope_id']));
         $result = $this->jsonFactory->create();
 
         if (!$scope->isConnected()) {

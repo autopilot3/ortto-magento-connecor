@@ -6,6 +6,7 @@ namespace Autopilot\AP3Connector\Observer;
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Helper\Data;
+use Autopilot\AP3Connector\Helper\To;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Exception;
 use Magento\Framework\Event\Observer;
@@ -43,11 +44,11 @@ class OrderCanceledAfter implements ObserverInterface
         $now = $this->helper->now();
         try {
             $collection = $this->collectionFactory->create();
-            $collection->setCancellationDate((int)$order->getEntityId(), $now);
+            $collection->setCancellationDate(To::int($order->getEntityId()), $now);
         } catch (Exception $e) {
             $msg = sprintf(
                 'Failed to update order cancellation attribute (ID: %d)',
-                (int)$order->getEntityId()
+                To::int($order->getEntityId())
             );
             $this->logger->error($e, $msg);
         }
@@ -66,7 +67,7 @@ class OrderCanceledAfter implements ObserverInterface
             } catch (Exception $e) {
                 $msg = sprintf(
                     'Failed to export the cancelled order ID %d to %s',
-                    (int)$order->getEntityId(),
+                    To::int($order->getEntityId()),
                     $scope->getCode()
                 );
                 $this->logger->error($e, $msg);

@@ -7,6 +7,7 @@ namespace Autopilot\AP3Connector\Service;
 use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
 use Autopilot\AP3Connector\Api\SyncCategoryInterface;
 use Autopilot\AP3Connector\Helper\Config;
+use Autopilot\AP3Connector\Helper\To;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 
@@ -32,7 +33,7 @@ class ConfigurationReader implements ConfigurationReaderInterface
      */
     public function isActive(string $scopeType, int $scopeId): bool
     {
-        return (bool)$this->scopeConfig->getValue(Config::XML_PATH_ACTIVE, $scopeType, $scopeId);
+        return To::bool($this->scopeConfig->getValue(Config::XML_PATH_ACTIVE, $scopeType, $scopeId));
     }
 
     /**
@@ -58,17 +59,17 @@ class ConfigurationReader implements ConfigurationReaderInterface
     {
         switch ($category) {
             case SyncCategoryInterface::CUSTOMER:
-                return (bool)$this->scopeConfig->getValue(
+                return To::bool($this->scopeConfig->getValue(
                     Config::XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED,
                     $scopeType,
                     $scopeId
-                );
+                ));
             case SyncCategoryInterface::ORDER:
-                return (bool)$this->scopeConfig->getValue(
+                return To::bool($this->scopeConfig->getValue(
                     Config::XML_PATH_SYNC_ORDER_AUTO_ENABLED,
                     $scopeType,
                     $scopeId
-                );
+                ));
             default:
                 return false;
         }
@@ -79,11 +80,11 @@ class ConfigurationReader implements ConfigurationReaderInterface
      */
     public function isNonSubscribedCustomerSyncEnabled(string $scopeType, int $scopeId): bool
     {
-        return (bool)$this->scopeConfig->getValue(
+        return To::bool($this->scopeConfig->getValue(
             Config::XML_PATH_SYNC_CUSTOMER_NON_SUBSCRIBED_ENABLED,
             $scopeType,
             $scopeId
-        );
+        ));
     }
 
     /**
@@ -111,10 +112,10 @@ class ConfigurationReader implements ConfigurationReaderInterface
      */
     public function isAnonymousOrderSyncEnabled(string $scopeType, int $scopeId): bool
     {
-        return (bool)$this->scopeConfig->getValue(
+        return To::bool($this->scopeConfig->getValue(
             Config::XML_PATH_SYNC_ANONYMOUS_ORDERS_ENABLED,
             $scopeType,
             $scopeId
-        );
+        ));
     }
 }

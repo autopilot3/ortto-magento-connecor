@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Observer;
 
 use Autopilot\AP3Connector\Helper\Data;
+use Autopilot\AP3Connector\Helper\To;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
@@ -45,7 +46,12 @@ class CustomerSubscriptionSavedAfterFrontend implements ObserverInterface
                 $this->logger->warn("Subscriber was not provided");
                 return;
             }
-            $customer = $this->customerRepository->get((string)$subscriber->getEmail());
+            $email = To::email($subscriber->getEmail());
+            if (empty($email)) {
+                $this->logger->warn("Customer email was not provided");
+                return;
+            }
+            $customer = $this->customerRepository->get($email);
             $scopes = $this->scopeManager->getActiveScopes();
             foreach ($scopes as $scope) {
                 if (!$this->helper->shouldExportCustomer($scope, $customer)) {

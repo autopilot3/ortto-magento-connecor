@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Observer;
 
 use Autopilot\AP3Connector\Helper\Data;
+use Autopilot\AP3Connector\Helper\To;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
@@ -45,7 +46,7 @@ class CustomerAddressSavedAfterFrontend implements ObserverInterface
                 $this->logger->warn("Customer address was not provided");
                 return;
             }
-            $customer = $this->customerRepository->getById((int)$address->getCustomerId());
+            $customer = $this->customerRepository->getById(To::int($address->getCustomerId()));
             $scopes = $this->scopeManager->getActiveScopes();
             foreach ($scopes as $scope) {
                 if (!$this->helper->shouldExportCustomer($scope, $customer)) {

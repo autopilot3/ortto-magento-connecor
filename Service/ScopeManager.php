@@ -6,6 +6,7 @@ namespace Autopilot\AP3Connector\Service;
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
+use Autopilot\AP3Connector\Helper\To;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\Scope;
 use Autopilot\AP3Connector\Model\ScopeFactory;
@@ -50,7 +51,7 @@ class ScopeManager implements ScopeManagerInterface
         $websites = $this->storeManager->getWebsites();
         foreach ($websites as $website) {
             try {
-                $scope = $this->initialiseScope(ScopeInterface::SCOPE_WEBSITE, (int)$website->getId(), $websites);
+                $scope = $this->initialiseScope(ScopeInterface::SCOPE_WEBSITE, To::int($website->getId()), $websites);
                 if ($scope->isConnected()) {
                     $result[] = $scope;
                 }
@@ -62,7 +63,12 @@ class ScopeManager implements ScopeManagerInterface
         $stores = $this->storeManager->getStores();
         foreach ($stores as $store) {
             try {
-                $scope = $this->initialiseScope(ScopeInterface::SCOPE_STORE, (int)$store->getId(), $websites, $stores);
+                $scope = $this->initialiseScope(
+                    ScopeInterface::SCOPE_STORE,
+                    To::int($store->getId()),
+                    $websites,
+                    $stores
+                );
                 if ($scope->isConnected()) {
                     $result[] = $scope;
                 }
@@ -82,7 +88,7 @@ class ScopeManager implements ScopeManagerInterface
         try {
             if ($scopeType === ScopeInterface::SCOPE_WEBSITE) {
                 if (empty($scopeId)) {
-                    $websiteId = (int)$this->request->getParam($scopeType, -1);
+                    $websiteId = To::int($this->request->getParam($scopeType, -1));
                 } else {
                     $websiteId = $scopeId;
                 }
@@ -93,7 +99,7 @@ class ScopeManager implements ScopeManagerInterface
 
             $scopeType = ScopeInterface::SCOPE_STORE;
             if (empty($scopeId)) {
-                $storeId = (int)$this->request->getParam($scopeType, -1);
+                $storeId = To::int($this->request->getParam($scopeType, -1));
             } else {
                 $storeId = $scopeId;
             }
@@ -146,14 +152,14 @@ class ScopeManager implements ScopeManagerInterface
                     }
                 }
                 foreach ($stores as $store) {
-                    if ((int)$store->getWebsiteId() === $id) {
-                        $scope->addStoreId((int)$store->getId());
+                    if (To::int($store->getWebsiteId()) === $id) {
+                        $scope->addStoreId(To::int($store->getId()));
                     }
                 }
                 break;
             case ScopeInterface::SCOPE_STORE:
                 $store = $this->storeManager->getStore($id);
-                $websiteId = (int)$store->getWebsiteId();
+                $websiteId = To::int($store->getWebsiteId());
                 $scope->setWebsiteId($websiteId);
                 $websiteAPIKey = $this->configReader->getAPIKey(ScopeInterface::SCOPE_WEBSITE, $websiteId);
                 $storeAPIKey = $this->configReader->getAPIKey($type, $id);

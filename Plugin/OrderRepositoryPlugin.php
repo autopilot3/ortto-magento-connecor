@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Plugin;
 
+use Autopilot\AP3Connector\Helper\To;
 use AutoPilot\AP3Connector\Model\ResourceModel\OrderAttributes\CollectionFactory as OrderAttributeCollectionFactory;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -32,7 +33,7 @@ class OrderRepositoryPlugin
         }
 
         $attributesCollection = $this->attrCollectionFactory->create();
-        $attribute = $attributesCollection->getByOrderId((int)$order->getId());
+        $attribute = $attributesCollection->getByOrderId(To::int($order->getId()));
         if (!empty($attribute)) {
             $extAttributes->setAutopilotCanceledAt($attribute->getCanceledAt());
             $order->setExtensionAttributes($extAttributes);
