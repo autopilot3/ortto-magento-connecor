@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Service;
 
 use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
+use Autopilot\AP3Connector\Api\ImageIdInterface;
 use Autopilot\AP3Connector\Api\SyncCategoryInterface;
 use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Helper\To;
@@ -117,5 +118,34 @@ class ConfigurationReader implements ConfigurationReaderInterface
             $scopeType,
             $scopeId
         ));
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function getPlaceholderImages(string $scopeType, int $scopeId): array
+    {
+        return [
+            ImageIdInterface::IMAGE => $this->scopeConfig->getValue(
+                Config::XML_PATH_IMAGE_PLACE_HOLDER,
+                $scopeType,
+                $scopeId
+            ),
+            ImageIdInterface::SMALL => $this->scopeConfig->getValue(
+                Config::XML_PATH_SMALL_IMAGE_PLACE_HOLDER,
+                $scopeType,
+                $scopeId
+            ),
+            ImageIdInterface::SWATCH => $this->scopeConfig->getValue(
+                Config::XML_PATH_SWATCH_IMAGE_PLACE_HOLDER,
+                $scopeType,
+                $scopeId
+            ),
+            ImageIdInterface::THUMBNAIL => $this->scopeConfig->getValue(
+                Config::XML_PATH_THUMBNAIL_IMAGE_PLACE_HOLDER,
+                $scopeType,
+                $scopeId
+            ),
+        ];
     }
 }
