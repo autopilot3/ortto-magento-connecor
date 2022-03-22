@@ -6,19 +6,11 @@ namespace Autopilot\AP3Connector\Helper;
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Api\SyncCategoryInterface;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
+use Autopilot\AP3Connector\Model\Api\ProductDataFactory;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
 use AutoPilot\AP3Connector\Model\ResourceModel\CronCheckpoint\CollectionFactory as CheckpointCollectionFactory;
 use AutoPilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
-use DateTime;
-use Exception;
-use Magento\Catalog\Api\Data\CategoryInterface;
-use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\Product\Visibility;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
@@ -30,8 +22,6 @@ use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Framework\UrlInterface;
-use Magento\InventorySalesAdminUi\Model\GetSalableQuantityDataBySku;
 use Magento\Newsletter\Model\Subscriber;
 use Magento\Sales\Api\Data\OrderAddressInterface;
 use Magento\Sales\Api\Data\OrderExtensionInterface;
@@ -39,18 +29,15 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
 use Magento\Sales\Model\Order;
-use Magento\Catalog\Helper\ImageFactory;
 use Magento\Store\Model\ScopeInterface;
-use Magento\Store\Model\StoreManagerInterface;
+use DateTime;
+use Exception;
 
 class Data extends AbstractHelper
 {
     private const SHIPPING_ADDRESS = "shipping_address";
     private const BILLING_ADDRESS = "billing_address";
-    private const NO_SELECT = 'no_select';
     private const ORDERS = "orders";
-    private const VARIATIONS = 'variations';
-    private const URL = 'url';
 
     private string $baseURL = "https://magento-integration-api.autopilotapp.com";
     private string $clientID = "mgqQkvCJWDFnxJTgQwfVuYEdQRWVAywE";
@@ -61,15 +48,9 @@ class Data extends AbstractHelper
     private CustomerMetadataInterface $customerMetadata;
     private Subscriber $subscriber;
     private ConfigurationReaderInterface $config;
-    private ProductRepositoryInterface $productRepository;
-    private ImageFactory $imageFactory;
     private CheckpointCollectionFactory $checkpointCollectionFactory;
     private JobCollectionFactory $jobCollectionFactory;
-    private GetSalableQuantityDataBySku $getSalableStock;
-    private CategoryCollectionFactory $categoryCollectionFactory;
-    private array $categoryCache;
-    private StoreManagerInterface $storeManager;
-    private Configurable $configurable;
+    private ProductDataFactory $productDataFactory;
 
     public function __construct(
         Context $context,
@@ -80,17 +61,11 @@ class Data extends AbstractHelper
         Subscriber $subscriber,
         AutopilotLoggerInterface $logger,
         ConfigurationReaderInterface $config,
-        ProductRepositoryInterface $productRepository,
         CheckpointCollectionFactory $checkpointCollectionFactory,
         JobCollectionFactory $jobCollectionFactory,
-        ImageFactory $imageFactory,
-        GetSalableQuantityDataBySku $getSalableStock,
-        CategoryCollectionFactory $categoryCollectionFactory,
-        StoreManagerInterface $storeManager,
-        Configurable $configurable
+        ProductDataFactory $productDataFactory
     ) {
         parent::__construct($context);
-        $this->categoryCache = [];
         $this->_request = $context->getRequest();
         $this->groupRepository = $groupRepository;
         $this->logger = $logger;
@@ -99,14 +74,9 @@ class Data extends AbstractHelper
         $this->customerMetadata = $customerMetadata;
         $this->subscriber = $subscriber;
         $this->config = $config;
-        $this->productRepository = $productRepository;
-        $this->imageFactory = $imageFactory;
         $this->checkpointCollectionFactory = $checkpointCollectionFactory;
         $this->jobCollectionFactory = $jobCollectionFactory;
-        $this->getSalableStock = $getSalableStock;
-        $this->categoryCollectionFactory = $categoryCollectionFactory;
-        $this->storeManager = $storeManager;
-        $this->configurable = $configurable;
+        $this->productDataFactory = $productDataFactory;
     }
 
     /**
@@ -212,7 +182,6 @@ class Data extends AbstractHelper
         $isAnonymousOrderEnabled = $this->config->isAnonymousOrderSyncEnabled($scope->getType(), $scope->getId());
         $nonSubscribedEnabled = $this->config->isNonSubscribedCustomerSyncEnabled($scope->getType(), $scope->getId());
         $orderGroups = [];
-        $this->categoryCache = [];
         foreach ($orders as $order) {
             $customerId = To::int($order->getCustomerId());
             $customerEmail = To::email($order->getCustomerEmail());
@@ -430,16 +399,12 @@ class Data extends AbstractHelper
         }
         $result = [];
         foreach ($items as $item) {
-            $storeId = To::int($item->getStoreId());
             $sku = (string)$item->getSku();
-            $productId = To::int($item->getProductId());
-            try {
-                $product = $this->productRepository->getById($productId);
-            } catch (NoSuchEntityException $e) {
-                $this->logger->error($e, "Failed to find order item's product by ID");
+            $product = $this->productDataFactory->create();
+            if (!$product->loadById(To::int($item->getProductId()))) {
                 continue;
             }
-            $itemFields = [
+            $result[] = [
                 'id' => To::int($item->getItemId()),
                 'is_virtual' => To::bool($item->getIsVirtual()),
                 'name' => (string)$item->getName(),
@@ -477,197 +442,12 @@ class Data extends AbstractHelper
                 'is_free_shipping' => $item->getFreeShipping(),
                 'tax_percent' => To::float($item->getTaxPercent()),
                 'additional_data' => (string)$item->getAdditionalData(),
-                'store_id' => $storeId,
+                'store_id' => To::int($item->getStoreId()),
+                'product' => $product->toArray(),
+                'variation' => $product->getVariationDataBySKU($sku),
             ];
-
-            $productFields = $this->getProductFields($product);
-            if ($product->getTypeId() == Configurable::TYPE_CODE) {
-                $variations = $this->getProductVariations($productId);
-                foreach ($variations as $variation) {
-                    $vFields = $this->getProductFields($variation, false, false);
-                    if ($variation->getVisibility() == Visibility::VISIBILITY_NOT_VISIBLE) {
-                        $vFields[self::URL] = $productFields[self::URL];
-                    }
-                    if ($variation->getSku() == $sku) {
-                        $itemFields['variation'] = $vFields;
-                    }
-                    $productFields[self::VARIATIONS][] = $vFields;
-                }
-            }
-            $itemFields['product'] = $productFields;
-            $result[] = $itemFields;
         }
         return $result;
-    }
-
-    /**
-     * @param ProductInterface|Product $product
-     * @param bool $loadStock
-     * @param bool $loadCustomAttributes
-     * @return array
-     */
-    private function getProductFields(
-        $product,
-        bool $loadStock = true,
-        bool $loadCustomAttributes = true
-    ): array {
-        $productSKU = (string)$product->getSku();
-        $productTypeId = $product->getTypeId();
-        $fields = [
-            'id' => To::int($product->getId()),
-            'type' => $productTypeId,
-            'name' => (string)$product->getName(),
-            'sku' => $productSKU,
-            self::URL => (string)$product->getProductUrl() ?? '',
-            'is_virtual' => To::bool($product->getIsVirtual()),
-            'categories' => $this->getProductCategories($product->getCategoryIds()),
-            'price' => To::float($product->getPrice()),
-            'minimal_price' => To::float($product->getMinimalPrice()),
-            'calculated_price' => To::float($product->getCalculatedFinalPrice()),
-            'updated_at' => $this->formatDate($product->getUpdatedAt()),
-            'created_at' => $this->formatDate($product->getCreatedAt()),
-            'weight' => To::float($product->getWeight()),
-            'image_url' => $this->getProductImageURL($product),
-            'stock' => [
-                'is_in_stock' => To::bool($product->isInStock()),
-                'quantity' => To::float($product->getQty()),
-            ],
-            'custom_attributes' => [],
-            self::VARIATIONS => [],
-        ];
-
-        if ($loadStock && !empty($productSKU)) {
-            $salable = $this->getSalableStock->execute($productSKU);
-            if (isset($salable['qty'])) {
-                $fields['stock']['salable'] = To::float($salable['qty']);
-            }
-        }
-
-        if ($loadCustomAttributes) {
-            $customAttrs = $product->getCustomAttributes();
-            foreach ($customAttrs as $attr) {
-                $fields['custom_attributes'][] = [
-                    'code' => $attr->getAttributeCode(),
-                    'value' => $attr->getValue(),
-                ];
-            }
-        }
-
-        return $fields;
-    }
-
-    /**
-     * @param int $parentProductId
-     * @return ProductInterface[]
-     */
-    private function getProductVariations(int $parentProductId): array
-    {
-        $childrenIDs = $this->configurable->getChildrenIds($parentProductId);
-        $variations = [];
-        foreach ($childrenIDs as $idGroup) {
-            foreach ($idGroup as $productId) {
-                try {
-                    $product = $this->productRepository->getById($productId);
-                    $variations[] = $product;
-                } catch (NoSuchEntityException $e) {
-                    $this->logger->error($e, "Failed to fetch variation product");
-                }
-            }
-        }
-        return $variations;
-    }
-
-    /**
-     * @param ProductInterface|Product $product
-     */
-    private function getProductImageURL($product): string
-    {
-        $image = $product->getImage();
-        if (!empty($image) && $image != self::NO_SELECT) {
-            return $this->resolveProductImageURL($product);
-        }
-        $parent = $this->getProductParent(To::int($product->getId()));
-        if ($parent) {
-            $image = $parent->getImage();
-            if (!empty($image) && $image != self::NO_SELECT) {
-                return $this->resolveProductImageURL($parent);
-            }
-        }
-
-        return '';
-    }
-
-    /**
-     * @param Product|ProductInterface $product
-     */
-    private function resolveProductImageURL($product): string
-    {
-        $img = $this->imageFactory->create();
-        return $img->init($product, 'product_page_image_small')
-                ->setImageFile($product->getImage())->getUrl() ?? '';
-    }
-
-    /**
-     * @param int $productId
-     * @return false|ProductInterface
-     */
-    private function getProductParent(int $productId)
-    {
-        $parentIds = $this->configurable->getParentIdsByChild($productId);
-        foreach ($parentIds as $id) {
-            try {
-                $parent = $this->productRepository->getById($id, false);
-                if ($parent->getTypeId() == Configurable::TYPE_CODE) {
-                    return $parent;
-                }
-            } catch (NoSuchEntityException $e) {
-                $this->logger->warn("Failed to lookup product by ID", ['error' => $e->getMessage()]);
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param int[] $categoryIds
-     * @return array
-     */
-    private function getProductCategories(array $categoryIds): array
-    {
-        $result = [];
-        $toSearch = [];
-        foreach ($categoryIds as $id) {
-            if (isset($this->categoryCache[$id])) {
-                $result[] = $this->categoryCache[$id];
-                continue;
-            }
-            $toSearch[] = $id;
-        }
-
-        if (empty($toSearch)) {
-            return $result;
-        }
-
-        $collection = $this->categoryCollectionFactory->create();
-        $collection->addFieldToSelect("*")
-            ->addFieldToFilter('entity_id', ['in' => implode(',', $toSearch)]);
-
-        /** @var CategoryInterface $category */
-        foreach ($collection->getItems() as $category) {
-            $fields = $this->getCategoryFields($category);
-            $result[] = $fields;
-            $this->categoryCache[$category->getId()] = $fields;
-        }
-        return $result;
-    }
-
-    private function getCategoryFields(CategoryInterface $category): array
-    {
-        return [
-            'id' => To::int($category->getId()),
-            'name' => $category->getName(),
-            'is_active' => To::bool($category->getIsActive()),
-            'level' => To::int($category->getLevel()),
-        ];
     }
 
     /**
