@@ -92,7 +92,7 @@ class Data extends AbstractHelper
     public function getAutopilotURL(string $path): string
     {
         $path = trim($path);
-        $url = $this->scopeConfig->getValue(Config::XML_PATH_BASE_URL);
+        $url = (string)$this->scopeConfig->getValue(Config::XML_PATH_BASE_URL);
         if (empty($url)) {
             $url = $this->baseURL;
         }

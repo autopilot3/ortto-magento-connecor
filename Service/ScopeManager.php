@@ -178,7 +178,7 @@ class ScopeManager implements ScopeManagerInterface
                 throw new InvalidArgumentException(new Phrase("Unsupported scope type $type"));
         }
 
-        if (empty(trim($code))) {
+        if (empty(trim((string)$code))) {
             throw new NotFoundException(new Phrase("Scope not found", ['type' => $type, 'id' => $id]));
         }
 
