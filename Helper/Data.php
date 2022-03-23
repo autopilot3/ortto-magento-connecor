@@ -9,8 +9,8 @@ use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\Api\ProductDataFactory;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
-use AutoPilot\AP3Connector\Model\ResourceModel\CronCheckpoint\CollectionFactory as CheckpointCollectionFactory;
-use AutoPilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
+use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\CollectionFactory as CheckpointCollectionFactory;
+use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
@@ -86,7 +86,7 @@ class Data extends AbstractHelper
     public function getAutopilotURL(string $path): string
     {
         $path = trim($path);
-        $url = $this->scopeConfig->getValue(Config::XML_PATH_BASE_URL);
+        $url = (string)$this->scopeConfig->getValue(Config::XML_PATH_BASE_URL);
         if (empty($url)) {
             $url = $this->baseURL;
         }

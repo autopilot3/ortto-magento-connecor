@@ -45,7 +45,7 @@ class ConfigurationReader implements ConfigurationReaderInterface
         if ($this->apiKey !== '') {
             return $this->apiKey;
         }
-        $encrypted = trim($this->scopeConfig->getValue(Config::XML_PATH_API_KEY, $scopeType, $scopeId));
+        $encrypted = trim((string)$this->scopeConfig->getValue(Config::XML_PATH_API_KEY, $scopeType, $scopeId));
         if (empty($encrypted)) {
             return "";
         }
@@ -96,7 +96,7 @@ class ConfigurationReader implements ConfigurationReaderInterface
         if ($this->accessToken !== '') {
             return $this->accessToken;
         }
-        $encrypted = trim($this->scopeConfig->getValue(
+        $encrypted = trim((string)$this->scopeConfig->getValue(
             Config::XML_PATH_ACCESS_TOKEN,
             $scopeType,
             $scopeId
