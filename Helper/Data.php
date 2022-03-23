@@ -6,15 +6,11 @@ namespace Autopilot\AP3Connector\Helper;
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Api\SyncCategoryInterface;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
+use Autopilot\AP3Connector\Model\Api\ProductDataFactory;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\CollectionFactory as CheckpointCollectionFactory;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
-use DateTime;
-use Exception;
-use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\ProductRepository;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
@@ -33,8 +29,9 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
 use Magento\Sales\Model\Order;
-use Magento\Catalog\Helper\Image;
 use Magento\Store\Model\ScopeInterface;
+use DateTime;
+use Exception;
 
 class Data extends AbstractHelper
 {
@@ -51,10 +48,9 @@ class Data extends AbstractHelper
     private CustomerMetadataInterface $customerMetadata;
     private Subscriber $subscriber;
     private ConfigurationReaderInterface $config;
-    private ProductRepository $productRepository;
-    private Image $imageHelper;
     private CheckpointCollectionFactory $checkpointCollectionFactory;
     private JobCollectionFactory $jobCollectionFactory;
+    private ProductDataFactory $productDataFactory;
 
     public function __construct(
         Context $context,
@@ -65,10 +61,9 @@ class Data extends AbstractHelper
         Subscriber $subscriber,
         AutopilotLoggerInterface $logger,
         ConfigurationReaderInterface $config,
-        ProductRepository $productRepository,
         CheckpointCollectionFactory $checkpointCollectionFactory,
         JobCollectionFactory $jobCollectionFactory,
-        Image $imageHelper
+        ProductDataFactory $productDataFactory
     ) {
         parent::__construct($context);
         $this->_request = $context->getRequest();
@@ -79,10 +74,9 @@ class Data extends AbstractHelper
         $this->customerMetadata = $customerMetadata;
         $this->subscriber = $subscriber;
         $this->config = $config;
-        $this->productRepository = $productRepository;
-        $this->imageHelper = $imageHelper;
         $this->checkpointCollectionFactory = $checkpointCollectionFactory;
         $this->jobCollectionFactory = $jobCollectionFactory;
+        $this->productDataFactory = $productDataFactory;
     }
 
     /**
@@ -236,7 +230,7 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param OrderInterface $order
+     * @param OrderInterface|Order $order
      * @return array
      */
     private function getOrderFields(OrderInterface $order): array
@@ -247,6 +241,8 @@ class Data extends AbstractHelper
             'number' => (string)$order->getIncrementId(),
             'status' => (string)$order->getStatus(),
             'state' => (string)$order->getState(),
+            'quantity' => To::float($order->getTotalQtyOrdered()),
+            'base_quantity' => To::float($order->getBaseTotalQtyOrdered()),
             'created_at' => $this->formatDate($order->getCreatedAt()),
             'updated_at' => $this->formatDate($order->getUpdatedAt()),
             'ip_address' => $order->getRemoteIp(),
@@ -305,7 +301,7 @@ class Data extends AbstractHelper
             'coupon_code' => (string)$order->getCouponCode(),
             'protect_code' => (string)$order->getProtectCode(),
             'canceled_at' => $this->getOrderCancellationDate($order),
-            'items' => $this->getOrderItemFields($order->getItems()),
+            'items' => $this->getOrderItemFields($order->getAllVisibleItems()),
         ];
 
         $payment = $order->getPayment();
@@ -403,10 +399,16 @@ class Data extends AbstractHelper
         }
         $result = [];
         foreach ($items as $item) {
+            $sku = (string)$item->getSku();
+            $product = $this->productDataFactory->create();
+            if (!$product->loadById(To::int($item->getProductId()))) {
+                continue;
+            }
             $result[] = [
-                'product' => $this->getProductFieldsById($item->getProductId()),
+                'id' => To::int($item->getItemId()),
+                'is_virtual' => To::bool($item->getIsVirtual()),
                 'name' => (string)$item->getName(),
-                'sku' => (string)$item->getSku(),
+                'sku' => $sku,
                 'description' => (string)$item->getDescription(),
                 'created_at' => $this->formatDate($item->getCreatedAt()),
                 'updated_at' => $this->formatDate($item->getUpdatedAt()),
@@ -440,50 +442,12 @@ class Data extends AbstractHelper
                 'is_free_shipping' => $item->getFreeShipping(),
                 'tax_percent' => To::float($item->getTaxPercent()),
                 'additional_data' => (string)$item->getAdditionalData(),
+                'store_id' => To::int($item->getStoreId()),
+                'product' => $product->toArray(),
+                'variation' => $product->getVariationDataBySKU($sku),
             ];
         }
         return $result;
-    }
-
-    /**
-     * @param int|null $productId
-     * @return array|null
-     */
-    private function getProductFieldsById($productId)
-    {
-        if (empty($productId)) {
-            return null;
-        }
-        try {
-            $product = $this->productRepository->getById($productId);
-        } catch (NoSuchEntityException $e) {
-            return null;
-        }
-        return $this->getProductFields($product);
-    }
-
-    /**
-     * @param ProductInterface|Product $product
-     * @return array
-     */
-    private function getProductFields($product): array
-    {
-        return [
-            'id' => $product->getId(),
-            'type' => (string)$product->getTypeId(),
-            'name' => (string)$product->getName(),
-            'sku' => (string)$product->getSku(),
-            'url' => (string)$product->getProductUrl(),
-            'is_virtual' => $product->getIsVirtual(),
-            'image_url' => $this->imageHelper->init(
-                $product,
-                'product_base_image'
-            )->setImageFile($product->getImage())->getUrl(),
-            'price' => To::float($product->getPrice()),
-            'minimal_price' => To::float($product->getMinimalPrice()),
-            'updated_at' => $this->formatDate($product->getUpdatedAt()),
-            'created_at' => $this->formatDate($product->getCreatedAt()),
-        ];
     }
 
     /**

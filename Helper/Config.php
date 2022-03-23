@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Helper;
 
+use Autopilot\AP3Connector\Api\ImageIdInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 
 class Config extends AbstractHelper
@@ -18,6 +19,10 @@ class Config extends AbstractHelper
     const XML_PATH_SYNC_ORDER_AUTO_ENABLED = "ap_sync/order/auto_sync_enabled";
     const XML_PATH_SYNC_CUSTOMER_NON_SUBSCRIBED_ENABLED = "ap_sync/customer/non_subscribed_enabled";
     const XML_PATH_SYNC_ANONYMOUS_ORDERS_ENABLED = "ap_sync/order/anonymous_enabled";
+    const XML_PATH_IMAGE_PLACE_HOLDER = 'catalog/placeholder/image_placeholder';
+    const XML_PATH_SMALL_IMAGE_PLACE_HOLDER = 'catalog/placeholder/small_image_placeholder';
+    const XML_PATH_SWATCH_IMAGE_PLACE_HOLDER = 'catalog/placeholder/swatch_image_placeholder';
+    const XML_PATH_THUMBNAIL_IMAGE_PLACE_HOLDER = 'catalog/placeholder/thumbnail_placeholder';
 
     // "2006-01-02T15:04:05Z07:00"
     const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';
