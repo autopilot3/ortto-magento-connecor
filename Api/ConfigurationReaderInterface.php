@@ -44,13 +44,6 @@ interface ConfigurationReaderInterface
     /**
      * @param string $scopeType
      * @param int $scopeId
-     * @return string
-     */
-    public function getAccessToken(string $scopeType, int $scopeId): string;
-
-    /**
-     * @param string $scopeType
-     * @param int $scopeId
      * @return array
      */
     public function getPlaceholderImages(string $scopeType, int $scopeId): array;
