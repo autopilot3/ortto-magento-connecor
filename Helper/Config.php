@@ -13,7 +13,6 @@ class Config extends AbstractHelper
     const XML_PATH_CLIENT_ID = "autopilot/general/client_id";
     const XML_PATH_ACTIVE = "ap_general/authentication/active";
     const XML_PATH_API_KEY = "ap_general/authentication/api_key";
-    const XML_PATH_ACCESS_TOKEN = "ap_general/authentication/access_token";
 
     const XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED = "ap_sync/customer/auto_sync_enabled";
     const XML_PATH_SYNC_ORDER_AUTO_ENABLED = "ap_sync/order/auto_sync_enabled";

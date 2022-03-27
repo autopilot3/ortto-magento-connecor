@@ -26,10 +26,4 @@ interface AutopilotClientInterface
      * @throws JsonException|AutopilotException|LocalizedException
      */
     public function importOrders(ConfigScopeInterface $scope, array $orders);
-
-    /**
-     * @param ConfigScopeInterface $scope
-     * @return mixed
-     */
-    public function updateAccessToken(ConfigScopeInterface $scope);
 }

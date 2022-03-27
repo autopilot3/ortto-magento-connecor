@@ -19,13 +19,11 @@ class ConfigurationReader implements ConfigurationReaderInterface
     private ScopeConfigInterface $scopeConfig;
 
     private string $apiKey;
-    private string $accessToken;
 
     public function __construct(EncryptorInterface $encryptor, ScopeConfigInterface $scopeConfig)
     {
         $this->encryptor = $encryptor;
         $this->scopeConfig = $scopeConfig;
-        $this->accessToken = '';
         $this->apiKey = '';
     }
 
@@ -86,26 +84,6 @@ class ConfigurationReader implements ConfigurationReaderInterface
             $scopeType,
             $scopeId
         ));
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function getAccessToken(string $scopeType, int $scopeId): string
-    {
-        if ($this->accessToken !== '') {
-            return $this->accessToken;
-        }
-        $encrypted = trim((string)$this->scopeConfig->getValue(
-            Config::XML_PATH_ACCESS_TOKEN,
-            $scopeType,
-            $scopeId
-        ));
-        if (empty($encrypted)) {
-            return "";
-        }
-        $this->accessToken = $this->encryptor->decrypt($encrypted);
-        return $this->accessToken;
     }
 
     /**

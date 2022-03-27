@@ -45,13 +45,5 @@ class ConfigChange implements ObserverInterface
             $scopeType = ScopeInterface::SCOPE_STORE;
             $scopeId = To::int($storeId);
         }
-
-        try {
-            $scope = $this->scopeManager->initialiseScope($scopeType, $scopeId);
-            $this->autopilotClient->updateAccessToken($scope);
-        } catch (Exception $e) {
-            $this->logger->error($e, "Failed to load the scope or update the access token");
-            return;
-        }
     }
 }

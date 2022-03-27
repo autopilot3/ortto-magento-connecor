@@ -82,35 +82,6 @@ class AutopilotClient implements AutopilotClientInterface
     }
 
     /**
-     * @inheirtDoc
-     */
-    public function updateAccessToken(ConfigScopeInterface $scope)
-    {
-        try {
-            $isActive = $this->config->isActive($scope->getType(), $scope->getId());
-            if (!$isActive) {
-                return;
-            }
-
-            $apiKey = $this->config->getAPIKey($scope->getType(), $scope->getId());
-            if (empty($apiKey)) {
-                return;
-            }
-
-            $this->postJSON(
-                $this->helper->getAutopilotURL(RoutesInterface::AP_UPDATE_ACCESS_TOKEN),
-                $scope,
-                [
-                    'scope' => $scope->getCode(),
-                    'access_token' => $this->config->getAccessToken($scope->getType(), $scope->getId()),
-                ]
-            );
-        } catch (Exception $e) {
-            $this->logger->error($e, "Failed to update access token");
-        }
-    }
-
-    /**
      * @param string $url
      * @param ConfigScopeInterface $scope
      * @param array $request
