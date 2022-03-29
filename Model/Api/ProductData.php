@@ -122,8 +122,8 @@ class ProductData
             'price' => To::float($this->product->getPrice()),
             'minimal_price' => To::float($this->product->getMinimalPrice()),
             'calculated_price' => To::float($this->product->getCalculatedFinalPrice()),
-            'updated_at' => $this->helper->formatDate($this->product->getUpdatedAt()),
-            'created_at' => $this->helper->formatDate($this->product->getCreatedAt()),
+            'updated_at' => $this->helper->toUTC($this->product->getUpdatedAt()),
+            'created_at' => $this->helper->toUTC($this->product->getCreatedAt()),
             'weight' => To::float($this->product->getWeight()),
             // Stock total, based on the available stocks
             'stock' => $this->stockData,

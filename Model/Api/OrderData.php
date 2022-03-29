@@ -45,8 +45,8 @@ class OrderData
             'state' => (string)$order->getState(),
             'quantity' => To::float($order->getTotalQtyOrdered()),
             'base_quantity' => To::float($order->getBaseTotalQtyOrdered()),
-            'created_at' => $this->helper->formatDate($order->getCreatedAt()),
-            'updated_at' => $this->helper->formatDate($order->getUpdatedAt()),
+            'created_at' => $this->helper->toUTC($order->getCreatedAt()),
+            'updated_at' => $this->helper->toUTC($order->getUpdatedAt()),
             'ip_address' => $order->getRemoteIp(),
             'total_due' => To::float($order->getTotalDue()),
             'base_total_due' => To::float($order->getBaseTotalDue()),
@@ -104,7 +104,7 @@ class OrderData
             'protect_code' => (string)$order->getProtectCode(),
             'canceled_at' => $this->getOrderCancellationDate($order),
             'items' => $this->orderItemDataFactory->create()->toArray($order->getAllVisibleItems()),
-            'refunds' => $this->creditMemoDataFactory->create()->loadByOrderId($orderId)
+            'refunds' => $this->creditMemoDataFactory->create()->loadByOrderId($orderId),
         ];
 
         $payment = $order->getPayment();
@@ -168,9 +168,9 @@ class OrderData
         if (!empty($attr)) {
             $canceledAt = $attr->getAutopilotCanceledAt();
             if (!empty($canceledAt)) {
-                return $this->helper->formatDate($canceledAt);
+                return $this->helper->toUTC($canceledAt);
             }
         }
-        return $this->helper->formatDate($order->getCreatedAt());
+        return $this->helper->toUTC($order->getCreatedAt());
     }
 }

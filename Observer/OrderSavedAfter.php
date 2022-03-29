@@ -70,10 +70,10 @@ class OrderSavedAfter implements ObserverInterface
     {
         try {
             $collection = $this->collectionFactory->create();
-            $now = $this->helper->now();
-            $collection->setCancellationDate(To::int($order->getEntityId()), $now);
+            $nowUTC = $this->helper->nowUTC();
+            $collection->setCancellationDate(To::int($order->getEntityId()), $nowUTC);
             $attr = $order->getExtensionAttributes();
-            $attr->setAutopilotCanceledAt($this->helper->formatDateTime($now));
+            $attr->setAutopilotCanceledAt($this->helper->toUTC($nowUTC));
         } catch (Exception $e) {
             $msg = sprintf(
                 'Failed to update order cancellation attribute (ID: %d)',

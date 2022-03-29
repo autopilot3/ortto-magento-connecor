@@ -82,7 +82,7 @@ class CreditMemoData
             'adjustment' => To::float($memo->getAdjustment()),
             'base_adjustment' => To::float($memo->getBaseAdjustment()),
             'items' => $this->getItemsArray($memo->getItems()),
-            'refunded_at' => $this->helper->formatDate($memo->getCreatedAt()),
+            'refunded_at' => $this->helper->toUTC($memo->getCreatedAt()),
         ];
     }
 

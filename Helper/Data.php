@@ -38,7 +38,7 @@ class Data extends AbstractHelper
     private string $clientID = "mgqQkvCJWDFnxJTgQwfVuYEdQRWVAywE";
     private GroupRepositoryInterface $groupRepository;
     private AutopilotLoggerInterface $logger;
-    private TimezoneInterface $time;
+    private TimezoneInterface $timezone;
     private CustomerMetadataInterface $customerMetadata;
     private Subscriber $subscriber;
     private ConfigurationReaderInterface $config;
@@ -46,11 +46,12 @@ class Data extends AbstractHelper
     private JobCollectionFactory $jobCollectionFactory;
     private OrderDataFactory $orderDataFactory;
     private AddressDataFactory $addressDataFactory;
+    private \DateTimeZone $utcTZ;
 
     public function __construct(
         Context $context,
         GroupRepositoryInterface $groupRepository,
-        TimezoneInterface $time,
+        TimezoneInterface $timezone,
         CustomerMetadataInterface $customerMetadata,
         Subscriber $subscriber,
         AutopilotLoggerInterface $logger,
@@ -64,7 +65,7 @@ class Data extends AbstractHelper
         $this->_request = $context->getRequest();
         $this->groupRepository = $groupRepository;
         $this->logger = $logger;
-        $this->time = $time;
+        $this->timezone = $timezone;
         $this->customerMetadata = $customerMetadata;
         $this->subscriber = $subscriber;
         $this->config = $config;
@@ -72,6 +73,7 @@ class Data extends AbstractHelper
         $this->jobCollectionFactory = $jobCollectionFactory;
         $this->orderDataFactory = $orderDataFactory;
         $this->addressDataFactory = $addressDataFactory;
+        $this->utcTZ = timezone_open('UTC');
     }
 
     /**
@@ -123,10 +125,10 @@ class Data extends AbstractHelper
             'last_name' => (string)$customer->getLastname(),
             'suffix' => (string)$customer->getSuffix(),
             'email' => (string)$customer->getEmail(),
-            'created_at' => $this->formatDate($customer->getCreatedAt()),
-            'updated_at' => $this->formatDate($customer->getUpdatedAt()),
+            'created_at' => $this->toUTC($customer->getCreatedAt()),
+            'updated_at' => $this->toUTC($customer->getUpdatedAt()),
             'created_in' => (string)$customer->getCreatedIn(),
-            'dob' => $this->formatDate($customer->getDob()),
+            'dob' => $this->toUTC($customer->getDob()),
             'gender' => $this->getGenderLabel($customer->getGender()),
             'is_subscribed' => $isSubscribed,
         ];
@@ -202,7 +204,7 @@ class Data extends AbstractHelper
                     'last_name' => (string)$order->getCustomerLastname(),
                     'suffix' => (string)$order->getCustomerSuffix(),
                     'email' => $customerEmail,
-                    'dob' => $this->formatDate($order->getCustomerDob()),
+                    'dob' => $this->toUTC($order->getCustomerDob()),
                     'gender' => $this->getGenderLabel($order->getCustomerGender()),
                     'is_subscribed' => $isSubscribed,
                     self::ORDERS => [$orderFields],
@@ -244,31 +246,26 @@ class Data extends AbstractHelper
     }
 
 
-    public function formatDate(?string $value): string
-    {
-        if (empty($value)) {
-            return Config::EMPTY_DATE_TIME;
-        }
-        $date = date_create($value);
-        if ($date) {
-            return $this->time->date($date)->format(Config::DATE_TIME_FORMAT);
-        }
-
-        $this->logger->warn("Invalid time value", ["value" => $value]);
-        return Config::EMPTY_DATE_TIME;
-    }
-
     /**
-     * @param DateTime|null $value
+     * @param DateTime|string|null $value
      * @return string
      */
-    public function formatDateTime($value): string
+    public function toUTC($value): string
     {
-        if (empty($value)) {
-            return Config::EMPTY_DATE_TIME;
+        switch (true) {
+            case is_string($value):
+                $date = date_create($value, $this->utcTZ);
+                if ($date) {
+                    return $date->format(Config::DATE_TIME_FORMAT);
+                }
+                $this->logger->warn("Invalid date time", ['value' => $value]);
+                return Config::EMPTY_DATE_TIME;
+            case $value instanceof DateTime:
+                $value->setTimezone($this->utcTZ);
+                return $value->format(Config::DATE_TIME_FORMAT);
+            default:
+                return Config::EMPTY_DATE_TIME;
         }
-
-        return $value->format(Config::DATE_TIME_FORMAT);
     }
 
     /**
@@ -276,15 +273,15 @@ class Data extends AbstractHelper
      */
     public function nowInClientTimezone(): DateTime
     {
-        return $this->time->date();
+        return $this->timezone->date();
     }
 
     /**
      * @return DateTime
      */
-    public function now(): DateTime
+    public function nowUTC(): DateTime
     {
-        return date_create();
+        return date_create('now', $this->utcTZ);
     }
 
     public function getErrorResponse(string $message): array

@@ -76,7 +76,7 @@ class SyncOrders
          */
         $processedScopes = [];
 
-        $now = $this->helper->now();
+        $now = $this->helper->nowUTC();
 
         try {
             $jobCollection = $this->helper->createJobCollection();
