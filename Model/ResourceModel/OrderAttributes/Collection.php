@@ -44,11 +44,31 @@ class Collection extends AbstractCollection
 
     public function setCancellationDate(int $orderId, DateTime $dateTime)
     {
+        $this->insertDateIfNotSet($orderId, $dateTime, OrderAttributesInterface::CANCELED_AT);
+    }
+
+    public function setCompletionDate(int $orderId, DateTime $dateTime)
+    {
+        $this->insertDateIfNotSet($orderId, $dateTime, OrderAttributesInterface::COMPLETED_AT);
+    }
+
+    private function insertDateIfNotSet(int $orderId, DateTime $dateTime, string $dateField)
+    {
         $table = $this->getTable(SchemaInterface::TABLE_ORDER_ATTRIBUTES);
+
+        $connection = $this->getConnection();
+
+        $condition = sprintf("%s = ?", OrderAttributesInterface::ORDER_ID);
+        $select = $connection->select()->from($table)->where($condition, $orderId);
+        $result = $connection->fetchAll($select);
+        if (isset($result[$dateField])) {
+            // We don't want to override the date if it's been set before
+            return;
+        }
         $data = [
             OrderAttributesInterface::ORDER_ID => $orderId,
-            OrderAttributesInterface::CANCELED_AT => $dateTime->format(Config::DB_DATE_TIME_FORMAT),
+            $dateField => $dateTime->format(Config::DB_DATE_TIME_FORMAT),
         ];
-        $this->getConnection()->insertOnDuplicate($table, $data, [OrderAttributesInterface::CANCELED_AT]);
+        $connection->insert($table, $data);
     }
 }

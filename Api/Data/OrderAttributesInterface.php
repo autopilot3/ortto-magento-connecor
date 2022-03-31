@@ -8,6 +8,7 @@ use DateTime;
 interface OrderAttributesInterface
 {
     public const CANCELED_AT = 'canceled_at';
+    public const COMPLETED_AT = 'completed_at';
     public const ORDER_ID = 'order_id';
 
     /**
@@ -20,4 +21,15 @@ interface OrderAttributesInterface
      * @return $this
      */
     public function setCanceledAt(DateTime $dateTime);
+
+    /**
+     * @return DateTime|null
+     */
+    public function getCompletedAt();
+
+    /**
+     * @param DateTime $dateTime
+     * @return $this
+     */
+    public function setCompletedAt(DateTime $dateTime);
 }

@@ -7,27 +7,39 @@ namespace Autopilot\AP3Connector\Model\Api;
 use Autopilot\AP3Connector\Helper\Config;
 use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Helper\To;
+use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Sales\Api\Data\OrderExtensionInterface;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\ShipmentTrackInterface;
+use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
 use Magento\Sales\Model\Order;
 
 class OrderData
 {
+    private const CANCELLED_AT = 'canceled_at';
+    private const COMPLETED_AT = 'completed_at';
+
     private Data $helper;
     private OrderItemDataFactory $orderItemDataFactory;
     private AddressDataFactory $addressDataFactory;
     private CreditMemoDataFactory $creditMemoDataFactory;
+    private ShipmentTrackRepositoryInterface $shipmentTrackRepository;
+    private SearchCriteriaBuilder $searchCriteriaBuilder;
 
     public function __construct(
         Data $helper,
         OrderItemDataFactory $orderItemDataFactory,
         AddressDataFactory $addressDataFactory,
-        CreditMemoDataFactory $creditMemoDataFactory
+        CreditMemoDataFactory $creditMemoDataFactory,
+        ShipmentTrackRepositoryInterface $shipmentTrackRepository,
+        SearchCriteriaBuilder $searchCriteriaBuilder
     ) {
         $this->helper = $helper;
         $this->orderItemDataFactory = $orderItemDataFactory;
         $this->addressDataFactory = $addressDataFactory;
         $this->creditMemoDataFactory = $creditMemoDataFactory;
+        $this->shipmentTrackRepository = $shipmentTrackRepository;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
     }
 
     /**
@@ -37,12 +49,13 @@ class OrderData
     public function toArray(OrderInterface $order): array
     {
         $orderId = To::int($order->getEntityId());
+        $state = (string)$order->getState();
         $fields = [
             'id' => $orderId,
             'is_virtual' => To::bool($order->getIsVirtual()),
             'number' => (string)$order->getIncrementId(),
             'status' => (string)$order->getStatus(),
-            'state' => (string)$order->getState(),
+            'state' => $state,
             'quantity' => To::float($order->getTotalQtyOrdered()),
             'base_quantity' => To::float($order->getBaseTotalQtyOrdered()),
             'created_at' => $this->helper->toUTC($order->getCreatedAt()),
@@ -102,10 +115,15 @@ class OrderData
             'base_shipping_discount' => To::float($order->getBaseShippingDiscountAmount()),
             'coupon_code' => (string)$order->getCouponCode(),
             'protect_code' => (string)$order->getProtectCode(),
-            'canceled_at' => $this->getOrderCancellationDate($order),
             'items' => $this->orderItemDataFactory->create()->toArray($order->getAllVisibleItems()),
             'refunds' => $this->creditMemoDataFactory->create()->loadByOrderId($orderId),
+            'carriers' => $this->getShippingCarriers($orderId, $state),
         ];
+
+        $dates = $this->getCustomDates($order);
+        foreach ($dates as $key => $value) {
+            $fields[$key] = $value;
+        }
 
         $payment = $order->getPayment();
         if ($payment !== null) {
@@ -136,41 +154,74 @@ class OrderData
             }
         }
 
-        if ($order instanceof Order) {
-            $addresses = $order->getAddresses();
-            foreach ($addresses as $address) {
-                switch ($address->getAddressType()) {
-                    case "shipping":
-                        if (!$order->getIsVirtual()) {
-                            $shippingAddress = $this->addressDataFactory->create()->toArray($address);
-                            $fields[Data::SHIPPING_ADDRESS] = $shippingAddress;
-                        }
-                        break;
-                    case "billing":
-                        $billingAddress = $this->addressDataFactory->create()->toArray($address);
-                        $fields[Data::BILLING_ADDRESS] = $billingAddress;
-                        break;
-                }
+        $addresses = $order->getAddresses();
+        foreach ($addresses as $address) {
+            switch ($address->getAddressType()) {
+                case "shipping":
+                    if (!$order->getIsVirtual()) {
+                        $shippingAddress = $this->addressDataFactory->create()->toArray($address);
+                        $fields[Data::SHIPPING_ADDRESS] = $shippingAddress;
+                    }
+                    break;
+                case "billing":
+                    $billingAddress = $this->addressDataFactory->create()->toArray($address);
+                    $fields[Data::BILLING_ADDRESS] = $billingAddress;
+                    break;
             }
         }
+
 
         return $fields;
     }
 
-
-    private function getOrderCancellationDate(OrderInterface $order): string
+    private function getShippingCarriers(int $orderId, string $state): array
     {
-        $status = (string)$order->getStatus();
-        if ($status !== Order::STATE_CANCELED) {
-            return Config::EMPTY_DATE_TIME;
+        if ($state != Order::STATE_COMPLETE) {
+            return [];
         }
-        $attr = $order->getExtensionAttributes();
-        if (!empty($attr)) {
-            $canceledAt = $attr->getAutopilotCanceledAt();
-            if (!empty($canceledAt)) {
-                return $this->helper->toUTC($canceledAt);
-            }
+        $criteria = $this->searchCriteriaBuilder->addFilter(ShipmentTrackInterface::ORDER_ID, $orderId)->create();
+        $carriers = $this->shipmentTrackRepository->getList($criteria)->getItems();
+        $result = [];
+        foreach ($carriers as $carrier) {
+            $result[] = [
+                'id' => To::int($carrier->getEntityId()),
+                'code' => (string)$carrier->getCarrierCode(),
+                'title' => (string)$carrier->getTitle(),
+                'tracking_number' => (string)$carrier->getTrackNumber(),
+                'created_at' => $this->helper->toUTC($carrier->getCreatedAt()),
+            ];
         }
-        return $this->helper->toUTC($order->getCreatedAt());
+        return $result;
+    }
+
+    private function getCustomDates(OrderInterface $order): array
+    {
+        $dates = [
+            self::COMPLETED_AT => Config::EMPTY_DATE_TIME,
+            self::CANCELLED_AT => Config::EMPTY_DATE_TIME,
+        ];
+        switch ((string)$order->getState()) {
+            case Order::STATE_CANCELED:
+                $attr = $order->getExtensionAttributes();
+                if (!empty($attr)) {
+                    $date = $attr->getOrttoCanceledAt();
+                    if (!empty($date)) {
+                        $dates[self::CANCELLED_AT] = $this->helper->toUTC($date);
+                    } else {
+                        $dates[self::CANCELLED_AT] = $this->helper->toUTC($order->getCreatedAt());
+                    }
+                }
+                break;
+            case Order::STATE_COMPLETE:
+                $attr = $order->getExtensionAttributes();
+                if (!empty($attr)) {
+                    $date = $attr->getOrttoCompletedAt();
+                    if (!empty($date)) {
+                        $dates[self::COMPLETED_AT] = $this->helper->toUTC($date);
+                    }
+                }
+                break;
+        }
+        return $dates;
     }
 }

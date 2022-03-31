@@ -51,6 +51,7 @@
         <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="false" identity="false"
                 comment="Order Id"/>
         <column xsi:type="timestamp" name="canceled_at" nullable="true" comment="Order canceled at"/>
+        <column xsi:type="timestamp" name="completed_at" nullable="true" comment="Order completion date"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="entity_id"/>
         </constraint>

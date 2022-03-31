@@ -23,6 +23,7 @@ use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Newsletter\Model\Subscriber;
 use Magento\Sales\Api\Data\OrderInterface;
 use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
+use Magento\Sales\Model\Order;
 use Magento\Store\Model\ScopeInterface;
 use DateTime;
 use Exception;

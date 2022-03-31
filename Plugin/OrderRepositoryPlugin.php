@@ -28,14 +28,15 @@ class OrderRepositoryPlugin
     public function afterGet(OrderRepositoryInterface $subject, OrderInterface $order): OrderInterface
     {
         $extAttributes = $order->getExtensionAttributes();
-        if ($extAttributes && $extAttributes->getAutopilotCanceledAt()) {
+        if ($extAttributes && $extAttributes->getOrttoCanceledAt()) {
             return $order;
         }
 
         $attributesCollection = $this->attrCollectionFactory->create();
         $attribute = $attributesCollection->getByOrderId(To::int($order->getId()));
         if (!empty($attribute)) {
-            $extAttributes->setAutopilotCanceledAt($attribute->getCanceledAt());
+            $extAttributes->setOrttoCanceledAt($attribute->getCanceledAt());
+            $extAttributes->setOrttoCompletedAt($attribute->getCompletedAt());
             $order->setExtensionAttributes($extAttributes);
         }
         return $order;

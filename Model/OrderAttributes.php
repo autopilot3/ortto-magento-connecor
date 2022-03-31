@@ -38,4 +38,21 @@ class OrderAttributes extends AbstractModel implements OrderAttributesInterface
         $this->setData(OrderAttributesInterface::CANCELED_AT, $dateTime);
         return $this;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCompletedAt()
+    {
+        return $this->getData(OrderAttributesInterface::COMPLETED_AT);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setCompletedAt(DateTime $dateTime)
+    {
+        $this->setData(OrderAttributesInterface::COMPLETED_AT, $dateTime);
+        return $this;
+    }
 }
