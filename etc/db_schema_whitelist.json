@@ -38,7 +38,8 @@
         "column": {
             "entity_id": true,
             "order_id": true,
-            "canceled_at": true
+            "canceled_at": true,
+            "completed_at": true
         },
         "constraint": {
             "PRIMARY": true,

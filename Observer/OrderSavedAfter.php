@@ -4,13 +4,11 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Observer;
 
 use Autopilot\AP3Connector\Helper\Data;
-use Autopilot\AP3Connector\Helper\To;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Api\AutopilotClientInterface;
 use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Model\ResourceModel\OrderAttributes\CollectionFactory as OrderAttributeCollectionFactory;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Sales\Api\Data\OrderExtensionInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\Event\Observer;
 use Exception;
@@ -44,11 +42,26 @@ class OrderSavedAfter implements ObserverInterface
             $event = $observer->getEvent();
             /** @var OrderInterface $order */
             $order = $event->getData('order');
-            if ($order->getState() == Order::STATE_CANCELED) {
-                $attr = $this->setCancellationDate($order);
-                if (!empty($attr)) {
-                    $order->setExtensionAttributes($attr);
-                }
+            switch ($order->getState()) {
+                case Order::STATE_CANCELED:
+                    // Cancelled orders are processed by the Cancellation observer
+                    return;
+                case Order::STATE_COMPLETE:
+                    $this->logger->info("COMPLETED");
+                    try {
+                        $now = $this->helper->nowUTC();
+                        $collection = $this->collectionFactory->create();
+                        $collection->setCompletionDate((int)$order->getEntityId(), $now);
+                        $attr = $order->getExtensionAttributes();
+                        $attr->setOrttoCompletedAt($this->helper->toUTC($now));
+                        $order->setExtensionAttributes($attr);
+                    } catch (Exception $e) {
+                        $msg = sprintf(
+                            'Failed to update order completion date (ID: %d)',
+                            (int)$order->getEntityId()
+                        );
+                        $this->logger->error($e, $msg);
+                    }
             }
             $scopes = $this->scopeManager->getActiveScopes();
             foreach ($scopes as $scope) {
@@ -60,29 +73,5 @@ class OrderSavedAfter implements ObserverInterface
         } catch (Exception $e) {
             $this->logger->error($e, "Failed to export the order");
         }
-    }
-
-    /**
-     * @param OrderInterface|Order $order
-     * @return OrderExtensionInterface|null
-     */
-    private function setCancellationDate($order)
-    {
-        try {
-            $collection = $this->collectionFactory->create();
-            $nowUTC = $this->helper->nowUTC();
-            $collection->setCancellationDate(To::int($order->getEntityId()), $nowUTC);
-            $attr = $order->getExtensionAttributes();
-            $attr->setAutopilotCanceledAt($this->helper->toUTC($nowUTC));
-        } catch (Exception $e) {
-            $msg = sprintf(
-                'Failed to update order cancellation attribute (ID: %d)',
-                To::int($order->getEntityId())
-            );
-            $this->logger->error($e, $msg);
-            return null;
-        }
-
-        return $attr;
     }
 }
