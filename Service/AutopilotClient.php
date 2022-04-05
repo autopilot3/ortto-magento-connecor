@@ -14,6 +14,7 @@ use Autopilot\AP3Connector\Model\AutopilotException;
 use Autopilot\AP3Connector\Model\ImportResponse;
 use Exception;
 use JsonException;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\HTTP\ClientInterface;
 
 class AutopilotClient implements AutopilotClientInterface
@@ -78,6 +79,19 @@ class AutopilotClient implements AutopilotClientInterface
             return new ImportResponse();
         }
         $response = $this->postJSON($url, $scope, [self::CUSTOMERS => $payload]);
+        return new ImportResponse($response);
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function ingestProductView(ConfigScopeInterface $scope, array $product, array $customer)
+    {
+        $url = $this->helper->getAutopilotURL(RoutesInterface::AP_PRODUCT_VIEW);
+        $response = $this->postJSON($url, $scope, [
+            'product' => $product,
+            'customer' => $customer,
+        ]);
         return new ImportResponse($response);
     }
 

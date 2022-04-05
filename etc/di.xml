@@ -28,6 +28,7 @@
             <argument name="curl" xsi:type="object">Magento\Framework\HTTP\Client\Curl</argument>
         </arguments>
     </type>
+    <preference for="Magento\Catalog\Block\Product\View" type="Autopilot\AP3Connector\Block\Catalog\Product\View"/>
     <preference for="Autopilot\AP3Connector\Logger\AutopilotLoggerInterface"
                 type="Autopilot\AP3Connector\Logger\Logger"/>
     <preference for="Autopilot\AP3Connector\Api\CouponRepositoryInterface"
