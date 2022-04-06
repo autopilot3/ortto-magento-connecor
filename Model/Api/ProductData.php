@@ -89,7 +89,7 @@ class ProductData
     }
 
     /**
-     * @param Product $product
+     * @param Product|ProductInterface $product
      * @return void
      */
     public function load($product)

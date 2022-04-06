@@ -1,0 +1,25 @@
+<?php
+
+use Magento\Catalog\Model\Product;
+use Magento\Customer\Model\Session;
+
+/**
+ * @var $block Autopilot\AP3Connector\Block\Catalog\Product\View
+ * @var $product Product
+ * @var $session Session
+ */
+$product = $block->getProduct();
+$session = $block->getSession();
+?>
+
+<?php if ($session->isLoggedIn()) { ?>
+    <div class="display:none;" data-mage-init='{"product_view":  {
+      "product_id":<?= $product->getId() ?>,
+      "customer_id": <?= $session->getCustomer()->getId() ?>,
+      "store_id": <?= $product->getStoreId() ?>,
+      "url": "<?= $block->getAjaxURL() ?>"
+     }
+}'>
+    </div>
+
+<?php } ?>
