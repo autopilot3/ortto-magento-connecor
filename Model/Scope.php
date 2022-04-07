@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Model;
 
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
+use function MongoDB\BSON\toJSON;
 
 class Scope implements ConfigScopeInterface
 {
@@ -13,6 +14,8 @@ class Scope implements ConfigScopeInterface
     private string $code;
     private bool $connected;
     private int $websiteId;
+    private string $baseURL;
+
     /** @var int[] */
     private array $storeIds;
 
@@ -148,6 +151,23 @@ class Scope implements ConfigScopeInterface
     /**
      * @inheirtDoc
      */
+    public function getBaseURL(): string
+    {
+        return $this->baseURL;
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function setBaseURL(string $url)
+    {
+        $this->baseURL = $url;
+        return $this;
+    }
+
+    /**
+     * @inheirtDoc
+     */
     public function toArray(): array
     {
         return [
@@ -155,6 +175,7 @@ class Scope implements ConfigScopeInterface
             'id' => $this->id,
             'name' => $this->name,
             'code' => $this->code,
+            'url' => $this->baseURL,
         ];
     }
 

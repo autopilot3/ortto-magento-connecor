@@ -96,4 +96,15 @@ interface ConfigScopeInterface
      * @return string
      */
     public function toString(): string;
+
+    /**
+     * @return string
+     */
+    public function getBaseURL(): string;
+
+    /**
+     * @param string $url
+     * @return $this
+     */
+    public function setBaseURL(string $url);
 }

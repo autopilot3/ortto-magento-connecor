@@ -17,9 +17,11 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Framework\Phrase;
+use Magento\Framework\UrlInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 
 class ScopeManager implements ScopeManagerInterface
@@ -29,25 +31,27 @@ class ScopeManager implements ScopeManagerInterface
     private ConfigurationReaderInterface $configReader;
     private ScopeFactory $scopeFactory;
     private RequestInterface $request;
+    private UrlInterface $urlInterface;
 
     public function __construct(
         StoreManagerInterface $storeManager,
         AutopilotLoggerInterface $logger,
         ConfigurationReaderInterface $configReader,
         ScopeFactory $scopeFactory,
-        RequestInterface $request
+        RequestInterface $request,
+        UrlInterface $urlInterface
     ) {
         $this->storeManager = $storeManager;
         $this->logger = $logger;
         $this->configReader = $configReader;
         $this->scopeFactory = $scopeFactory;
         $this->request = $request;
+        $this->urlInterface = $urlInterface;
     }
 
     public function getActiveScopes(): array
     {
         $result = [];
-
         $websites = $this->storeManager->getWebsites();
         foreach ($websites as $website) {
             try {
@@ -145,6 +149,7 @@ class ScopeManager implements ScopeManagerInterface
                     $websites = $this->storeManager->getWebsites();
                 }
                 $scope->setIsConnected(!empty($this->configReader->getAPIKey($type, $id)));
+                $scope->setBaseURL((string)$this->urlInterface->getBaseUrl());
                 $count = 0;
                 foreach ($websites as $w) {
                     if ($w->getCode() === $code) {
@@ -158,6 +163,7 @@ class ScopeManager implements ScopeManagerInterface
                 }
                 break;
             case ScopeInterface::SCOPE_STORE:
+                /** @var Store $store */
                 $store = $this->storeManager->getStore($id);
                 $websiteId = To::int($store->getWebsiteId());
                 $scope->setWebsiteId($websiteId);
@@ -165,6 +171,7 @@ class ScopeManager implements ScopeManagerInterface
                 $storeAPIKey = $this->configReader->getAPIKey($type, $id);
                 $scope->setIsConnected($websiteAPIKey !== $storeAPIKey && !empty($storeAPIKey));
                 $scope->setName($store->getName());
+                $scope->setBaseURL((string)$store->getBaseUrl(UrlInterface::URL_TYPE_WEB, true));
                 $code = $store->getCode();
                 $scope->addStoreId($id);
                 $count = 0;

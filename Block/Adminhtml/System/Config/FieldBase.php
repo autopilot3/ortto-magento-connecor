@@ -9,6 +9,7 @@ use Autopilot\AP3Connector\Model\Scope;
 use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\View\Helper\SecureHtmlRenderer;
+use Magento\Store\Model\Store;
 
 class FieldBase extends Field
 {
@@ -33,26 +34,6 @@ class FieldBase extends Field
     public function getScope(): Scope
     {
         return $this->scope;
-    }
-
-    public function getEscapedAttrScopeName(): string
-    {
-        return $this->_escaper->escapeHtmlAttr($this->scope->getName());
-    }
-
-    public function getEscapedAttrScopeCode(): string
-    {
-        return $this->_escaper->escapeHtmlAttr($this->scope->getCode());
-    }
-
-    public function getEscapedAttrScopeType(): string
-    {
-        return $this->_escaper->escapeHtmlAttr($this->scope->getType());
-    }
-
-    public function getEscapedAttrScopeID(): string
-    {
-        return $this->_escaper->escapeHtmlAttr($this->scope->getId());
     }
 
     public function getEscapedAttrClientID(): string

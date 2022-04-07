@@ -1,23 +1,22 @@
 <?php
 
-use Autopilot\AP3Connector\Block\frontend\Catalog\SyncOrders;
+use Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncOrders;
 
 /**
  * @var $block SyncOrders
  */
+$scope = $block->getScope();
 ?>
 <div>
     <button
-        data-mage-init='{"Autopilot_AP3Connector/js/post_data":
+        data-mage-init='{"postData":
             {
-              "url":"<?= /* @noEscape */
-        $block->getAjaxURL() ?>",
-              "scope_type": "<?= /* @noEscape */
-        $block->getEscapedAttrScopeType() ?>",
-                "scope_id": "<?= /* @noEscape */
-        $block->getEscapedAttrScopeID() ?>",
-                "client_id": "<?= /* @noEscape */
-        $block->getEscapedAttrClientID() ?>"
+                "url":"<?= $block->getAjaxURL() ?>",
+                "title": "Orders",
+                "data": {
+                    "scope_id": <?= $scope->getId() ?>,
+                    "scope_type": "<?= $scope->getType() ?>"
+                }
             }
         }'
         id="sync-orders">
