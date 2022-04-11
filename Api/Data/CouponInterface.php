@@ -7,7 +7,7 @@ namespace Autopilot\AP3Connector\Api\Data;
  * Interface CouponInterface
  * @api
  */
-interface CouponInterface
+interface CouponInterface extends SerializableInterface
 {
     const DATA_TITLE = 'title';
 

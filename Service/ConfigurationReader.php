@@ -14,7 +14,6 @@ use Magento\Framework\Encryption\EncryptorInterface;
 
 class ConfigurationReader implements ConfigurationReaderInterface
 {
-
     private EncryptorInterface $encryptor;
     private ScopeConfigInterface $scopeConfig;
 
@@ -33,6 +32,14 @@ class ConfigurationReader implements ConfigurationReaderInterface
     public function isActive(string $scopeType, int $scopeId): bool
     {
         return To::bool($this->scopeConfig->getValue(Config::XML_PATH_ACTIVE, $scopeType, $scopeId));
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function isTrackingEnabled(string $scopeType, int $scopeId): bool
+    {
+        return To::bool($this->scopeConfig->getValue(Config::XML_PATH_TRACKING_ENABLED, $scopeType, $scopeId));
     }
 
     /**
@@ -125,5 +132,41 @@ class ConfigurationReader implements ConfigurationReaderInterface
                 $scopeId
             ),
         ];
+    }
+
+    public function getTrackingCode(string $scopeType, int $scopeId): string
+    {
+        return (string)$this->scopeConfig->getValue(
+            Config::XML_PATH_TRACKING_CODE,
+            $scopeType,
+            $scopeId
+        );
+    }
+
+    public function getTrackingJsURL(string $scopeType, int $scopeId): string
+    {
+        return (string)$this->scopeConfig->getValue(
+            Config::XML_PATH_TRACKING_URL,
+            $scopeType,
+            $scopeId
+        );
+    }
+
+    public function getCaptureURL(string $scopeType, int $scopeId): string
+    {
+        return (string)$this->scopeConfig->getValue(
+            Config::XML_PATH_CAPTURE_URL,
+            $scopeType,
+            $scopeId
+        );
+    }
+
+    public function getInstanceId(string $scopeType, int $scopeId): string
+    {
+        return (string)$this->scopeConfig->getValue(
+            Config::XML_PATH_INSTANCE_ID,
+            $scopeType,
+            $scopeId
+        );
     }
 }

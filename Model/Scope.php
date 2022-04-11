@@ -4,27 +4,17 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Model;
 
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use function MongoDB\BSON\toJSON;
+use Autopilot\AP3Connector\Helper\To;
+use Magento\Framework\DataObject;
 
-class Scope implements ConfigScopeInterface
+class Scope extends DataObject implements ConfigScopeInterface
 {
-    private string $name;
-    private int $id;
-    private string $type;
-    private string $code;
-    private bool $connected;
-    private int $websiteId;
-    private string $baseURL;
-
-    /** @var int[] */
-    private array $storeIds;
-
     /**
      * @inheirtDoc
      */
     public function getId(): int
     {
-        return $this->id;
+        return To::int($this->getData(self::ID));
     }
 
     /**
@@ -32,8 +22,7 @@ class Scope implements ConfigScopeInterface
      */
     public function setId(int $id)
     {
-        $this->id = $id;
-        return $this;
+        return $this->setData(self::ID, $id);
     }
 
     /**
@@ -41,7 +30,7 @@ class Scope implements ConfigScopeInterface
      */
     public function getType(): string
     {
-        return $this->type;
+        return (string)$this->getData(self::TYPE);
     }
 
     /**
@@ -49,8 +38,7 @@ class Scope implements ConfigScopeInterface
      */
     public function setType(string $type)
     {
-        $this->type = $type;
-        return $this;
+        return $this->setData(self::TYPE, $type);
     }
 
     /**
@@ -58,56 +46,7 @@ class Scope implements ConfigScopeInterface
      */
     public function getName(): string
     {
-        return $this->name;
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function getCode(): string
-    {
-        return $this->code;
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function isConnected(): bool
-    {
-        return $this->connected;
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function setIsConnected(bool $connected)
-    {
-        $this->connected = $connected;
-        return $this;
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function getWebsiteId(): int
-    {
-        return $this->websiteId;
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function toString(): string
-    {
-        return sprintf("%s:%s:%d", $this->type, $this->code, $this->id);
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function getStoreIds(): array
-    {
-        return $this->storeIds;
+        return (string)$this->getData(self::NAME);
     }
 
     /**
@@ -115,8 +54,15 @@ class Scope implements ConfigScopeInterface
      */
     public function setName(string $name)
     {
-        $this->name = $name;
-        return $this;
+        return $this->setData(self::NAME, $name);
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function getCode(): string
+    {
+        return (string)$this->getData(self::CODE);
     }
 
     /**
@@ -124,28 +70,7 @@ class Scope implements ConfigScopeInterface
      */
     public function setCode(string $code)
     {
-        $this->code = $code;
-        return $this;
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function addStoreId(int $id)
-    {
-        if (empty($this->storeIds)) {
-            $this->storeIds = [];
-        }
-        $this->storeIds[] = $id;
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function setWebsiteId(int $id)
-    {
-        $this->websiteId = $id;
-        return $this;
+        return $this->setData(self::CODE, $code);
     }
 
     /**
@@ -153,7 +78,7 @@ class Scope implements ConfigScopeInterface
      */
     public function getBaseURL(): string
     {
-        return $this->baseURL;
+        return (string)$this->getData(self::URL);
     }
 
     /**
@@ -161,22 +86,77 @@ class Scope implements ConfigScopeInterface
      */
     public function setBaseURL(string $url)
     {
-        $this->baseURL = $url;
-        return $this;
+        return $this->setData(self::URL, $url);
     }
 
     /**
      * @inheirtDoc
      */
-    public function toArray(): array
+    public function isConnected(): bool
     {
-        return [
-            'type' => $this->type,
-            'id' => $this->id,
-            'name' => $this->name,
-            'code' => $this->code,
-            'url' => $this->baseURL,
-        ];
+        return To::bool($this->getData(self::IS_CONNECTED));
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function setIsConnected(bool $connected)
+    {
+        return $this->setData(self::IS_CONNECTED, $connected);
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function getWebsiteId(): int
+    {
+        return To::int($this->getData(self::WEBSITE_ID));
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function setWebsiteId(int $id)
+    {
+        return $this->setData(self::WEBSITE_ID, $id);
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function toString($format = ''): string
+    {
+        return sprintf("%s:%s:%d", $this->getType(), $this->getCode(), $this->getId());
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function getStoreIds(): array
+    {
+        $storeIds = $this->getData(self::STORE_IDS);
+        if (empty($storeIds)) {
+            return [];
+        }
+        return $storeIds;
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function addStoreId(int $id)
+    {
+        $storeIds = $this->getStoreIds();
+        $storeIds[] = $id;
+        $this->setData(self::STORE_IDS, $storeIds);
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function toArray(array $keys = [self::TYPE, self::ID, self::NAME, self::CODE, self::URL]): array
+    {
+        return parent::toArray($keys);
     }
 
     /**
@@ -184,6 +164,6 @@ class Scope implements ConfigScopeInterface
      */
     public function equals(ConfigScopeInterface $scope): bool
     {
-        return $this->type === $scope->getType() && $this->code === $scope->getCode();
+        return $this->getType() === $scope->getType() && $this->getType() === $scope->getCode();
     }
 }

@@ -22,6 +22,6 @@ class CouponRepository implements CouponRepositoryInterface
     public function create(CouponInterface $coupon)
     {
         // TODO: Implement me
-        $this->logger->info("Title: " . $coupon->getTitle());
+        $this->logger->info("Coupon: ", $coupon->toArray());
     }
 }

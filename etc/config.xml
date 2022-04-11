@@ -2,6 +2,11 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
+        <ap_general>
+            <tracking>
+                <enabled>1</enabled>
+            </tracking>
+        </ap_general>
         <ap_sync>
             <customer>
                 <auto_sync_enabled>1</auto_sync_enabled>

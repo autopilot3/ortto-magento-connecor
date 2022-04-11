@@ -7,4 +7,10 @@
             <resource ref="Autopilot_AP3Connector::coupons_create"/>
         </resources>
     </route>
+    <route url="/V1/ortto/config/update" method="PUT">
+        <service class="Autopilot\AP3Connector\Api\AppConfigRepositoryInterface" method="update"/>
+        <resources>
+            <resource ref="Autopilot_AP3Connector::update_app_config"/>
+        </resources>
+    </route>
 </routes>

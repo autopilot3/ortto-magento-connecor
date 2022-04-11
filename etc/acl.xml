@@ -11,6 +11,7 @@
                         <resource id="Autopilot_AP3Connector::coupons" title="Coupons">
                             <resource id="Autopilot_AP3Connector::coupons_create" title="Create"/>
                         </resource>
+                        <resource id="Autopilot_AP3Connector::update_app_config" title="Update Settings"/>
                     </resource>
                 </resource>
             </resource>

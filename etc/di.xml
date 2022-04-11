@@ -37,6 +37,8 @@
                 type="Autopilot\AP3Connector\Model\Data\Coupon"/>
     <preference for="Autopilot\AP3Connector\Api\ScopeManagerInterface"
                 type="Autopilot\AP3Connector\Service\ScopeManager"/>
+    <preference for="Autopilot\AP3Connector\Api\ConfigScopeInterface"
+                type="Autopilot\AP3Connector\Model\Scope"/>
     <preference for="Autopilot\AP3Connector\Api\AutopilotClientInterface"
                 type="Autopilot\AP3Connector\Service\AutopilotClient"/>
     <preference for="Autopilot\AP3Connector\Api\ConfigurationReaderInterface"
@@ -45,4 +47,8 @@
                 type="Autopilot\AP3Connector\Model\SyncJob"/>
     <preference for="Autopilot\AP3Connector\Api\Data\CronCheckpointInterface"
                 type="Autopilot\AP3Connector\Model\CronCheckpoint"/>
+    <preference for="Autopilot\AP3Connector\Api\Data\AppConfigInterface"
+                type="Autopilot\AP3Connector\Model\Data\AppConfig"/>
+    <preference for="Autopilot\AP3Connector\Api\AppConfigRepositoryInterface"
+                type="Autopilot\AP3Connector\Model\ResourceModel\AppConfigRepository"/>
 </config>
