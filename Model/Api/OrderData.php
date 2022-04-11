@@ -170,7 +170,6 @@ class OrderData
             }
         }
 
-
         return $fields;
     }
 

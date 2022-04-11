@@ -12,6 +12,7 @@ use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\Collection as Chec
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\CollectionFactory as CheckpointCollectionFactory;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
+use InvalidArgumentException;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Api\GroupRepositoryInterface;
@@ -245,7 +246,6 @@ class Data extends AbstractHelper
         }
     }
 
-
     /**
      * @param DateTime|string|null $value
      * @return string
@@ -294,7 +294,7 @@ class Data extends AbstractHelper
 
     /**
      * @return CheckpointCollection
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function createCheckpointCollection()
     {
@@ -302,12 +302,12 @@ class Data extends AbstractHelper
         if ($collection instanceof CheckpointCollection) {
             return $collection;
         }
-        throw new Exception("Invalid checkpoint collection type");
+        throw new InvalidArgumentException("Invalid checkpoint collection type");
     }
 
     /**
      * @return JobCollection
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function createJobCollection()
     {
@@ -315,7 +315,7 @@ class Data extends AbstractHelper
         if ($collection instanceof JobCollection) {
             return $collection;
         }
-        throw new Exception("Invalid job collection type");
+        throw new InvalidArgumentException("Invalid job collection type");
     }
 
     public function shouldExportCustomer(ConfigScopeInterface $scope, CustomerInterface $customer): bool

@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Helper;
 
-use Autopilot\AP3Connector\Api\ImageIdInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 
 class Config extends AbstractHelper
@@ -11,8 +10,13 @@ class Config extends AbstractHelper
     // Scope config paths
     const XML_PATH_BASE_URL = "autopilot/general/base_url";
     const XML_PATH_CLIENT_ID = "autopilot/general/client_id";
+    const XML_PATH_TRACKING_ENABLED = "ap_general/tracking/enabled";
     const XML_PATH_ACTIVE = "ap_general/authentication/active";
     const XML_PATH_API_KEY = "ap_general/authentication/api_key";
+    const XML_PATH_TRACKING_CODE = "ap_general/tracking/code";
+    const XML_PATH_TRACKING_URL = "ap_general/tracking/js_url";
+    const XML_PATH_CAPTURE_URL = "ap_general/tracking/capture_url";
+    const XML_PATH_INSTANCE_ID = "ap_general/general/instance_id";
 
     const XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED = "ap_sync/customer/auto_sync_enabled";
     const XML_PATH_SYNC_ORDER_AUTO_ENABLED = "ap_sync/order/auto_sync_enabled";

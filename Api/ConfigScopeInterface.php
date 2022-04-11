@@ -3,8 +3,19 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Api;
 
-interface ConfigScopeInterface
+use Autopilot\AP3Connector\Api\Data\SerializableInterface;
+
+interface ConfigScopeInterface extends SerializableInterface
 {
+    const  NAME = 'name';
+    const ID = 'id';
+    const TYPE = 'type';
+    const CODE = 'code';
+    const IS_CONNECTED = 'is_connected';
+    const WEBSITE_ID = 'website_id';
+    const URL = 'url';
+    const STORE_IDS = 'store_ids';
+
     /**
      * @return int
      */
@@ -48,11 +59,6 @@ interface ConfigScopeInterface
      * @return $this
      */
     public function setCode(string $code);
-
-    /**
-     * @return array
-     */
-    public function toArray(): array;
 
     /**
      * @return bool

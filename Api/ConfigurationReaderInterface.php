@@ -15,6 +15,13 @@ interface ConfigurationReaderInterface
     /**
      * @param string $scopeType
      * @param int $scopeId
+     * @return bool
+     */
+    public function isTrackingEnabled(string $scopeType, int $scopeId): bool;
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
      * @param string $category
      * @return bool
      */
@@ -47,4 +54,32 @@ interface ConfigurationReaderInterface
      * @return array
      */
     public function getPlaceholderImages(string $scopeType, int $scopeId): array;
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @return string
+     */
+    public function getTrackingCode(string $scopeType, int $scopeId): string;
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @return string
+     */
+    public function getTrackingJsURL(string $scopeType, int $scopeId): string;
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @return string
+     */
+    public function getCaptureURL(string $scopeType, int $scopeId): string;
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @return string
+     */
+    public function getInstanceId(string $scopeType, int $scopeId): string;
 }
