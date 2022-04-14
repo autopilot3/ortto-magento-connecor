@@ -9,56 +9,20 @@ namespace Autopilot\AP3Connector\Api\Data;
  */
 interface AppConfigInterface extends SerializableInterface
 {
-    public const TRACKING_CODE = 'tracking_code';
-    public const TRACKING_JS_URL = 'tracking_js_url';
-    public const CAPTURE_URL = 'capture_url';
-    public const INSTANCE_ID = 'instance_id';
     public const SCOPE_ID = 'scope_id';
     public const SCOPE_TYPE = 'scope_type';
+    public const KEYS = 'keys';
 
     /**
-     * @param string $instanceId
+     * @param string[] $keys
      * @return $this
      */
-    public function setInstanceId(string $instanceId): AppConfigInterface;
+    public function setKeys(array $keys): AppConfigInterface;
 
     /**
-     * @return string
+     * @return string[]
      */
-    public function getInstanceId(): string;
-
-    /**
-     * @param string $trackingCode
-     * @return $this
-     */
-    public function setTrackingCode(string $trackingCode): AppConfigInterface;
-
-    /**
-     * @return string
-     */
-    public function getTrackingCode(): string;
-
-    /**
-     * @param string $trackingURL
-     * @return $this
-     */
-    public function setTrackingJsUrl(string $trackingURL): AppConfigInterface;
-
-    /**
-     * @return string
-     */
-    public function getTrackingJsUrl(): string;
-
-    /**
-     * @param string $url
-     * @return $this
-     */
-    public function setCaptureUrl(string $url): AppConfigInterface;
-
-    /**
-     * @return string
-     */
-    public function getCaptureUrl(): string;
+    public function getKeys(): array;
 
     /**
      * @param int $scopeId

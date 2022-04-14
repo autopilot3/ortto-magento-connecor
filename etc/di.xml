@@ -51,4 +51,8 @@
                 type="Autopilot\AP3Connector\Model\Data\AppConfig"/>
     <preference for="Autopilot\AP3Connector\Api\AppConfigRepositoryInterface"
                 type="Autopilot\AP3Connector\Model\ResourceModel\AppConfigRepository"/>
+    <preference for="Autopilot\AP3Connector\Api\TrackDataProviderInterface"
+                type="Autopilot\AP3Connector\Service\TrackDataProvider"/>
+    <preference for="Autopilot\AP3Connector\Api\Data\TrackingDataInterface"
+                type="Autopilot\AP3Connector\Model\Data\TrackingData"/>
 </config>

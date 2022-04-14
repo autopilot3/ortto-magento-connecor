@@ -1,18 +1,16 @@
-define([
-        "jquery"
-    ], function ($) {
-        "use strict";
-        return function (config) {
-            $.ajax({
-                url: config.url,
-                type: "POST",
-                contentType: 'application/x-www-form-urlencoded',
-                data: {
-                    "product_id": config.product_id,
-                    "customer_id": config.customer_id,
-                    "store_id": config.store_id,
-                }
-            });
+define([], function () {
+    "use strict";
+    return function (config) {
+        const ap3c = window.ap3c;
+        /**
+         * Initializer
+         * @param {Function} ap3c.trackMagento
+         * @param {Object} config.payload
+         * @param {String} config.email
+         * @param {String} config.phone
+         */
+        if (ap3c && ap3c.trackMagento) {
+            ap3c.trackMagento(config.email, config.phone, config.payload)
         }
     }
-)
+})

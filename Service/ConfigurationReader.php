@@ -143,19 +143,28 @@ class ConfigurationReader implements ConfigurationReaderInterface
         );
     }
 
-    public function getTrackingJsURL(string $scopeType, int $scopeId): string
+    public function getCaptureJsURL(string $scopeType, int $scopeId): string
     {
         return (string)$this->scopeConfig->getValue(
-            Config::XML_PATH_TRACKING_URL,
+            Config::XML_PATH_CAPTURE_JS_URL,
             $scopeType,
             $scopeId
         );
     }
 
-    public function getCaptureURL(string $scopeType, int $scopeId): string
+    public function getMagentoCaptureJsURL(string $scopeType, int $scopeId): string
     {
         return (string)$this->scopeConfig->getValue(
-            Config::XML_PATH_CAPTURE_URL,
+            Config::XML_PATH_MAGENTO_CAPTURE_JS_URL,
+            $scopeType,
+            $scopeId
+        );
+    }
+
+    public function getCaptureApiURL(string $scopeType, int $scopeId): string
+    {
+        return (string)$this->scopeConfig->getValue(
+            Config::XML_PATH_CAPTURE_API_URL,
             $scopeType,
             $scopeId
         );

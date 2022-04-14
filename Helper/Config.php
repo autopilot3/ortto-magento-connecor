@@ -3,9 +3,7 @@ declare(strict_types=1);
 
 namespace Autopilot\AP3Connector\Helper;
 
-use Magento\Framework\App\Helper\AbstractHelper;
-
-class Config extends AbstractHelper
+class Config
 {
     // Scope config paths
     const XML_PATH_BASE_URL = "autopilot/general/base_url";
@@ -14,9 +12,11 @@ class Config extends AbstractHelper
     const XML_PATH_ACTIVE = "ap_general/authentication/active";
     const XML_PATH_API_KEY = "ap_general/authentication/api_key";
     const XML_PATH_TRACKING_CODE = "ap_general/tracking/code";
-    const XML_PATH_TRACKING_URL = "ap_general/tracking/js_url";
-    const XML_PATH_CAPTURE_URL = "ap_general/tracking/capture_url";
+    const XML_PATH_CAPTURE_JS_URL = "ap_general/tracking/capture_js_url";
+    const XML_PATH_MAGENTO_CAPTURE_JS_URL = "ap_general/tracking/magento_js_url";
+    const XML_PATH_CAPTURE_API_URL = "ap_general/tracking/capture_url";
     const XML_PATH_INSTANCE_ID = "ap_general/general/instance_id";
+    const XML_PATH_DATA_SOURCE_ID = "ap_general/general/data_source_id";
 
     const XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED = "ap_sync/customer/auto_sync_enabled";
     const XML_PATH_SYNC_ORDER_AUTO_ENABLED = "ap_sync/order/auto_sync_enabled";
@@ -31,4 +31,16 @@ class Config extends AbstractHelper
     const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';
     const DB_DATE_TIME_FORMAT = 'Y-m-d H:i:s';
     const EMPTY_DATE_TIME = "0001-01-01T00:00:00Z";
+
+    // Capture Events
+    const RESOURCE_PRODUCT = 'product';
+    const RESOURCE_ORDER = 'order';
+    const RESOURCE_CART = 'cart';
+    const EVENT_TYPE_CREATED = 'created';
+    const EVENT_TYPE_UPDATED = 'updated';
+    const EVENT_TYPE_DELETED = 'deleted';
+    const EVENT_TYPE_WAITING_ON_STOCK = 'waiting_on_stock';
+    const EVENT_TYPE_ADDED_TO_CARD = 'added_to_cart';
+    const EVENT_TYPE_ADDED_VIEWED = 'viewed';
+    const EVENT_TYPE_CHECKOUT_STARTED = 'checkout_started';
 }

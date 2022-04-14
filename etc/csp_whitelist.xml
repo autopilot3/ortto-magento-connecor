@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
+    <policies>
+        <policy id="script-src">
+            <values>
+                <value id="ortto-stg" type="host">*.ap3stg.com</value>
+                <value id="ortto" type="host">*.ink</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="ortto-stg" type="host">*.stgautopilotapp.com</value>
+                <value id="ortto" type="host">*.autopilotapp.com</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="ortto-stg" type="host">*.stgautopilotapp.com</value>
+                <value id="ortto" type="host">*.autopilotapp.com</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>

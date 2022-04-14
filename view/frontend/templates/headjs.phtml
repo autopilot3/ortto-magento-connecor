@@ -1,0 +1,32 @@
+<?php
+/**
+ * @var $block Autopilot\AP3Connector\Block\HeadJs
+ */
+
+use Autopilot\AP3Connector\Block\HeadJs;
+
+$config = $block->getConfiguration();
+?>
+
+<?php if (!empty($config)) { ?>
+    <script type="text/javascript">
+        window.ap3c = window.ap3c || {};
+        const ap3c = window.ap3c;
+        ap3c.cmd = ap3c.cmd || [];
+        ap3c.cmdMagento = ap3c.cmdMagento || [];
+        const context = {
+            scope: {},
+            email: '',
+            phone: ''
+        };
+        /**
+         * Initializer
+         * @param {Function} ap3c.initMagento
+         */
+        ap3c.cmdMagento.push(function () {
+            ap3c.initMagento('<?= $config[HeadJs::TRACKING_CODE] ?>', '<?= $config[HeadJs::CAPTURE_API] ?>', context);
+        });
+    </script>
+    <script src="<?= $config[HeadJs::CAPTURE_JS] ?>" type="text/javascript"></script>
+    <script src="<?= $config[HeadJs::MAGENTO_JS] ?>" type="text/javascript"></script>
+<?php } ?>

@@ -15,6 +15,7 @@ interface ConfigScopeInterface extends SerializableInterface
     const WEBSITE_ID = 'website_id';
     const URL = 'url';
     const STORE_IDS = 'store_ids';
+    const PARENT = 'parent';
 
     /**
      * @return int
@@ -61,15 +62,20 @@ interface ConfigScopeInterface extends SerializableInterface
     public function setCode(string $code);
 
     /**
-     * @return bool
+     * @return bool Returns true if the scope is explicitly connected the admins.
      */
-    public function isConnected(): bool;
+    public function isExplicitlyConnected(): bool;
 
     /**
      * @param bool $connected
      * @return $this
      */
-    public function setIsConnected(bool $connected);
+    public function setIsExplicitlyConnected(bool $connected);
+
+    /**
+     * @return bool Returns true if the scope or its parent website (if applicable) is explicitly connected by admins.
+     */
+    public function isConnected(): bool;
 
     /**
      * Returns all the store IDs under a website if scope type == 'website', otherwise (type == 'store')
@@ -97,6 +103,17 @@ interface ConfigScopeInterface extends SerializableInterface
      * @return $this
      */
     public function setWebsiteId(int $id);
+
+    /**
+     * @return ConfigScopeInterface|null
+     */
+    public function getParent();
+
+    /**
+     * @param ConfigScopeInterface $scope
+     * @return $this
+     */
+    public function setParent(ConfigScopeInterface $scope);
 
     /**
      * @return string

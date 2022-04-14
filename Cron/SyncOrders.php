@@ -94,7 +94,7 @@ class SyncOrders
                 $this->logger->info(sprintf('Processing order synchronization job ID %s', $jobId));
                 try {
                     $scope = $this->scopeManager->initialiseScope($job->getScopeType(), $job->getScopeId());
-                    if (!$scope->isConnected()) {
+                    if (!$scope->isExplicitlyConnected()) {
                         $this->logger->warn("Job scope is not connected to Autopilot", $scope->toArray());
                         $jobCollection->markAsFailed($jobId, "Not connected to Autopilot");
                         continue;

@@ -32,7 +32,7 @@ class Data extends AbstractHelper
 {
     public const SHIPPING_ADDRESS = "shipping_address";
     public const BILLING_ADDRESS = "billing_address";
-
+    public const PHONE = "phone";
     private const ORDERS = "orders";
 
     private string $baseURL = "https://magento-integration-api.autopilotapp.com";
@@ -149,12 +149,31 @@ class Data extends AbstractHelper
         $addresses = $customer->getAddresses();
 
         if (!empty($addresses)) {
+            $phoneSetToBilling = false;
             foreach ($addresses as $address) {
-                if ($address->isDefaultBilling()) {
-                    $data[self::BILLING_ADDRESS] = $this->addressDataFactory->create()->toArray($address);
-                }
-                if ($address->isDefaultShipping()) {
-                    $data[self::SHIPPING_ADDRESS] = $this->addressDataFactory->create()->toArray($address);
+                switch (true) {
+                    case $address->isDefaultBilling():
+                        $data[self::BILLING_ADDRESS] = $this->addressDataFactory->create()->toArray($address);
+                        $phone = $address->getTelephone();
+                        if (!empty($phone)) {
+                            $data[self::PHONE] = $phone;
+                            $phoneSetToBilling = true;
+                        }
+                        break;
+                    case $address->isDefaultShipping():
+                        $data[self::SHIPPING_ADDRESS] = $this->addressDataFactory->create()->toArray($address);
+                        // Billing phone number takes precedence
+                        if (!$phoneSetToBilling) {
+                            $phone = $address->getTelephone();
+                            if (!empty($phone)) {
+                                $data[self::PHONE] = $phone;
+                            }
+                        }
+                        break;
+                    default:
+                        if (!array_key_exists(self::PHONE, $data)) {
+                            $data[self::PHONE] = $address->getTelephone();
+                        }
                 }
             }
         }

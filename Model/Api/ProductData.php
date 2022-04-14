@@ -17,6 +17,7 @@ use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\InventorySalesAdminUi\Model\GetSalableQuantityDataBySku;
+use Magento\Framework\Serialize\JsonConverter;
 
 class ProductData
 {
@@ -142,6 +143,14 @@ class ProductData
         }
 
         return $fields;
+    }
+
+    /**
+     * @return string|bool
+     */
+    public function toJSON()
+    {
+        return JsonConverter::convert($this->toArray());
     }
 
     private function loadVariations()
