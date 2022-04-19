@@ -67,14 +67,21 @@ interface ConfigurationReaderInterface
      * @param int $scopeId
      * @return string
      */
-    public function getTrackingJsURL(string $scopeType, int $scopeId): string;
+    public function getCaptureJsURL(string $scopeType, int $scopeId): string;
 
     /**
      * @param string $scopeType
      * @param int $scopeId
      * @return string
      */
-    public function getCaptureURL(string $scopeType, int $scopeId): string;
+    public function getMagentoCaptureJsURL(string $scopeType, int $scopeId): string;
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @return string
+     */
+    public function getCaptureApiURL(string $scopeType, int $scopeId): string;
 
     /**
      * @param string $scopeType

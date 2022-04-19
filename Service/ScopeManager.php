@@ -15,7 +15,6 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\InvalidArgumentException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Exception\NotFoundException;
 use Magento\Framework\Phrase;
 use Magento\Framework\UrlInterface;
 use Magento\Store\Api\Data\StoreInterface;
@@ -56,7 +55,7 @@ class ScopeManager implements ScopeManagerInterface
         foreach ($websites as $website) {
             try {
                 $scope = $this->initialiseScope(ScopeInterface::SCOPE_WEBSITE, To::int($website->getId()), $websites);
-                if ($scope->isConnected()) {
+                if ($scope->isExplicitlyConnected()) {
                     $result[] = $scope;
                 }
             } catch (Exception $e) {
@@ -73,7 +72,7 @@ class ScopeManager implements ScopeManagerInterface
                     $websites,
                     $stores
                 );
-                if ($scope->isConnected()) {
+                if ($scope->isExplicitlyConnected()) {
                     $result[] = $scope;
                 }
             } catch (Exception $e) {
@@ -125,7 +124,6 @@ class ScopeManager implements ScopeManagerInterface
      * @throws InvalidArgumentException
      * @throws LocalizedException
      * @throws NoSuchEntityException
-     * @throws NotFoundException
      */
     public function initialiseScope(
         string $type,
@@ -144,18 +142,9 @@ class ScopeManager implements ScopeManagerInterface
                 $scope->setWebsiteId($id);
                 $website = $this->storeManager->getWebsite($id);
                 $scope->setName($website->getName());
-                $code = $website->getCode();
-                if (empty($websites)) {
-                    $websites = $this->storeManager->getWebsites();
-                }
-                $scope->setIsConnected(!empty($this->configReader->getAPIKey($type, $id)));
+                $scope->setCode($website->getCode());
+                $scope->setIsExplicitlyConnected(!empty($this->configReader->getAPIKey($type, $id)));
                 $scope->setBaseURL((string)$this->urlInterface->getBaseUrl());
-                $count = 0;
-                foreach ($websites as $w) {
-                    if ($w->getCode() === $code) {
-                        $count++;
-                    }
-                }
                 foreach ($stores as $store) {
                     if (To::int($store->getWebsiteId()) === $id) {
                         $scope->addStoreId(To::int($store->getId()));
@@ -169,31 +158,15 @@ class ScopeManager implements ScopeManagerInterface
                 $scope->setWebsiteId($websiteId);
                 $websiteAPIKey = $this->configReader->getAPIKey(ScopeInterface::SCOPE_WEBSITE, $websiteId);
                 $storeAPIKey = $this->configReader->getAPIKey($type, $id);
-                $scope->setIsConnected($websiteAPIKey !== $storeAPIKey && !empty($storeAPIKey));
+                $scope->setIsExplicitlyConnected($websiteAPIKey !== $storeAPIKey && !empty($storeAPIKey));
                 $scope->setName($store->getName());
                 $scope->setBaseURL((string)$store->getBaseUrl(UrlInterface::URL_TYPE_WEB, true));
-                $code = $store->getCode();
+                $scope->setCode($store->getCode());
                 $scope->addStoreId($id);
-                $count = 0;
-                foreach ($stores as $store) {
-                    if ($store->getCode() === $code) {
-                        $count++;
-                    }
-                }
+                $scope->setParent($this->initialiseScope(ScopeInterface::SCOPE_WEBSITE, $websiteId));
                 break;
             default:
                 throw new InvalidArgumentException(new Phrase("Unsupported scope type $type"));
-        }
-
-        if (empty(trim((string)$code))) {
-            throw new NotFoundException(new Phrase("Scope not found", ['type' => $type, 'id' => $id]));
-        }
-
-        // Code is not necessarily unique in Magento
-        if ($count > 1) {
-            $scope->setCode(sprintf('$%s_%d', $code, $id));
-        } else {
-            $scope->setCode($code);
         }
 
         return $scope;

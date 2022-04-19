@@ -1,25 +1,21 @@
 <?php
 
-use Magento\Catalog\Model\Product;
-use Magento\Customer\Model\Session;
+use Autopilot\AP3Connector\Api\Data\TrackingDataInterface;
+use Autopilot\AP3Connector\Helper\Config;
 
 /**
  * @var $block Autopilot\AP3Connector\Block\Catalog\Product\View
- * @var $product Product
- * @var $session Session
  */
-$product = $block->getProduct();
-$session = $block->getSession();
+$event = $block->getProductEvent(Config::EVENT_TYPE_ADDED_VIEWED);
 ?>
 
-<?php if ($session->isLoggedIn()) { ?>
+<?php if (!empty($event)) { ?>
     <div class="display:none;" data-mage-init='{"product_view":  {
-      "product_id":<?= $product->getId() ?>,
-      "customer_id": <?= $session->getCustomer()->getId() ?>,
-      "store_id": <?= $product->getStoreId() ?>,
-      "url": "<?= $block->getAjaxURL() ?>"
-     }
-}'>
+          "email": "<?= $event[TrackingDataInterface::EMAIL] ?>",
+          "phone": "<?= $event[TrackingDataInterface::PHONE] ?>",
+          "payload": <?= $event[TrackingDataInterface::PAYLOAD] ?>
+      }
+    }'>
     </div>
 
 <?php } ?>

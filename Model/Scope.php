@@ -6,6 +6,7 @@ namespace Autopilot\AP3Connector\Model;
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Helper\To;
 use Magento\Framework\DataObject;
+use Magento\Framework\Serialize\JsonConverter;
 
 class Scope extends DataObject implements ConfigScopeInterface
 {
@@ -92,7 +93,7 @@ class Scope extends DataObject implements ConfigScopeInterface
     /**
      * @inheirtDoc
      */
-    public function isConnected(): bool
+    public function isExplicitlyConnected(): bool
     {
         return To::bool($this->getData(self::IS_CONNECTED));
     }
@@ -100,7 +101,7 @@ class Scope extends DataObject implements ConfigScopeInterface
     /**
      * @inheirtDoc
      */
-    public function setIsConnected(bool $connected)
+    public function setIsExplicitlyConnected(bool $connected)
     {
         return $this->setData(self::IS_CONNECTED, $connected);
     }
@@ -154,16 +155,62 @@ class Scope extends DataObject implements ConfigScopeInterface
     /**
      * @inheirtDoc
      */
-    public function toArray(array $keys = [self::TYPE, self::ID, self::NAME, self::CODE, self::URL]): array
+    public function equals(ConfigScopeInterface $scope): bool
     {
-        return parent::toArray($keys);
+        return $this->getType() === $scope->getType() && $this->getType() === $scope->getCode();
     }
 
     /**
      * @inheirtDoc
      */
-    public function equals(ConfigScopeInterface $scope): bool
+    public function getParent()
     {
-        return $this->getType() === $scope->getType() && $this->getType() === $scope->getCode();
+        return $this->getData(self::PARENT);
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function setParent(ConfigScopeInterface $scope)
+    {
+        return $this->setData(self::PARENT, $scope);
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function isConnected(): bool
+    {
+        if ($this->isExplicitlyConnected()) {
+            return true;
+        }
+        $parent = $this->getParent();
+        return !empty($parent) && $parent->isExplicitlyConnected();
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function toJson(array $keys = [])
+    {
+        $result = $this->toArray($keys);
+        return JsonConverter::convert($result);
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function toArray(array $keys = [])
+    {
+        if (empty($keys)) {
+            $keys = [self::ID, self::CODE, self::NAME, self::TYPE, self::URL];
+        }
+        $result = parent::toArray($keys);
+        $result[self::PARENT] = null;
+        $parent = $this->getParent();
+        if (!empty($parent)) {
+            $result[self::PARENT] = $parent->toArray();
+        }
+        return $result;
     }
 }

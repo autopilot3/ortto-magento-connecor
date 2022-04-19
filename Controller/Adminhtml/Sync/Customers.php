@@ -56,7 +56,7 @@ class Customers extends Action
         $scope = $this->scopeManager->getCurrentConfigurationScope($params['scope_type'], To::int($params['scope_id']));
         $result = $this->jsonFactory->create();
 
-        if (!$scope->isConnected()) {
+        if (!$scope->isExplicitlyConnected()) {
             $this->logger->warn("Not connected to Autopilot", $scope->toArray());
             $result->setData($this->helper->getErrorResponse(sprintf(
                 '%s %s is not connected to Autopilot.',
