@@ -15,6 +15,9 @@
                 <auto_sync_enabled>1</auto_sync_enabled>
                 <anonymous_enabled>1</anonymous_enabled>
             </order>
+            <product>
+                <auto_sync_enabled>1</auto_sync_enabled>
+            </product>
         </ap_sync>
     </default>
 </config>

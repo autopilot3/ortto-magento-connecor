@@ -7,6 +7,7 @@ namespace Autopilot\AP3Connector\Model\Api;
 use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Helper\To;
 use Autopilot\AP3Connector\Logger\Logger;
+use Magento\Bundle\Model\ResourceModel\Selection;
 use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Helper\ImageFactory;
@@ -14,62 +15,86 @@ use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ProductRepository;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Downloadable\Api\Data\LinkInterface;
+use Magento\Downloadable\Api\LinkRepositoryInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Catalog\Model\Product\Visibility;
+use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\InventorySalesAdminUi\Model\GetSalableQuantityDataBySku;
 use Magento\Framework\Serialize\JsonConverter;
 
 class ProductData
 {
-    private const VARIATIONS = 'variations';
+    private const CHILDREN = 'children';
+    private const LINKS = 'links';
+    private const BUNDLE = 'bundle';
+    private const CONFIGURABLE = 'configurable';
+    private const GROUPED = 'grouped';
+
     private const NO_SELECT = 'no_select';
 
     private Product $product;
     private string $imageURL;
     private string $url;
 
+    private array $parents;
+
     /** @var ProductData[] $variations */
-    private array $variations;
-    private array $variationsData;
     private array $stockData;
     private array $stocks;
 
+    /** @var int[] $children */
+    private array $children;
+
     private array $categoriesData;
-    private bool $isConfigurable;
+    /** @var LinkInterface[] $links */
+    private array $links;
 
     private Data $helper;
     private ProductRepository $productRepository;
     private ImageFactory $imageFactory;
     private CategoryCollectionFactory $categoryCollectionFactory;
-    private Configurable $configurable;
     private Logger $logger;
-    private ProductDataFactory $productDataFactory;
     private GetSalableQuantityDataBySku $salableQty;
+    private Configurable $configurable;
+    private Grouped $grouped;
+    private Selection $bundle;
+    private LinkRepositoryInterface $linkRepository;
 
     public function __construct(
         Data $helper,
         ProductRepository $productRepository,
         ImageFactory $imageFactory,
         CategoryCollectionFactory $categoryCollectionFactory,
-        Configurable $configurable,
         Logger $logger,
-        ProductDataFactory $productDataFactory,
-        GetSalableQuantityDataBySku $salableQty
+        GetSalableQuantityDataBySku $salableQty,
+        Configurable $configurable,
+        Grouped $grouped,
+        Selection $bundle,
+        LinkRepositoryInterface $linkRepository
     ) {
         $this->helper = $helper;
         $this->productRepository = $productRepository;
         $this->imageFactory = $imageFactory;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
-        $this->configurable = $configurable;
-        $this->productDataFactory = $productDataFactory;
         $this->salableQty = $salableQty;
         $this->logger = $logger;
         $this->categoriesData = [];
-        $this->variations = [];
-        $this->variationsData = [];
+        $this->children = [];
         $this->stockData = [];
         $this->stocks = [];
-        $this->isConfigurable = false;
+        $this->imageURL = '';
+        $this->url = '';
+        $this->configurable = $configurable;
+        $this->grouped = $grouped;
+        $this->bundle = $bundle;
+        $this->parents = [
+            self::CONFIGURABLE => [],
+            self::GROUPED => [],
+            self::BUNDLE => [],
+        ];
+        $this->linkRepository = $linkRepository;
+        $this->links = [];
     }
 
     /**
@@ -97,9 +122,25 @@ class ProductData
     {
         $this->product = $product;
         $this->loadCategories();
-        if ($product->getTypeId() == Configurable::TYPE_CODE) {
-            $this->isConfigurable = true;
-            $this->loadVariations();
+        switch ($product->getTypeId()) {
+            case Configurable::TYPE_CODE:
+            case Grouped::TYPE_CODE:
+            case "bundle":
+                $childrenIDs = $product->getTypeInstance()->getChildrenIds($this->product->getId());
+                foreach ($childrenIDs as $idGroup) {
+                    foreach ($idGroup as $productId) {
+                        $this->children[] = To::int($productId);
+                    }
+                }
+                break;
+            case "simple":
+            case "virtual":
+                $this->parents = $this->getParentIds();
+                break;
+            case "downloadable":
+                $this->links = $this->linkRepository->getLinksByProduct($product);
+                $this->parents = $this->getParentIds();
+                break;
         }
         $this->loadStockData();
         $this->loadURLs();
@@ -118,7 +159,6 @@ class ProductData
             'sku' => (string)$this->product->getSku(),
             'url' => $this->url,
             'image_url' => $this->imageURL,
-            'is_virtual' => To::bool($this->product->getIsVirtual()),
             'categories' => $this->categoriesData,
             'price' => To::float($this->product->getPrice()),
             'minimal_price' => To::float($this->product->getMinimalPrice()),
@@ -131,8 +171,26 @@ class ProductData
             // Each product can have multiple stocks
             'stocks' => $this->stocks,
             'custom_attributes' => [],
-            self::VARIATIONS => $this->variationsData,
+            'is_visible' => $this->product->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE,
+            'parents' => $this->parents,
+            self::LINKS => [],
+            self::CHILDREN => $this->children,
         ];
+
+        foreach ($this->links as $link) {
+            $fields[self::LINKS][] = [
+                'title' => $link->getTitle() ?? '',
+                'downloads' => To::int($link->getNumberOfDownloads()),
+                'type' => $link->getLinkType(),
+                'url' => $link->getLinkUrl(),
+                'file' => $link->getLinkFile() ?? '',
+                'sample_type' => $link->getSampleType(),
+                'sample_url' => $link->getSampleUrl(),
+                'sample_file' => $link->getSampleFile() ?? '',
+                'price' => To::float($link->getPrice()),
+            ];
+        }
+
 
         $customAttrs = $this->product->getCustomAttributes();
         foreach ($customAttrs as $attr) {
@@ -151,20 +209,6 @@ class ProductData
     public function toJSON()
     {
         return JsonConverter::convert($this->toArray());
-    }
-
-    private function loadVariations()
-    {
-        $childrenIDs = $this->configurable->getChildrenIds($this->product->getId());
-        foreach ($childrenIDs as $idGroup) {
-            foreach ($idGroup as $productId) {
-                $variation = $this->productDataFactory->create();
-                if ($variation->loadById(To::int($productId))) {
-                    $this->variations[] = $variation;
-                    $this->variationsData[] = $variation->toArray();
-                }
-            }
-        }
     }
 
     private function loadCategories()
@@ -196,30 +240,12 @@ class ProductData
     private function loadURLs()
     {
         $image = $this->product->getImage();
-        $productId = To::int($this->product->getId());
         if (!empty($image) && $image != self::NO_SELECT) {
             $this->imageURL = $this->resolveProductImageURL($this->product);
         }
 
-        $visible = $this->product->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE;
-        $imageLoaded = !empty($this->imageURL);
-        if ($visible) {
+        if ($this->product->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE) {
             $this->url = $this->product->getProductUrl();
-        }
-        if (!$imageLoaded || !$visible) {
-            $parent = $this->getParent($productId);
-            if (!$parent) {
-                return;
-            }
-            if (!$imageLoaded) {
-                $image = $parent->getImage();
-                if (!empty($image) && $image != self::NO_SELECT) {
-                    $this->imageURL = $this->resolveProductImageURL($parent);
-                }
-            }
-            if (!$visible) {
-                $this->url = $parent->getProductUrl();
-            }
         }
     }
 
@@ -253,39 +279,13 @@ class ProductData
                 ->setImageFile($product->getImage())->getUrl() ?? '';
     }
 
-    /**
-     * @param int $productId
-     * @return false|Product
-     */
-    private function getParent(int $productId)
+    private function getParentIds(): array
     {
-        $parentIds = $this->configurable->getParentIdsByChild($productId);
-        foreach ($parentIds as $id) {
-            try {
-                $parent = $this->productRepository->getById($id, false);
-                if ($parent->getTypeId() == Configurable::TYPE_CODE) {
-                    return $parent;
-                }
-            } catch (NoSuchEntityException $e) {
-                $this->logger->warn("Failed to lookup product by ID", ['error' => $e->getMessage()]);
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @return array|null
-     */
-    public function getVariationDataBySKU(string $sku)
-    {
-        if (!$this->isConfigurable) {
-            return null;
-        }
-        foreach ($this->variations as $index => $variation) {
-            if ($sku == $variation->product->getSku()) {
-                return $this->variationsData[$index];
-            }
-        }
-        return null;
+        $productId = $this->product->getId();
+        return [
+            self::CONFIGURABLE => $this->configurable->getParentIdsByChild($productId) ?? [],
+            self::GROUPED => $this->grouped->getParentIdsByChild($productId) ?? [],
+            self::BUNDLE => $this->bundle->getParentIdsByChild($productId) ?? [],
+        ];
     }
 }

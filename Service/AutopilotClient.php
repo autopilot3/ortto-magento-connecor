@@ -12,26 +12,28 @@ use Autopilot\AP3Connector\Helper\To;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
 use Autopilot\AP3Connector\Model\ImportResponse;
-use Exception;
-use JsonException;
-use Magento\Framework\Exception\LocalizedException;
+use Autopilot\AP3Connector\Model\Api\ProductDataFactory;
 use Magento\Framework\HTTP\ClientInterface;
+use JsonException;
 
 class AutopilotClient implements AutopilotClientInterface
 {
     private const CUSTOMERS = 'customers';
+    private const PRODUCTS = 'products';
 
     private ClientInterface $curl;
     private Data $helper;
 
     private AutopilotLoggerInterface $logger;
     private ConfigurationReaderInterface $config;
+    private ProductDataFactory $productDataFactory;
 
     public function __construct(
         ClientInterface $curl,
         Data $helper,
         AutopilotLoggerInterface $logger,
-        ConfigurationReaderInterface $config
+        ConfigurationReaderInterface $config,
+        ProductDataFactory $productDataFactory
     ) {
         // In Seconds
         $curl->setOption(CURLOPT_TIMEOUT, 10);
@@ -42,6 +44,7 @@ class AutopilotClient implements AutopilotClientInterface
         $this->helper = $helper;
         $this->logger = $logger;
         $this->config = $config;
+        $this->productDataFactory = $productDataFactory;
     }
 
     /**
@@ -85,6 +88,26 @@ class AutopilotClient implements AutopilotClientInterface
     /**
      * @inheirtDoc
      */
+    public function importProducts(ConfigScopeInterface $scope, array $products)
+    {
+        $url = $this->helper->getAutopilotURL(RoutesInterface::AP_IMPORT_PRODUCTS);
+        $payload = [];
+        foreach ($products as $product) {
+            $productData = $this->productDataFactory->create();
+            $productData->load($product);
+            $payload[] = $productData->toArray();
+        }
+        if (empty($payload)) {
+            $this->logger->debug("No products to export");
+            return new ImportResponse();
+        }
+        $response = $this->postJSON($url, $scope, [self::PRODUCTS => $payload]);
+        return new ImportResponse($response);
+    }
+
+    /**
+     * @inheirtDoc
+     */
     public function ingestProductView(ConfigScopeInterface $scope, array $product, array $customer)
     {
         $url = $this->helper->getAutopilotURL(RoutesInterface::AP_PRODUCT_VIEW);
@@ -94,6 +117,7 @@ class AutopilotClient implements AutopilotClientInterface
         ]);
         return new ImportResponse($response);
     }
+
 
     /**
      * @param string $url

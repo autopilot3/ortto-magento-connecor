@@ -95,6 +95,20 @@
                     <frontend_model>Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncOrders</frontend_model>
                 </field>
             </group>
+            <group id="product" translate="label" sortOrder="3" showInDefault="0" showInWebsite="1"
+                   showInStore="1">
+                <label>Products</label>
+                <field id="auto_sync_enabled" translate="label" sortOrder="1" type="select" showInDefault="0"
+                       showInWebsite="1" showInStore="1">
+                    <label>Automatic Sync</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
+                       showInWebsite="1">
+                    <label>Sync Products</label>
+                    <frontend_model>Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncProducts</frontend_model>
+                </field>
+            </group>
         </section>
     </system>
 </config>

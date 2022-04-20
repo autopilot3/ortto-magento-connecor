@@ -5,6 +5,7 @@ namespace Autopilot\AP3Connector\Api;
 
 use Autopilot\AP3Connector\Model\AutopilotException;
 use JsonException;
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -26,6 +27,14 @@ interface AutopilotClientInterface
      * @throws JsonException|AutopilotException|LocalizedException
      */
     public function importOrders(ConfigScopeInterface $scope, array $orders);
+
+    /**
+     * @param ConfigScopeInterface $scope
+     * @param ProductInterface[] $products
+     * @return ImportResponseInterface|null
+     * @throws JsonException|AutopilotException|LocalizedException
+     */
+    public function importProducts(ConfigScopeInterface $scope, array $products);
 
     /**
      * @param ConfigScopeInterface $scope

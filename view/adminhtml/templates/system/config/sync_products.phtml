@@ -1,0 +1,27 @@
+<?php
+
+use Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncProducts;
+
+/**
+ * @var $block SyncProducts
+ */
+$scope = $block->getScope();
+?>
+<div>
+    <button
+        data-mage-init='{"postData":
+            {
+                "url":"<?= $block->getAjaxURL() ?>",
+                "title": "Products",
+                "data": {
+                    "scope_id": <?= $scope->getId() ?>,
+                    "scope_type": "<?= $scope->getType() ?>"
+                }
+            }
+        }'
+        id="sync-products">
+        <span><?= /* @noEscape */
+            $block->getButtonLabel() ?>
+        </span>
+    </button>
+</div>

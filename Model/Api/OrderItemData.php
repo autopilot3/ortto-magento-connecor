@@ -30,7 +30,6 @@ class OrderItemData
         }
         $result = [];
         foreach ($items as $item) {
-            $sku = (string)$item->getSku();
             $product = $this->productDataFactory->create();
             if (!$product->loadById(To::int($item->getProductId()))) {
                 continue;
@@ -39,7 +38,7 @@ class OrderItemData
                 'id' => To::int($item->getItemId()),
                 'is_virtual' => To::bool($item->getIsVirtual()),
                 'name' => (string)$item->getName(),
-                'sku' => $sku,
+                'sku' => (string)$item->getSku(),
                 'description' => (string)$item->getDescription(),
                 'created_at' => $this->helper->toUTC($item->getCreatedAt()),
                 'updated_at' => $this->helper->toUTC($item->getUpdatedAt()),
@@ -75,7 +74,6 @@ class OrderItemData
                 'additional_data' => (string)$item->getAdditionalData(),
                 'store_id' => To::int($item->getStoreId()),
                 'product' => $product->toArray(),
-                'variation' => $product->getVariationDataBySKU($sku),
             ];
         }
         return $result;
