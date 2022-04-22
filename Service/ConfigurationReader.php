@@ -84,18 +84,6 @@ class ConfigurationReader implements ConfigurationReaderInterface
     /**
      * @inheirtDoc
      */
-    public function isNonSubscribedCustomerSyncEnabled(string $scopeType, int $scopeId): bool
-    {
-        return To::bool($this->scopeConfig->getValue(
-            Config::XML_PATH_SYNC_CUSTOMER_NON_SUBSCRIBED_ENABLED,
-            $scopeType,
-            $scopeId
-        ));
-    }
-
-    /**
-     * @inheirtDoc
-     */
     public function isAnonymousOrderSyncEnabled(string $scopeType, int $scopeId): bool
     {
         return To::bool($this->scopeConfig->getValue(

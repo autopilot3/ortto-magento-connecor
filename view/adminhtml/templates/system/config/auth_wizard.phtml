@@ -6,6 +6,7 @@ use Autopilot\AP3Connector\Block\Adminhtml\System\Config\AuthWizard;
  * @var $block AuthWizard
  */
 $scope = $block->getScope();
+$parent = $scope->getParent();
 ?>
 
 <div>
@@ -19,7 +20,9 @@ $scope = $block->getScope();
                     "scope_code": "<?= $scope->getCode() ?>",
                     "scope_type": "<?= $scope->getType() ?>",
                     "scope_name": "<?= $scope->getName() ?>",
-                    "scope_url": "<?= $scope->getBaseURL() ?>"
+                    "scope_url": "<?= $scope->getBaseURL() ?>",
+                    "store_ids": "<?= implode(',', $scope->getStoreIds()) ?>",
+                    "parent": "<?= empty($parent) ? null : base64_encode($parent->toJson()) ?>"
                 }
             }
         }' id="authenticate">

@@ -13,6 +13,7 @@ use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\AutopilotException;
 use Autopilot\AP3Connector\Model\ImportResponse;
 use Autopilot\AP3Connector\Model\Api\ProductDataFactory;
+use Autopilot\AP3Connector\Model\Api\CustomerDataFactory;
 use Magento\Framework\HTTP\ClientInterface;
 use JsonException;
 
@@ -27,13 +28,15 @@ class AutopilotClient implements AutopilotClientInterface
     private AutopilotLoggerInterface $logger;
     private ConfigurationReaderInterface $config;
     private ProductDataFactory $productDataFactory;
+    private CustomerDataFactory $customerDataFactory;
 
     public function __construct(
         ClientInterface $curl,
         Data $helper,
         AutopilotLoggerInterface $logger,
         ConfigurationReaderInterface $config,
-        ProductDataFactory $productDataFactory
+        ProductDataFactory $productDataFactory,
+        CustomerDataFactory $customerDataFactory
     ) {
         // In Seconds
         $curl->setOption(CURLOPT_TIMEOUT, 10);
@@ -45,6 +48,7 @@ class AutopilotClient implements AutopilotClientInterface
         $this->logger = $logger;
         $this->config = $config;
         $this->productDataFactory = $productDataFactory;
+        $this->customerDataFactory = $customerDataFactory;
     }
 
     /**
@@ -56,7 +60,9 @@ class AutopilotClient implements AutopilotClientInterface
 
         $payload = [];
         foreach ($customers as $customer) {
-            $data = $this->helper->getCustomerFields($customer, $scope);
+            $customerData = $this->customerDataFactory->create();
+            $customerData->load($customer);
+            $data = $customerData->toArray();
             if (empty($data)) {
                 continue;
             }
@@ -104,20 +110,6 @@ class AutopilotClient implements AutopilotClientInterface
         $response = $this->postJSON($url, $scope, [self::PRODUCTS => $payload]);
         return new ImportResponse($response);
     }
-
-    /**
-     * @inheirtDoc
-     */
-    public function ingestProductView(ConfigScopeInterface $scope, array $product, array $customer)
-    {
-        $url = $this->helper->getAutopilotURL(RoutesInterface::AP_PRODUCT_VIEW);
-        $response = $this->postJSON($url, $scope, [
-            'product' => $product,
-            'customer' => $customer,
-        ]);
-        return new ImportResponse($response);
-    }
-
 
     /**
      * @param string $url

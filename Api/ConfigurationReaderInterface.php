@@ -32,13 +32,6 @@ interface ConfigurationReaderInterface
      * @param int $scopeId
      * @return bool
      */
-    public function isNonSubscribedCustomerSyncEnabled(string $scopeType, int $scopeId): bool;
-
-    /**
-     * @param string $scopeType
-     * @param int $scopeId
-     * @return bool
-     */
     public function isAnonymousOrderSyncEnabled(string $scopeType, int $scopeId): bool;
 
     /**

@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace Autopilot\AP3Connector\Block\Catalog\Product;
 
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\Data\TrackingDataInterface;
+use Autopilot\AP3Connector\Api\Data\TrackingDataInterface as TD;
+use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Api\TrackDataProviderInterface;
 use Autopilot\AP3Connector\Helper\Config;
+use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\Logger;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Autopilot\AP3Connector\Model\Api\ProductDataFactory;
 use Magento\Catalog\Block\Product\Context;
 use Magento\Catalog\Helper\Product;
 use Magento\Catalog\Model\ProductTypes\ConfigInterface;
+use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Locale\FormatInterface;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
@@ -41,6 +44,9 @@ class View extends \Magento\Catalog\Block\Product\View
         PriceCurrencyInterface $priceCurrency,
         ProductDataFactory $productDataFactory,
         TrackDataProviderInterface $trackDataProvider,
+        CustomerRepositoryInterface $customerRepository,
+        Data $helper,
+        ScopeManagerInterface $scopeManager,
         Logger $logger,
         array $data = []
     ) {
@@ -75,11 +81,13 @@ class View extends \Magento\Catalog\Block\Product\View
             if (empty($product)) {
                 return false;
             }
+
             $trackingData = $this->trackDataProvider->getData();
+
             $payload = [
                 'resource' => Config::RESOURCE_PRODUCT,
                 'event' => $event,
-                TrackingDataInterface::SCOPE => [
+                'scope' => [
                     ConfigScopeInterface::ID => $trackingData->getScopeId(),
                     ConfigScopeInterface::TYPE => $trackingData->getScopeType(),
                 ],
@@ -88,9 +96,9 @@ class View extends \Magento\Catalog\Block\Product\View
                 ],
             ];
             return [
-                TrackingDataInterface::EMAIL => $trackingData->getEmail(),
-                TrackingDataInterface::PHONE => $trackingData->getPhone(),
-                TrackingDataInterface::PAYLOAD => JsonConverter::convert($payload),
+                TD::EMAIL => $trackingData->getEmail(),
+                TD::PHONE => $trackingData->getPhone(),
+                TD::PAYLOAD => JsonConverter::convert($payload),
             ];
         } catch (Exception $e) {
             $this->logger->error($e, "Failed to get product data");

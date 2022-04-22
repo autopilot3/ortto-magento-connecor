@@ -10,23 +10,39 @@ $config = $block->getConfiguration();
 
 <?php if (!empty($config)) { ?>
     <script type="text/javascript">
+        /**
+         * Initializer
+         * @param {Function} ap3c.initMagento
+         * @param {Object} window.ap3c
+         */
         window.ap3c = window.ap3c || {};
-        const ap3c = window.ap3c;
+        var ap3c = window.ap3c;
         ap3c.cmd = ap3c.cmd || [];
         ap3c.cmdMagento = ap3c.cmdMagento || [];
-        const context = {
+
+        var context = {
             scope: {},
             email: '',
             phone: ''
         };
-        /**
-         * Initializer
-         * @param {Function} ap3c.initMagento
-         */
+
         ap3c.cmdMagento.push(function () {
             ap3c.initMagento('<?= $config[HeadJs::TRACKING_CODE] ?>', '<?= $config[HeadJs::CAPTURE_API] ?>', context);
         });
+
+        var s, t;
+        s = document.createElement('script');
+        s.type = 'text/javascript';
+        s.src = '<?= $config[HeadJs::CAPTURE_JS] ?>';
+        t = document.getElementsByTagName('script')[0];
+        t.parentNode.insertBefore(s, t);
+        s.addEventListener('load', function () {
+            var bs, bt;
+            bs = document.createElement('script');
+            bs.type = 'text/javascript';
+            bs.src = '<?= $config[HeadJs::MAGENTO_JS] ?>';
+            bt = document.getElementsByTagName('script')[0];
+            bt.parentNode.insertBefore(bs, bt);
+        });
     </script>
-    <script src="<?= $config[HeadJs::CAPTURE_JS] ?>" type="text/javascript"></script>
-    <script src="<?= $config[HeadJs::MAGENTO_JS] ?>" type="text/javascript"></script>
 <?php } ?>

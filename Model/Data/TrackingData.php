@@ -29,7 +29,8 @@ class TrackingData extends DataObject implements TrackingDataInterface
      */
     public function getScopeType(): string
     {
-        return $this->getData(self::SCOPE_TYPE);
+        $value = $this->getData(self::SCOPE_TYPE);
+        return $value ? (string)$value : '';
     }
 
     /**
@@ -45,7 +46,8 @@ class TrackingData extends DataObject implements TrackingDataInterface
      */
     public function getEmail(): string
     {
-        return (string)$this->getData(self::EMAIL);
+        $value = $this->getData(self::EMAIL);
+        return $value ? (string)$value : '';
     }
 
     /**
@@ -61,7 +63,8 @@ class TrackingData extends DataObject implements TrackingDataInterface
      */
     public function getPhone(): string
     {
-        return (string)$this->getData(self::PHONE);
+        $value = $this->getData(self::PHONE);
+        return $value ? (string)$value : '';
     }
 
     /**
