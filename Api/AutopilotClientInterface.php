@@ -35,13 +35,4 @@ interface AutopilotClientInterface
      * @throws JsonException|AutopilotException|LocalizedException
      */
     public function importProducts(ConfigScopeInterface $scope, array $products);
-
-    /**
-     * @param ConfigScopeInterface $scope
-     * @param array $product
-     * @param array $customer
-     * @return ImportResponseInterface|null
-     * @throws JsonException|AutopilotException|LocalizedException
-     */
-    public function ingestProductView(ConfigScopeInterface $scope, array $product, array $customer);
 }

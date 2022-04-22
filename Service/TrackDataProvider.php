@@ -10,6 +10,7 @@ use Autopilot\AP3Connector\Helper\To;
 use Magento\Customer\Model\Address;
 use Magento\Customer\Model\Customer;
 use Magento\Customer\Model\Session;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
@@ -32,6 +33,7 @@ class TrackDataProvider implements TrackDataProviderInterface
 
     /**
      * @throws NoSuchEntityException
+     * @throws LocalizedException
      */
     public function getData(): TrackingDataInterface
     {

@@ -203,7 +203,7 @@ class Scope extends DataObject implements ConfigScopeInterface
     public function toArray(array $keys = [])
     {
         if (empty($keys)) {
-            $keys = [self::ID, self::CODE, self::NAME, self::TYPE, self::URL];
+            $keys = [self::ID, self::CODE, self::NAME, self::TYPE, self::URL, self::STORE_IDS];
         }
         $result = parent::toArray($keys);
         $result[self::PARENT] = null;

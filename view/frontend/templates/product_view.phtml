@@ -1,6 +1,6 @@
 <?php
 
-use Autopilot\AP3Connector\Api\Data\TrackingDataInterface;
+use Autopilot\AP3Connector\Api\Data\TrackingDataInterface as TD;
 use Autopilot\AP3Connector\Helper\Config;
 
 /**
@@ -11,9 +11,9 @@ $event = $block->getProductEvent(Config::EVENT_TYPE_ADDED_VIEWED);
 
 <?php if (!empty($event)) { ?>
     <div class="display:none;" data-mage-init='{"product_view":  {
-          "email": "<?= $event[TrackingDataInterface::EMAIL] ?>",
-          "phone": "<?= $event[TrackingDataInterface::PHONE] ?>",
-          "payload": <?= $event[TrackingDataInterface::PAYLOAD] ?>
+          "email": "<?= $event[TD::EMAIL] ?>",
+          "phone": "<?= $event[TD::PHONE] ?>",
+          "payload": <?= $event[TD::PAYLOAD] ?>
       }
     }'>
     </div>

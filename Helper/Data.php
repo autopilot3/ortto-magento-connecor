@@ -7,7 +7,6 @@ use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Api\SyncCategoryInterface;
 use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
 use Autopilot\AP3Connector\Model\Api\OrderDataFactory;
-use Autopilot\AP3Connector\Model\Api\AddressDataFactory;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
 use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
 use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\CollectionFactory as CheckpointCollectionFactory;
@@ -15,11 +14,8 @@ use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobC
 use InvalidArgumentException;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
-use Magento\Customer\Api\GroupRepositoryInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Newsletter\Model\Subscriber;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -37,7 +33,7 @@ class Data extends AbstractHelper
 
     private string $baseURL = "https://magento-integration-api.autopilotapp.com";
     private string $clientID = "mgqQkvCJWDFnxJTgQwfVuYEdQRWVAywE";
-    private GroupRepositoryInterface $groupRepository;
+
     private AutopilotLoggerInterface $logger;
     private TimezoneInterface $timezone;
     private CustomerMetadataInterface $customerMetadata;
@@ -46,12 +42,10 @@ class Data extends AbstractHelper
     private CheckpointCollectionFactory $checkpointCollectionFactory;
     private JobCollectionFactory $jobCollectionFactory;
     private OrderDataFactory $orderDataFactory;
-    private AddressDataFactory $addressDataFactory;
     private \DateTimeZone $utcTZ;
 
     public function __construct(
         Context $context,
-        GroupRepositoryInterface $groupRepository,
         TimezoneInterface $timezone,
         CustomerMetadataInterface $customerMetadata,
         Subscriber $subscriber,
@@ -59,12 +53,10 @@ class Data extends AbstractHelper
         ConfigurationReaderInterface $config,
         CheckpointCollectionFactory $checkpointCollectionFactory,
         JobCollectionFactory $jobCollectionFactory,
-        OrderDataFactory $orderDataFactory,
-        AddressDataFactory $addressDataFactory
+        OrderDataFactory $orderDataFactory
     ) {
         parent::__construct($context);
         $this->_request = $context->getRequest();
-        $this->groupRepository = $groupRepository;
         $this->logger = $logger;
         $this->timezone = $timezone;
         $this->customerMetadata = $customerMetadata;
@@ -73,7 +65,7 @@ class Data extends AbstractHelper
         $this->checkpointCollectionFactory = $checkpointCollectionFactory;
         $this->jobCollectionFactory = $jobCollectionFactory;
         $this->orderDataFactory = $orderDataFactory;
-        $this->addressDataFactory = $addressDataFactory;
+
         $this->utcTZ = timezone_open('UTC');
     }
 
@@ -107,90 +99,6 @@ class Data extends AbstractHelper
     }
 
     /**
-     * @param CustomerInterface $customer
-     * @param ConfigScopeInterface $scope
-     * @return array
-     */
-    public function getCustomerFields(CustomerInterface $customer, ConfigScopeInterface $scope): array
-    {
-        $sub = $this->subscriber->loadByCustomer(To::int($customer->getId()), To::int($customer->getWebsiteId()));
-        $isSubscribed = $sub->isSubscribed();
-        if (!$this->config->isNonSubscribedCustomerSyncEnabled($scope->getType(), $scope->getId()) && !$isSubscribed) {
-            return [];
-        }
-        $data = [
-            'id' => To::int($customer->getId()),
-            'prefix' => (string)$customer->getPrefix(),
-            'first_name' => (string)$customer->getFirstname(),
-            'middle_name' => (string)$customer->getMiddlename(),
-            'last_name' => (string)$customer->getLastname(),
-            'suffix' => (string)$customer->getSuffix(),
-            'email' => (string)$customer->getEmail(),
-            'created_at' => $this->toUTC($customer->getCreatedAt()),
-            'updated_at' => $this->toUTC($customer->getUpdatedAt()),
-            'created_in' => (string)$customer->getCreatedIn(),
-            'dob' => $this->toUTC($customer->getDob()),
-            'gender' => $this->getGenderLabel($customer->getGender()),
-            'is_subscribed' => $isSubscribed,
-        ];
-
-        $groupId = $customer->getGroupId();
-        if (!empty($groupId)) {
-            try {
-                $group = $this->groupRepository->getById($groupId);
-                if (!empty($group)) {
-                    $data['group'] = $group->getCode();
-                }
-            } catch (NoSuchEntityException|LocalizedException $e) {
-                $this->logger->error($e, 'Failed to fetch customer group details');
-            }
-        }
-
-        $addresses = $customer->getAddresses();
-
-        if (!empty($addresses)) {
-            $phoneSetToBilling = false;
-            foreach ($addresses as $address) {
-                switch (true) {
-                    case $address->isDefaultBilling():
-                        $data[self::BILLING_ADDRESS] = $this->addressDataFactory->create()->toArray($address);
-                        $phone = $address->getTelephone();
-                        if (!empty($phone)) {
-                            $data[self::PHONE] = $phone;
-                            $phoneSetToBilling = true;
-                        }
-                        break;
-                    case $address->isDefaultShipping():
-                        $data[self::SHIPPING_ADDRESS] = $this->addressDataFactory->create()->toArray($address);
-                        // Billing phone number takes precedence
-                        if (!$phoneSetToBilling) {
-                            $phone = $address->getTelephone();
-                            if (!empty($phone)) {
-                                $data[self::PHONE] = $phone;
-                            }
-                        }
-                        break;
-                    default:
-                        if (!array_key_exists(self::PHONE, $data)) {
-                            $data[self::PHONE] = $address->getTelephone();
-                        }
-                }
-            }
-        }
-
-        $attributes = $customer->getCustomAttributes();
-        $customAttrs = [];
-        if (!empty($attributes)) {
-            foreach ($attributes as $attr) {
-                $customAttrs[$attr->getAttributeCode()] = $attr->getValue();
-            }
-            $data['custom_attributes'] = $customAttrs;
-        }
-
-        return $data;
-    }
-
-    /**
      * @param OrderInterface[] $orders
      * @param ConfigScopeInterface $scope
      * @return array
@@ -198,7 +106,6 @@ class Data extends AbstractHelper
     public function getCustomerWithOrderFields(array $orders, ConfigScopeInterface $scope): array
     {
         $isAnonymousOrderEnabled = $this->config->isAnonymousOrderSyncEnabled($scope->getType(), $scope->getId());
-        $nonSubscribedEnabled = $this->config->isNonSubscribedCustomerSyncEnabled($scope->getType(), $scope->getId());
         $orderGroups = [];
         foreach ($orders as $order) {
             $customerId = To::int($order->getCustomerId());
@@ -212,10 +119,6 @@ class Data extends AbstractHelper
                 $orderGroups[$key][self::ORDERS][] = $orderFields;
             } else {
                 $sub = $this->subscriber->loadBySubscriberEmail($customerEmail, $scope->getWebsiteId());
-                $isSubscribed = $sub->isSubscribed();
-                if (!$isSubscribed && !$nonSubscribedEnabled) {
-                    continue;
-                }
                 $customer = [
                     'id' => $customerId,
                     'prefix' => (string)$order->getCustomerPrefix(),
@@ -226,7 +129,7 @@ class Data extends AbstractHelper
                     'email' => $customerEmail,
                     'dob' => $this->toUTC($order->getCustomerDob()),
                     'gender' => $this->getGenderLabel($order->getCustomerGender()),
-                    'is_subscribed' => $isSubscribed,
+                    'is_subscribed' => $sub->isSubscribed(),
                     self::ORDERS => [$orderFields],
                 ];
                 if ($customerId === 0) {
@@ -251,7 +154,7 @@ class Data extends AbstractHelper
      * @param mixed|null|string $gender
      * @return string
      */
-    private function getGenderLabel($gender): string
+    public function getGenderLabel($gender): string
     {
         if (empty($gender)) {
             return "";

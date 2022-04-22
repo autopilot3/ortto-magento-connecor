@@ -7,13 +7,11 @@ interface TrackingDataInterface
     /**
      * String constants for property names
      */
-    const SCOPE_ID = "scope_id";
-    const SCOPE_TYPE = "scope_type";
-    const EMAIL = "email";
-    const PHONE = "phone";
-    const CUSTOMER_ID = "customer_id";
-    public const SCOPE = 'scope';
-    const PAYLOAD = 'payload';
+    public const SCOPE_ID = "scope_id";
+    public const SCOPE_TYPE = "scope_type";
+    public const PAYLOAD = 'payload';
+    public const EMAIL = "email";
+    public const PHONE = "phone";
 
     /**
      * Getter for ScopeId.
