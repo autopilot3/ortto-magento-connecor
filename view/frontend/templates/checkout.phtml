@@ -1,22 +1,20 @@
 <?php
 
 use Autopilot\AP3Connector\Api\Data\TrackingDataInterface as TD;
-use Autopilot\AP3Connector\Block\ProductView;
+use Autopilot\AP3Connector\Block\Checkout;
 use Autopilot\AP3Connector\Helper\Config;
 
 /**
- * @var $block ProductView
+ * @var $block Checkout
  */
-$event = $block->getProductEvent(Config::EVENT_TYPE_ADDED_VIEWED);
+$event = $block->getCardEvent(Config::EVENT_TYPE_CHECKOUT_STARTED);
 ?>
-
 <?php if (!empty($event)) { ?>
-    <div class="display:none;" data-mage-init='{"product_view":  {
+    <div class="display:none;" data-mage-init='{"checkout":  {
           "email": "<?= $event[TD::EMAIL] ?>",
           "phone": "<?= $event[TD::PHONE] ?>",
           "payload": <?= $event[TD::PAYLOAD] ?>
       }
     }'>
     </div>
-
 <?php } ?>

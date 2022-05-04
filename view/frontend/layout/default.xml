@@ -3,8 +3,8 @@
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="head.additional">
-            <block class="Autopilot\AP3Connector\Block\HeadJs" name="Autopilot_AP3Connector_headjs"
-                   template="headjs.phtml"/>
+            <block class="Autopilot\AP3Connector\Block\HeaderJs" name="ortto_header"
+                   template="Autopilot_AP3Connector::header.phtml"/>
         </referenceBlock>
     </body>
 </page>
