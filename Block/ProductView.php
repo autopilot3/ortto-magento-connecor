@@ -2,30 +2,28 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Block\Catalog\Product;
+namespace Autopilot\AP3Connector\Block;
 
 use Autopilot\AP3Connector\Api\ConfigScopeInterface;
 use Autopilot\AP3Connector\Api\Data\TrackingDataInterface as TD;
-use Autopilot\AP3Connector\Api\ScopeManagerInterface;
 use Autopilot\AP3Connector\Api\TrackDataProviderInterface;
 use Autopilot\AP3Connector\Helper\Config;
-use Autopilot\AP3Connector\Helper\Data;
 use Autopilot\AP3Connector\Logger\Logger;
-use Magento\Catalog\Api\ProductRepositoryInterface;
 use Autopilot\AP3Connector\Model\Api\ProductDataFactory;
+use Exception;
+use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Block\Product\Context;
+use Magento\Catalog\Block\Product\View;
 use Magento\Catalog\Helper\Product;
 use Magento\Catalog\Model\ProductTypes\ConfigInterface;
-use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Locale\FormatInterface;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
+use Magento\Framework\Serialize\JsonConverter;
 use Magento\Framework\Stdlib\StringUtils;
 use Magento\Framework\Url\EncoderInterface;
-use Magento\Framework\Serialize\JsonConverter;
-use Exception;
 
-class View extends \Magento\Catalog\Block\Product\View
+class ProductView extends View
 {
     private ProductDataFactory $productDataFactory;
     private TrackDataProviderInterface $trackDataProvider;
@@ -44,9 +42,6 @@ class View extends \Magento\Catalog\Block\Product\View
         PriceCurrencyInterface $priceCurrency,
         ProductDataFactory $productDataFactory,
         TrackDataProviderInterface $trackDataProvider,
-        CustomerRepositoryInterface $customerRepository,
-        Data $helper,
-        ScopeManagerInterface $scopeManager,
         Logger $logger,
         array $data = []
     ) {

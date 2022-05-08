@@ -12,7 +12,7 @@ use Magento\Framework\View\Element\Template;
 use Exception;
 use Magento\Store\Model\ScopeInterface;
 
-class HeadJs extends Template
+class HeaderJs extends Template
 {
     public const TRACKING_CODE = 'c';
     public const MAGENTO_JS = 'mgj';

@@ -23,12 +23,13 @@ class AddressData
     }
 
     /**
-     * @param AddressInterface|OrderAddressInterface $address
+     * @param AddressInterface|OrderAddressInterface|\Magento\Quote\Api\Data\AddressInterface $address
      * @return array
      */
     public function toArray($address): array
     {
         $data = [
+            'type' => $address->getAddressType(),
             'city' => (string)$address->getCity(),
             'street_lines' => $address->getStreet(),
             'post_code' => (string)$address->getPostcode(),
