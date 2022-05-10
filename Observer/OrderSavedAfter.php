@@ -47,7 +47,6 @@ class OrderSavedAfter implements ObserverInterface
                     // Cancelled orders are processed by the Cancellation observer
                     return;
                 case Order::STATE_COMPLETE:
-                    $this->logger->info("COMPLETED");
                     try {
                         $now = $this->helper->nowUTC();
                         $collection = $this->collectionFactory->create();
@@ -62,13 +61,6 @@ class OrderSavedAfter implements ObserverInterface
                         );
                         $this->logger->error($e, $msg);
                     }
-            }
-            $scopes = $this->scopeManager->getActiveScopes();
-            foreach ($scopes as $scope) {
-                if (!$this->helper->shouldExportOrder($scope, $order)) {
-                    continue;
-                }
-                $this->autopilotClient->importOrders($scope, [$order]);
             }
         } catch (Exception $e) {
             $this->logger->error($e, "Failed to export the order");

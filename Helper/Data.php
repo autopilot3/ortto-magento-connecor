@@ -114,7 +114,9 @@ class Data extends AbstractHelper
                 continue;
             }
             $key = sprintf("%d:%s", $customerId, $customerEmail);
-            $orderFields = $this->orderDataFactory->create()->toArray($order);
+            $orderData = $this->orderDataFactory->create();
+            $orderData->load($order);
+            $orderFields = $orderData->toArray(true);
             if (array_has($orderGroups, $key)) {
                 $orderGroups[$key][self::ORDERS][] = $orderFields;
             } else {
