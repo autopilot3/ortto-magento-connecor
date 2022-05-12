@@ -2,14 +2,14 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
-        <tab id="autopilot" translate="label" sortOrder="99999">
+        <tab id="ortto" translate="label" sortOrder="99999">
             <label>Ortto</label>
         </tab>
         <section id="ap_general" translate="label" type="text" sortOrder="100" showInDefault="0"
                  showInWebsite="1"
                  showInStore="1">
             <label>General</label>
-            <tab>autopilot</tab>
+            <tab>ortto</tab>
             <resource>Autopilot_AP3Connector::config</resource>
             <group id="authentication" translate="label" sortOrder="1" showInDefault="0" showInWebsite="1"
                    showInStore="1">
@@ -54,7 +54,7 @@
                  showInWebsite="1"
                  showInStore="1">
             <label>Data Synchronization</label>
-            <tab>autopilot</tab>
+            <tab>ortto</tab>
             <resource>Autopilot_AP3Connector::config</resource>
             <group id="customer" translate="label" sortOrder="2" showInDefault="0" showInWebsite="1"
                    showInStore="1">

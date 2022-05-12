@@ -52,9 +52,6 @@ class Checkout extends Template
                 return false;
             }
 
-            $cart['cart_url'] = $this->getUrl('checkout/cart', ['_secure' => true]);
-            $cart['checkout_url'] = $this->getUrl('checkout', ['_secure' => true]);
-
             $trackingData = $this->trackDataProvider->getData();
 
             $payload = [
