@@ -32,6 +32,8 @@
                 type="Autopilot\AP3Connector\Logger\Logger"/>
     <preference for="Autopilot\AP3Connector\Api\CouponRepositoryInterface"
                 type="Autopilot\AP3Connector\Model\ResourceModel\CouponRepository"/>
+    <preference for="Autopilot\AP3Connector\Api\CartRepositoryInterface"
+                type="Autopilot\AP3Connector\Model\ResourceModel\CartRepository"/>
     <preference for="Autopilot\AP3Connector\Api\Data\CouponInterface"
                 type="Autopilot\AP3Connector\Model\Data\Coupon"/>
     <preference for="Autopilot\AP3Connector\Api\ScopeManagerInterface"

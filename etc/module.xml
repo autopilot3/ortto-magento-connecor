@@ -3,6 +3,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
     <module name="Autopilot_AP3Connector" setup_version="0.0.2">
         <sequence>
+            <module name="Magento_Catalog"/>
             <module name="Magento_Checkout"/>
         </sequence>
     </module>

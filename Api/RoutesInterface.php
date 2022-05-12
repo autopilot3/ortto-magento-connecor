@@ -6,9 +6,10 @@ namespace Autopilot\AP3Connector\Api;
 interface RoutesInterface
 {
     // Magento Routes
-    const MG_SYNC_CUSTOMERS = "autopilot/sync/customers";
-    const MG_SYNC_ORDERS = "autopilot/sync/orders";
-    const MG_SYNC_PRODUCTS = "autopilot/sync/products";
+    const MG_SYNC_CUSTOMERS = "ortto/sync/customers";
+    const MG_SYNC_ORDERS = "ortto/sync/orders";
+    const MG_SYNC_PRODUCTS = "ortto/sync/products";
+    const MG_CART_GET = "ortto/cart/get";
 
     // Autopilot Routes
     const AP_AUTHENTICATE = "/-/installation/auth";

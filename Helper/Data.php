@@ -208,14 +208,6 @@ class Data extends AbstractHelper
         return date_create('now', $this->utcTZ);
     }
 
-    public function getErrorResponse(string $message): array
-    {
-        return [
-            'error' => true,
-            'message' => $message,
-        ];
-    }
-
     /**
      * @return CheckpointCollection
      * @throws InvalidArgumentException

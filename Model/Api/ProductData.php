@@ -115,6 +115,23 @@ class ProductData
     }
 
     /**
+     * @param string $sku
+     * @return bool
+     */
+    public function loadBySKU(string $sku)
+    {
+        try {
+            /** @var Product $product */
+            $product = $this->productRepository->get($sku);
+            $this->load($product);
+            return true;
+        } catch (NoSuchEntityException $e) {
+            $this->logger->error($e, sprintf("Product SKU %s could not be found.", $sku));
+            return false;
+        }
+    }
+
+    /**
      * @param Product|ProductInterface $product
      * @return void
      */
