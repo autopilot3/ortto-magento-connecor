@@ -53,8 +53,7 @@ class CheckoutSuccess extends Template
             $trackingData = $this->trackDataProvider->getData();
 
             $payload = [
-                'resource' => Config::RESOURCE_ORDER,
-                'event' => Config::EVENT_TYPE_CREATED,
+                'event' => Config::EVENT_TYPE_ORDER_CREATED,
                 'scope' => [
                     ConfigScopeInterface::ID => $trackingData->getScopeId(),
                     ConfigScopeInterface::TYPE => $trackingData->getScopeType(),

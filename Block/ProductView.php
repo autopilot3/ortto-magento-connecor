@@ -80,7 +80,6 @@ class ProductView extends View
             $trackingData = $this->trackDataProvider->getData();
 
             $payload = [
-                'resource' => Config::RESOURCE_PRODUCT,
                 'event' => $event,
                 'scope' => [
                     ConfigScopeInterface::ID => $trackingData->getScopeId(),
