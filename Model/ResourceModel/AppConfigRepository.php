@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model\ResourceModel;
+namespace Ortto\Connector\Model\ResourceModel;
 
-use Autopilot\AP3Connector\Api\AppConfigRepositoryInterface;
-use Autopilot\AP3Connector\Api\Data\AppConfigInterface;
-use Autopilot\AP3Connector\Helper\Config;
-use Autopilot\AP3Connector\Helper\To;
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
+use Ortto\Connector\Api\AppConfigRepositoryInterface;
+use Ortto\Connector\Api\Data\AppConfigInterface;
+use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Helper\To;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Magento\Framework\App\Cache\Frontend\Pool;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\Exception\LocalizedException;
@@ -17,7 +17,7 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class AppConfigRepository implements AppConfigRepositoryInterface
 {
-    private AutopilotLoggerInterface $logger;
+    private OrttoLoggerInterface $logger;
     private WriterInterface $configWriter;
     private StoreManagerInterface $storeManager;
     private Pool $cacheFrontendPool;
@@ -33,13 +33,13 @@ class AppConfigRepository implements AppConfigRepositoryInterface
     ];
 
     /**
-     * @param AutopilotLoggerInterface $logger
+     * @param OrttoLoggerInterface $logger
      * @param WriterInterface $configWriter
      * @param StoreManagerInterface $storeManager
      * @param Pool $cacheFrontendPool
      */
     public function __construct(
-        AutopilotLoggerInterface $logger,
+        OrttoLoggerInterface $logger,
         WriterInterface $configWriter,
         StoreManagerInterface $storeManager,
         Pool $cacheFrontendPool

@@ -1,16 +1,16 @@
 <?php
 
-namespace Autopilot\AP3Connector\Controller\Cart;
+namespace Ortto\Connector\Controller\Cart;
 
-use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\RoutesInterface;
-use Autopilot\AP3Connector\Api\TrackDataProviderInterface;
-use Autopilot\AP3Connector\Controller\AbstractJsonController;
-use Autopilot\AP3Connector\Helper\Config;
-use Autopilot\AP3Connector\Helper\To;
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Autopilot\AP3Connector\Model\Api\CartItemDataFactory;
-use Autopilot\AP3Connector\Model\Api\CartDataFactory;
+use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\RoutesInterface;
+use Ortto\Connector\Api\TrackDataProviderInterface;
+use Ortto\Connector\Controller\AbstractJsonController;
+use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Helper\To;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
+use Ortto\Connector\Model\Api\CartItemDataFactory;
+use Ortto\Connector\Model\Api\CartDataFactory;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\Controller\Result\Json;
@@ -21,11 +21,11 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
     private CartDataFactory $cartDataFactory;
     private Session $session;
     private TrackDataProviderInterface $trackDataProvider;
-    private AutopilotLoggerInterface $logger;
+    private OrttoLoggerInterface $logger;
 
     public function __construct(
         Context $context,
-        AutopilotLoggerInterface $logger,
+        OrttoLoggerInterface $logger,
         CartItemDataFactory $cartItemDataFactory,
         CartDataFactory $cartDataFactory,
         Session $session,

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Api;
+namespace Ortto\Connector\Api;
 
 interface RoutesInterface
 {
@@ -11,7 +11,7 @@ interface RoutesInterface
     const MG_SYNC_PRODUCTS = "ortto/sync/products";
     const MG_CART_GET = "ortto/cart/get";
 
-    // Autopilot Routes
+    // Ortto Routes
     const AP_AUTHENTICATE = "/-/installation/auth";
     const AP_IMPORT_CONTACTS = "/magento/contact/merge-all";
     const AP_IMPORT_ORDERS = "/magento/contact/orders";

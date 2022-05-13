@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Model\Api;
+namespace Ortto\Connector\Model\Api;
 
-use Autopilot\AP3Connector\Helper\To;
+use Ortto\Connector\Helper\To;
 use Magento\Framework\Serialize\JsonConverter;
 use Magento\Quote\Model\Quote;
 

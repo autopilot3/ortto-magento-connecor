@@ -1,12 +1,12 @@
 <?php
 
-namespace Autopilot\AP3Connector\Model\ResourceModel\OrderAttributes;
+namespace Ortto\Connector\Model\ResourceModel\OrderAttributes;
 
-use Autopilot\AP3Connector\Api\Data\OrderAttributesInterface;
-use Autopilot\AP3Connector\Api\SchemaInterface;
-use Autopilot\AP3Connector\Helper\Config;
-use Autopilot\AP3Connector\Model\OrderAttributes as Model;
-use Autopilot\AP3Connector\Model\ResourceModel\OrderAttributes as ResourceModel;
+use Ortto\Connector\Api\Data\OrderAttributesInterface;
+use Ortto\Connector\Api\SchemaInterface;
+use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Model\OrderAttributes as Model;
+use Ortto\Connector\Model\ResourceModel\OrderAttributes as ResourceModel;
 use DateTime;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
@@ -15,7 +15,7 @@ class Collection extends AbstractCollection
     /**
      * @var string
      */
-    protected $_eventPrefix = 'autopilot_order_attributes_collection';
+    protected $_eventPrefix = 'ortto_order_attributes_collection';
 
     /**
      * @inheritdoc

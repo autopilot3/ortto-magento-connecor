@@ -10,7 +10,7 @@
                  showInStore="1">
             <label>General</label>
             <tab>ortto</tab>
-            <resource>Autopilot_AP3Connector::config</resource>
+            <resource>Ortto_Connector::config</resource>
             <group id="authentication" translate="label" sortOrder="1" showInDefault="0" showInWebsite="1"
                    showInStore="1">
                 <label>Authentication</label>
@@ -21,7 +21,7 @@
                 <field id="oauth_wizard" translate="label" sortOrder="2" showInDefault="0" showInStore="1"
                        showInWebsite="1">
                     <label>Get API credentials</label>
-                    <frontend_model>Autopilot\AP3Connector\Block\Adminhtml\System\Config\AuthWizard</frontend_model>
+                    <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\AuthWizard</frontend_model>
                     <depends>
                         <field id="*/*/active">1</field>
                     </depends>
@@ -46,7 +46,7 @@
                 <field id="code" translate="label" type="text" showInDefault="0" showInWebsite="1"
                        showInStore="1">
                     <label>Code</label>
-                    <frontend_model>Autopilot\AP3Connector\Block\Adminhtml\System\Config\DisabledText</frontend_model>
+                    <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\DisabledText</frontend_model>
                 </field>
             </group>
         </section>
@@ -55,7 +55,7 @@
                  showInStore="1">
             <label>Data Synchronization</label>
             <tab>ortto</tab>
-            <resource>Autopilot_AP3Connector::config</resource>
+            <resource>Ortto_Connector::config</resource>
             <group id="customer" translate="label" sortOrder="2" showInDefault="0" showInWebsite="1"
                    showInStore="1">
                 <label>Customers</label>
@@ -73,7 +73,7 @@
                 <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
                        showInWebsite="1">
                     <label>Sync Customers</label>
-                    <frontend_model>Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncCustomers</frontend_model>
+                    <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\SyncCustomers</frontend_model>
                 </field>
             </group>
             <group id="order" translate="label" sortOrder="3" showInDefault="0" showInWebsite="1"
@@ -92,7 +92,7 @@
                 <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
                        showInWebsite="1">
                     <label>Sync Orders</label>
-                    <frontend_model>Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncOrders</frontend_model>
+                    <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\SyncOrders</frontend_model>
                 </field>
             </group>
             <group id="product" translate="label" sortOrder="3" showInDefault="0" showInWebsite="1"
@@ -106,7 +106,7 @@
                 <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
                        showInWebsite="1">
                     <label>Sync Products</label>
-                    <frontend_model>Autopilot\AP3Connector\Block\Adminhtml\System\Config\SyncProducts</frontend_model>
+                    <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\SyncProducts</frontend_model>
                 </field>
             </group>
         </section>

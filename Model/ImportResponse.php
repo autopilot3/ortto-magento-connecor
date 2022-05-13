@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model;
+namespace Ortto\Connector\Model;
 
-use Autopilot\AP3Connector\Api\ImportResponseInterface;
+use Ortto\Connector\Api\ImportResponseInterface;
 
 class ImportResponse implements ImportResponseInterface
 {

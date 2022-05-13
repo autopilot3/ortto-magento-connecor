@@ -1,16 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint;
+namespace Ortto\Connector\Model\ResourceModel\CronCheckpoint;
 
-use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\Data\CronCheckpointInterface;
-use Autopilot\AP3Connector\Api\Data\CronCheckpointInterface as Checkpoint;
-use Autopilot\AP3Connector\Api\SchemaInterface;
-use Autopilot\AP3Connector\Helper\Config;
-use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint as ResourceModel;
-use Autopilot\AP3Connector\Model\CronCheckpointFactory;
-use Autopilot\AP3Connector\Model\CronCheckpoint as Model;
+use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\Data\CronCheckpointInterface;
+use Ortto\Connector\Api\Data\CronCheckpointInterface as Checkpoint;
+use Ortto\Connector\Api\SchemaInterface;
+use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Model\ResourceModel\CronCheckpoint as ResourceModel;
+use Ortto\Connector\Model\CronCheckpointFactory;
+use Ortto\Connector\Model\CronCheckpoint as Model;
 use DateTime;
 use Magento\Framework\Data\Collection\Db\FetchStrategyInterface;
 use Magento\Framework\Data\Collection\EntityFactoryInterface;
@@ -23,7 +23,7 @@ use Exception;
 
 class Collection extends AbstractCollection
 {
-    protected $_eventPrefix = 'autopilot_cron_checkpoint_collection';
+    protected $_eventPrefix = 'ortto_cron_checkpoint_collection';
     protected $_idFieldName = "id";
 
     private CronCheckpointFactory $cronCheckpointFactory;

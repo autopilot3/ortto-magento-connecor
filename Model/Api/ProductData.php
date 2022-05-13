@@ -2,11 +2,11 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Model\Api;
+namespace Ortto\Connector\Model\Api;
 
-use Autopilot\AP3Connector\Helper\Data;
-use Autopilot\AP3Connector\Helper\To;
-use Autopilot\AP3Connector\Logger\Logger;
+use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Helper\To;
+use Ortto\Connector\Logger\Logger;
 use Magento\Bundle\Model\ResourceModel\Selection;
 use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Api\Data\ProductInterface;

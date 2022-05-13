@@ -3,10 +3,10 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="sales_order_save_after">
         <observer name="sales_order_save_after_global"
-                  instance="\Autopilot\AP3Connector\Observer\OrderSavedAfter"/>
+                  instance="\Ortto\Connector\Observer\OrderSavedAfter"/>
     </event>
     <event name="order_cancel_after">
         <observer name="order_cancel_after_global"
-                  instance="\Autopilot\AP3Connector\Observer\OrderCanceledAfter"/>
+                  instance="\Ortto\Connector\Observer\OrderCanceledAfter"/>
     </event>
 </config>

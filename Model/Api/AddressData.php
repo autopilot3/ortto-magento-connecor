@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Model\Api;
+namespace Ortto\Connector\Model\Api;
 
-use Autopilot\AP3Connector\Logger\Logger;
+use Ortto\Connector\Logger\Logger;
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\RegionInterface;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;

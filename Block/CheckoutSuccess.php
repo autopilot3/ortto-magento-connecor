@@ -2,14 +2,14 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Block;
+namespace Ortto\Connector\Block;
 
-use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\Data\TrackingDataInterface as TD;
-use Autopilot\AP3Connector\Api\TrackDataProviderInterface;
-use Autopilot\AP3Connector\Helper\Config;
-use Autopilot\AP3Connector\Logger\Logger;
-use Autopilot\AP3Connector\Model\Api\OrderDataFactory;
+use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
+use Ortto\Connector\Api\TrackDataProviderInterface;
+use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Logger\Logger;
+use Ortto\Connector\Model\Api\OrderDataFactory;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Serialize\JsonConverter;
 use Magento\Framework\View\Element\Template;

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model\Data;
+namespace Ortto\Connector\Model\Data;
 
-use Autopilot\AP3Connector\Api\Data\CouponInterface;
+use Ortto\Connector\Api\Data\CouponInterface;
 use Magento\Framework\DataObject;
 
 class Coupon extends DataObject implements CouponInterface

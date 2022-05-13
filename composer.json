@@ -1,6 +1,6 @@
 {
-    "name": "autopilot/ap3connector",
-    "description": "Autopilot Connector",
+    "name": "ortto/connector",
+    "description": "Ortto Connector",
     "require": {
         "php": "~5.5.0|~5.6.0|~7.0.0",
         "magento/framework": "100.0.*",
@@ -17,7 +17,7 @@
             "registration.php"
         ],
         "psr-4": {
-            "Autopilot\\AP3Connector\\": ""
+            "Ortto\\Connector\\": ""
         }
     }
 }

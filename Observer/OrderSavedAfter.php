@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Observer;
+namespace Ortto\Connector\Observer;
 
-use Autopilot\AP3Connector\Helper\Data;
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Autopilot\AP3Connector\Api\AutopilotClientInterface;
-use Autopilot\AP3Connector\Api\ScopeManagerInterface;
-use Autopilot\AP3Connector\Model\ResourceModel\OrderAttributes\CollectionFactory as OrderAttributeCollectionFactory;
+use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
+use Ortto\Connector\Api\OrttoClientInterface;
+use Ortto\Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Model\ResourceModel\OrderAttributes\CollectionFactory as OrderAttributeCollectionFactory;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\Event\Observer;
@@ -16,22 +16,22 @@ use Magento\Sales\Model\Order;
 
 class OrderSavedAfter implements ObserverInterface
 {
-    private AutopilotLoggerInterface $logger;
+    private OrttoLoggerInterface $logger;
     private ScopeManagerInterface $scopeManager;
-    private AutopilotClientInterface $autopilotClient;
+    private OrttoClientInterface $orttoClient;
     private Data $helper;
     private OrderAttributeCollectionFactory $collectionFactory;
 
     public function __construct(
-        AutopilotLoggerInterface $logger,
+        OrttoLoggerInterface $logger,
         ScopeManagerInterface $scopeManager,
-        AutopilotClientInterface $autopilotClient,
+        OrttoClientInterface $orttoClient,
         OrderAttributeCollectionFactory $collectionFactory,
         Data $helper
     ) {
         $this->logger = $logger;
         $this->scopeManager = $scopeManager;
-        $this->autopilotClient = $autopilotClient;
+        $this->orttoClient = $orttoClient;
         $this->helper = $helper;
         $this->collectionFactory = $collectionFactory;
     }

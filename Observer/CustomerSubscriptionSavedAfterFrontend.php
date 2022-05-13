@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Observer;
+namespace Ortto\Connector\Observer;
 
-use Autopilot\AP3Connector\Helper\Data;
-use Autopilot\AP3Connector\Helper\To;
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Autopilot\AP3Connector\Api\AutopilotClientInterface;
-use Autopilot\AP3Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Helper\To;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
+use Ortto\Connector\Api\OrttoClientInterface;
+use Ortto\Connector\Api\ScopeManagerInterface;
 use Magento\Customer\Model\ResourceModel\CustomerRepository;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Newsletter\Model\Subscriber;
@@ -16,22 +16,22 @@ use Exception;
 
 class CustomerSubscriptionSavedAfterFrontend implements ObserverInterface
 {
-    private AutopilotLoggerInterface $logger;
+    private OrttoLoggerInterface $logger;
     private ScopeManagerInterface $scopeManager;
-    private AutopilotClientInterface $autopilotClient;
+    private OrttoClientInterface $orttoClient;
     private CustomerRepository $customerRepository;
     private Data $helper;
 
     public function __construct(
-        AutopilotLoggerInterface $logger,
+        OrttoLoggerInterface $logger,
         ScopeManagerInterface $scopeManager,
-        AutopilotClientInterface $autopilotClient,
+        OrttoClientInterface $orttoClient,
         CustomerRepository $customerRepository,
         Data $helper
     ) {
         $this->logger = $logger;
         $this->scopeManager = $scopeManager;
-        $this->autopilotClient = $autopilotClient;
+        $this->orttoClient = $orttoClient;
         $this->customerRepository = $customerRepository;
         $this->helper = $helper;
     }
@@ -57,7 +57,7 @@ class CustomerSubscriptionSavedAfterFrontend implements ObserverInterface
                 if (!$this->helper->shouldExportCustomer($scope, $customer)) {
                     continue;
                 }
-                $this->autopilotClient->importContacts($scope, [$customer]);
+                $this->orttoClient->importContacts($scope, [$customer]);
             }
         } catch (Exception $e) {
             $this->logger->error($e, 'CustomerSubscriptionSavedAfterFrontend: Failed to export the customer');

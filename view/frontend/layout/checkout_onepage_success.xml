@@ -4,9 +4,9 @@
     <body>
         <referenceContainer name="content">
             <block name="ortto_checkout_success"
-                   class="Autopilot\AP3Connector\Block\CheckoutSuccess"
+                   class="Ortto\Connector\Block\CheckoutSuccess"
                    after="checkout.success"
-                   template="Autopilot_AP3Connector::checkout_success.phtml"/>
+                   template="Ortto_Connector::checkout_success.phtml"/>
         </referenceContainer>
     </body>
 </page>

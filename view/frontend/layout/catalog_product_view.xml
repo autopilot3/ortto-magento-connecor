@@ -4,8 +4,8 @@
     <body>
         <referenceContainer name="content">
             <block name="ortto_product_view"
-                   class="Autopilot\AP3Connector\Block\ProductView"
-                   template="Autopilot_AP3Connector::product_view.phtml"/>
+                   class="Ortto\Connector\Block\ProductView"
+                   template="Ortto_Connector::product_view.phtml"/>
         </referenceContainer>
     </body>
 </page>

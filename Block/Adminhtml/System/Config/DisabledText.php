@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Block\Adminhtml\System\Config;
+namespace Ortto\Connector\Block\Adminhtml\System\Config;
 
 use Magento\Framework\Data\Form\Element\AbstractElement;
 use Magento\Config\Block\System\Config\Form\Field;

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Api;
+namespace Ortto\Connector\Api;
 
-use Autopilot\AP3Connector\Api\Data\SerializableInterface;
+use Ortto\Connector\Api\Data\SerializableInterface;
 
 interface ConfigScopeInterface extends SerializableInterface
 {

@@ -3,57 +3,57 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <!-- PLUGINS -->
     <type name="Magento\Sales\Api\OrderRepositoryInterface">
-        <plugin name="order_attributes_plugin" type="Autopilot\AP3Connector\Plugin\OrderRepositoryPlugin"/>
+        <plugin name="order_attributes_plugin" type="Ortto\Connector\Plugin\OrderRepositoryPlugin"/>
     </type>
     <type name="Magento\Sales\Api\Data\OrderInterface">
         <plugin name="order_attributes_loader_plugin"
-                type="Autopilot\AP3Connector\Plugin\LoadOrderAttributesPlugin"/>
+                type="Ortto\Connector\Plugin\LoadOrderAttributesPlugin"/>
     </type>
     <!-- END PLUGINS -->
-    <virtualType name="AutopilotLogger" type="Magento\Framework\Logger\Monolog">
+    <virtualType name="OrttoLogger" type="Magento\Framework\Logger\Monolog">
         <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="error" xsi:type="object">Autopilot\AP3Connector\Logger\Handler\ErrorHandler</item>
-                <item name="info" xsi:type="object">Autopilot\AP3Connector\Logger\Handler\InfoHandler</item>
+                <item name="error" xsi:type="object">Ortto\Connector\Logger\Handler\ErrorHandler</item>
+                <item name="info" xsi:type="object">Ortto\Connector\Logger\Handler\InfoHandler</item>
             </argument>
         </arguments>
     </virtualType>
-    <type name="Autopilot\AP3Connector\Logger\Logger">
+    <type name="Ortto\Connector\Logger\Logger">
         <arguments>
-            <argument name="logger" xsi:type="object">AutopilotLogger</argument>
+            <argument name="logger" xsi:type="object">OrttoLogger</argument>
         </arguments>
     </type>
-    <type name="Autopilot\AP3Connector\Service\AutopilotClient">
+    <type name="Ortto\Connector\Service\OrttoClient">
         <arguments>
             <argument name="curl" xsi:type="object">Magento\Framework\HTTP\Client\Curl</argument>
         </arguments>
     </type>
-    <preference for="Autopilot\AP3Connector\Logger\AutopilotLoggerInterface"
-                type="Autopilot\AP3Connector\Logger\Logger"/>
-    <preference for="Autopilot\AP3Connector\Api\CouponRepositoryInterface"
-                type="Autopilot\AP3Connector\Model\ResourceModel\CouponRepository"/>
-    <preference for="Autopilot\AP3Connector\Api\CartRepositoryInterface"
-                type="Autopilot\AP3Connector\Model\ResourceModel\CartRepository"/>
-    <preference for="Autopilot\AP3Connector\Api\Data\CouponInterface"
-                type="Autopilot\AP3Connector\Model\Data\Coupon"/>
-    <preference for="Autopilot\AP3Connector\Api\ScopeManagerInterface"
-                type="Autopilot\AP3Connector\Service\ScopeManager"/>
-    <preference for="Autopilot\AP3Connector\Api\ConfigScopeInterface"
-                type="Autopilot\AP3Connector\Model\Scope"/>
-    <preference for="Autopilot\AP3Connector\Api\AutopilotClientInterface"
-                type="Autopilot\AP3Connector\Service\AutopilotClient"/>
-    <preference for="Autopilot\AP3Connector\Api\ConfigurationReaderInterface"
-                type="Autopilot\AP3Connector\Service\ConfigurationReader"/>
-    <preference for="Autopilot\AP3Connector\Api\Data\SyncJobInterface"
-                type="Autopilot\AP3Connector\Model\SyncJob"/>
-    <preference for="Autopilot\AP3Connector\Api\Data\CronCheckpointInterface"
-                type="Autopilot\AP3Connector\Model\CronCheckpoint"/>
-    <preference for="Autopilot\AP3Connector\Api\Data\AppConfigInterface"
-                type="Autopilot\AP3Connector\Model\Data\AppConfig"/>
-    <preference for="Autopilot\AP3Connector\Api\AppConfigRepositoryInterface"
-                type="Autopilot\AP3Connector\Model\ResourceModel\AppConfigRepository"/>
-    <preference for="Autopilot\AP3Connector\Api\TrackDataProviderInterface"
-                type="Autopilot\AP3Connector\Service\TrackDataProvider"/>
-    <preference for="Autopilot\AP3Connector\Api\Data\TrackingDataInterface"
-                type="Autopilot\AP3Connector\Model\Data\TrackingData"/>
+    <preference for="Ortto\Connector\Logger\OrttoLoggerInterface"
+                type="Ortto\Connector\Logger\Logger"/>
+    <preference for="Ortto\Connector\Api\CouponRepositoryInterface"
+                type="Ortto\Connector\Model\ResourceModel\CouponRepository"/>
+    <preference for="Ortto\Connector\Api\CartRepositoryInterface"
+                type="Ortto\Connector\Model\ResourceModel\CartRepository"/>
+    <preference for="Ortto\Connector\Api\Data\CouponInterface"
+                type="Ortto\Connector\Model\Data\Coupon"/>
+    <preference for="Ortto\Connector\Api\ScopeManagerInterface"
+                type="Ortto\Connector\Service\ScopeManager"/>
+    <preference for="Ortto\Connector\Api\ConfigScopeInterface"
+                type="Ortto\Connector\Model\Scope"/>
+    <preference for="Ortto\Connector\Api\OrttoClientInterface"
+                type="Ortto\Connector\Service\OrttoClient"/>
+    <preference for="Ortto\Connector\Api\ConfigurationReaderInterface"
+                type="Ortto\Connector\Service\ConfigurationReader"/>
+    <preference for="Ortto\Connector\Api\Data\SyncJobInterface"
+                type="Ortto\Connector\Model\SyncJob"/>
+    <preference for="Ortto\Connector\Api\Data\CronCheckpointInterface"
+                type="Ortto\Connector\Model\CronCheckpoint"/>
+    <preference for="Ortto\Connector\Api\Data\AppConfigInterface"
+                type="Ortto\Connector\Model\Data\AppConfig"/>
+    <preference for="Ortto\Connector\Api\AppConfigRepositoryInterface"
+                type="Ortto\Connector\Model\ResourceModel\AppConfigRepository"/>
+    <preference for="Ortto\Connector\Api\TrackDataProviderInterface"
+                type="Ortto\Connector\Service\TrackDataProvider"/>
+    <preference for="Ortto\Connector\Api\Data\TrackingDataInterface"
+                type="Ortto\Connector\Model\Data\TrackingData"/>
 </config>

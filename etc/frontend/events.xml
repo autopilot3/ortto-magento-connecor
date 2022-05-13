@@ -3,18 +3,18 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="customer_register_success">
         <observer name="customer_registered_frontend"
-                  instance="\Autopilot\AP3Connector\Observer\CustomerRegisteredAfter"/>
+                  instance="\Ortto\Connector\Observer\CustomerRegisteredAfter"/>
     </event>
     <event name="customer_account_edited">
         <observer name="customer_account_edited_frontend"
-                  instance="\Autopilot\AP3Connector\Observer\CustomerSavedAfterFrontend"/>
+                  instance="\Ortto\Connector\Observer\CustomerSavedAfterFrontend"/>
     </event>
     <event name="newsletter_subscriber_save_commit_after">
         <observer name="newsletter_subscriber_save_commit_after_frontend"
-                  instance="\Autopilot\AP3Connector\Observer\CustomerSubscriptionSavedAfterFrontend"/>
+                  instance="\Ortto\Connector\Observer\CustomerSubscriptionSavedAfterFrontend"/>
     </event>
     <event name="customer_address_save_after">
         <observer name="customer_address_save_after_frontend"
-                  instance="\Autopilot\AP3Connector\Observer\CustomerAddressSavedAfterFrontend"/>
+                  instance="\Ortto\Connector\Observer\CustomerAddressSavedAfterFrontend"/>
     </event>
 </config>

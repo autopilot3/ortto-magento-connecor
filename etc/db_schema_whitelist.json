@@ -1,5 +1,5 @@
 {
-    "autopilot_sync_jobs": {
+    "ortto_sync_jobs": {
         "column": {
             "id": true,
             "category": true,
@@ -21,7 +21,7 @@
             "PRIMARY": true
         }
     },
-    "autopilot_cron_checkpoint": {
+    "ortto_cron_checkpoint": {
         "column": {
             "id": true,
             "category": true,
@@ -34,7 +34,7 @@
             "AUTOPILOT_CRON_CHECKPOINT_SCOPE_TYPE_SCOPE_ID_CATEGORY": true
         }
     },
-    "autopilot_order_attributes": {
+    "ortto_order_attributes": {
         "column": {
             "entity_id": true,
             "order_id": true,

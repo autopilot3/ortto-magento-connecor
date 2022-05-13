@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Helper;
+namespace Ortto\Connector\Helper;
 
 class Config
 {
     // Scope config paths
-    const XML_PATH_BASE_URL = "autopilot/general/base_url";
-    const XML_PATH_CLIENT_ID = "autopilot/general/client_id";
+    const XML_PATH_BASE_URL = "ortto/general/base_url";
+    const XML_PATH_CLIENT_ID = "ortto/general/client_id";
     const XML_PATH_TRACKING_ENABLED = "ap_general/tracking/enabled";
     const XML_PATH_ACTIVE = "ap_general/authentication/active";
     const XML_PATH_API_KEY = "ap_general/authentication/api_key";

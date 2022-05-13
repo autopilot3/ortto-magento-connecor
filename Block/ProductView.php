@@ -2,14 +2,13 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Block;
+namespace Ortto\Connector\Block;
 
-use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\Data\TrackingDataInterface as TD;
-use Autopilot\AP3Connector\Api\TrackDataProviderInterface;
-use Autopilot\AP3Connector\Helper\Config;
-use Autopilot\AP3Connector\Logger\Logger;
-use Autopilot\AP3Connector\Model\Api\ProductDataFactory;
+use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
+use Ortto\Connector\Api\TrackDataProviderInterface;
+use Ortto\Connector\Logger\Logger;
+use Ortto\Connector\Model\Api\ProductDataFactory;
 use Exception;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Block\Product\Context;

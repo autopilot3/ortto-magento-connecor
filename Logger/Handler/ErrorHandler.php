@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Logger\Handler;
+namespace Ortto\Connector\Logger\Handler;
 
 use Magento\Framework\Logger\Handler\Base;
 use Monolog\Logger;
 
 class ErrorHandler extends Base
 {
-    public const FILE_NAME = '/var/log/autopilot_error.log';
+    public const FILE_NAME = '/var/log/ortto_error.log';
     /**
      * Logging level
      * @var int

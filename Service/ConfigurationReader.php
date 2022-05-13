@@ -2,13 +2,13 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Service;
+namespace Ortto\Connector\Service;
 
-use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
-use Autopilot\AP3Connector\Api\ImageIdInterface;
-use Autopilot\AP3Connector\Api\SyncCategoryInterface;
-use Autopilot\AP3Connector\Helper\Config;
-use Autopilot\AP3Connector\Helper\To;
+use Ortto\Connector\Api\ConfigurationReaderInterface;
+use Ortto\Connector\Api\ImageIdInterface;
+use Ortto\Connector\Api\SyncCategoryInterface;
+use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Helper\To;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 

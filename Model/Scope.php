@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model;
+namespace Ortto\Connector\Model;
 
-use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Helper\To;
+use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Helper\To;
 use Magento\Framework\DataObject;
 use Magento\Framework\Serialize\JsonConverter;
 

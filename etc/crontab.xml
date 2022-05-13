@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
-    <group id="autopilot">
-        <job name="autopilot_ap3connector_sync_customers" instance="Autopilot\AP3Connector\Cron\SyncCustomers"
+    <group id="ortto">
+        <job name="ortto_connector_sync_customers" instance="Ortto\Connector\Cron\SyncCustomers"
              method="execute">
             <schedule>* * * * *</schedule>
         </job>
-        <job name="autopilot_ap3connector_sync_orders" instance="Autopilot\AP3Connector\Cron\SyncOrders"
+        <job name="ortto_connector_sync_orders" instance="Ortto\Connector\Cron\SyncOrders"
              method="execute">
             <schedule>* * * * *</schedule>
         </job>
-        <job name="autopilot_ap3connector_sync_products" instance="Autopilot\AP3Connector\Cron\SyncProducts"
+        <job name="ortto_connector_sync_products" instance="Ortto\Connector\Cron\SyncProducts"
              method="execute">
             <schedule>* * * * *</schedule>
         </job>

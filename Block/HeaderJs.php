@@ -2,12 +2,12 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Block;
+namespace Ortto\Connector\Block;
 
-use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
-use Autopilot\AP3Connector\Api\ScopeManagerInterface;
-use Autopilot\AP3Connector\Helper\To;
-use Autopilot\AP3Connector\Logger\Logger;
+use Ortto\Connector\Api\ConfigurationReaderInterface;
+use Ortto\Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Helper\To;
+use Ortto\Connector\Logger\Logger;
 use Magento\Framework\View\Element\Template;
 use Exception;
 use Magento\Store\Model\ScopeInterface;

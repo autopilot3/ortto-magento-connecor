@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Logger\Handler;
+namespace Ortto\Connector\Logger\Handler;
 
 use Magento\Framework\Logger\Handler\Base;
 use Monolog\Logger;
 
 class InfoHandler extends Base
 {
-    const FILE_NAME = '/var/log/autopilot_info.log';
+    const FILE_NAME = '/var/log/ortto_info.log';
     /**
      * Logging level
      * @var int

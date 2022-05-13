@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model\Data;
+namespace Ortto\Connector\Model\Data;
 
-use Autopilot\AP3Connector\Api\Data\AppConfigInterface;
-use Autopilot\AP3Connector\Helper\To;
+use Ortto\Connector\Api\Data\AppConfigInterface;
+use Ortto\Connector\Helper\To;
 use Magento\Framework\DataObject;
 
 class AppConfig extends DataObject implements AppConfigInterface

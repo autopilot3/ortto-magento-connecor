@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Service;
+namespace Ortto\Connector\Service;
 
-use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
-use Autopilot\AP3Connector\Api\ScopeManagerInterface;
-use Autopilot\AP3Connector\Helper\To;
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Autopilot\AP3Connector\Model\Scope;
-use Autopilot\AP3Connector\Model\ScopeFactory;
+use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\ConfigurationReaderInterface;
+use Ortto\Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Helper\To;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
+use Ortto\Connector\Model\Scope;
+use Ortto\Connector\Model\ScopeFactory;
 use Exception;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\InvalidArgumentException;
@@ -26,7 +26,7 @@ use Magento\Store\Model\StoreManagerInterface;
 class ScopeManager implements ScopeManagerInterface
 {
     private StoreManagerInterface $storeManager;
-    private AutopilotLoggerInterface $logger;
+    private OrttoLoggerInterface $logger;
     private ConfigurationReaderInterface $configReader;
     private ScopeFactory $scopeFactory;
     private RequestInterface $request;
@@ -34,7 +34,7 @@ class ScopeManager implements ScopeManagerInterface
 
     public function __construct(
         StoreManagerInterface $storeManager,
-        AutopilotLoggerInterface $logger,
+        OrttoLoggerInterface $logger,
         ConfigurationReaderInterface $configReader,
         ScopeFactory $scopeFactory,
         RequestInterface $request,

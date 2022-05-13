@@ -1,21 +1,21 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Cron;
+namespace Ortto\Connector\Cron;
 
-use Autopilot\AP3Connector\Api\AutopilotClientInterface;
-use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
-use Autopilot\AP3Connector\Api\ImportResponseInterface;
-use Autopilot\AP3Connector\Api\SyncCategoryInterface as SyncCategory;
-use Autopilot\AP3Connector\Api\ScopeManagerInterface;
-use Autopilot\AP3Connector\Helper\Config;
-use Autopilot\AP3Connector\Helper\Data;
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Autopilot\AP3Connector\Model\AutopilotException;
-use Autopilot\AP3Connector\Model\ImportResponse;
-use Autopilot\AP3Connector\Model\Scope;
+use Ortto\Connector\Api\OrttoClientInterface;
+use Ortto\Connector\Api\ConfigurationReaderInterface;
+use Ortto\Connector\Api\ImportResponseInterface;
+use Ortto\Connector\Api\SyncCategoryInterface as SyncCategory;
+use Ortto\Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
+use Ortto\Connector\Model\OrttoException;
+use Ortto\Connector\Model\ImportResponse;
+use Ortto\Connector\Model\Scope;
 use Exception;
-use Autopilot\AP3Connector\Api\JobStatusInterface as Status;
+use Ortto\Connector\Api\JobStatusInterface as Status;
 use JsonException;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
@@ -28,8 +28,8 @@ use Magento\Store\Model\ScopeInterface;
 
 class SyncCustomers
 {
-    private AutopilotLoggerInterface $logger;
-    private AutopilotClientInterface $autopilotClient;
+    private OrttoLoggerInterface $logger;
+    private OrttoClientInterface $orttoClient;
     private ScopeManagerInterface $scopeManager;
     private Data $helper;
     private SearchCriteriaBuilder $searchCriteriaBuilder;
@@ -39,8 +39,8 @@ class SyncCustomers
     const PAGE_SIZE = 100;
 
     public function __construct(
-        AutopilotLoggerInterface $logger,
-        AutopilotClientInterface $autopilotClient,
+        OrttoLoggerInterface $logger,
+        OrttoClientInterface $orttoClient,
         ScopeManagerInterface $scopeManager,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         CustomerRepositoryInterface $customerRepository,
@@ -48,7 +48,7 @@ class SyncCustomers
         Data $helper
     ) {
         $this->logger = $logger;
-        $this->autopilotClient = $autopilotClient;
+        $this->orttoClient = $orttoClient;
         $this->scopeManager = $scopeManager;
         $this->helper = $helper;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
@@ -57,7 +57,7 @@ class SyncCustomers
     }
 
     /**
-     * Sync customers with Autopilot
+     * Sync customers with Ortto
      *
      * @return void
      */
@@ -89,8 +89,8 @@ class SyncCustomers
                 try {
                     $scope = $this->scopeManager->initialiseScope($job->getScopeType(), $job->getScopeId());
                     if (!$scope->isExplicitlyConnected()) {
-                        $this->logger->warn("Job scope is not connected to Autopilot", $scope->toArray());
-                        $jobCollection->markAsFailed($jobId, "Not connected to Autopilot");
+                        $this->logger->warn("Job scope is not connected to Ortto", $scope->toArray());
+                        $jobCollection->markAsFailed($jobId, "Not connected to Ortto");
                         continue;
                     }
                     $jobCollection->markAsInProgress($jobId);
@@ -177,7 +177,7 @@ class SyncCustomers
 
     /**
      * @return ImportResponseInterface
-     * @throws JsonException|AutopilotException|NoSuchEntityException|LocalizedException|Exception
+     * @throws JsonException|OrttoException|NoSuchEntityException|LocalizedException|Exception
      */
     private function exportAllCustomers(Scope $scope, int $jobId)
     {
@@ -195,7 +195,7 @@ class SyncCustomers
             $pageSize = 0;
             if (!empty($customers)) {
                 $pageSize = count($customers);
-                $importResult = $this->autopilotClient->importContacts($scope, $customers);
+                $importResult = $this->orttoClient->importContacts($scope, $customers);
                 $total->incr($importResult);
                 ++$page;
                 $jobCollection->updateStats($jobId, $result->getTotalCount(), $pageSize, $total->toJSON());
@@ -208,7 +208,7 @@ class SyncCustomers
      * @param Scope $scope
      * @param string|null $checkpoint
      * @return int
-     * @throws AutopilotException
+     * @throws OrttoException
      * @throws JsonException|LocalizedException
      */
     private function exportUpdatedCustomers(Scope $scope, string $checkpoint = null): int
@@ -222,7 +222,7 @@ class SyncCustomers
             $pageSize = 0;
             if (!empty($customers)) {
                 $pageSize = count($customers);
-                $importResult = $this->autopilotClient->importContacts($scope, $customers);
+                $importResult = $this->orttoClient->importContacts($scope, $customers);
                 $total += $importResult->getCreatedTotal() + $importResult->getUpdatedTotal();
                 ++$page;
             }

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Plugin;
+namespace Ortto\Connector\Plugin;
 
 use Magento\Sales\Api\Data\OrderExtensionFactory;
 use Magento\Sales\Api\Data\OrderExtensionInterface;

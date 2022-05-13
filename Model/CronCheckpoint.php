@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model;
+namespace Ortto\Connector\Model;
 
-use Autopilot\AP3Connector\Api\Data\CronCheckpointInterface;
-use Autopilot\AP3Connector\Api\SchemaInterface;
-use Autopilot\AP3Connector\Helper\Config;
-use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint as ResourceModel;
+use Ortto\Connector\Api\Data\CronCheckpointInterface;
+use Ortto\Connector\Api\SchemaInterface;
+use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Model\ResourceModel\CronCheckpoint as ResourceModel;
 use DateTime;
 use Magento\Framework\DataObject\IdentityInterface;
 use Magento\Framework\Model\AbstractModel;

@@ -1,9 +1,9 @@
 <?php
 
-namespace Autopilot\AP3Connector\Model;
+namespace Ortto\Connector\Model;
 
-use Autopilot\AP3Connector\Api\Data\OrderAttributesInterface;
-use Autopilot\AP3Connector\Model\ResourceModel\OrderAttributes as ResourceModel;
+use Ortto\Connector\Api\Data\OrderAttributesInterface;
+use Ortto\Connector\Model\ResourceModel\OrderAttributes as ResourceModel;
 use DateTime;
 use Magento\Framework\Model\AbstractModel;
 
@@ -12,7 +12,7 @@ class OrderAttributes extends AbstractModel implements OrderAttributesInterface
     /**
      * @var string
      */
-    protected $_eventPrefix = 'autopilot_order_attributes_model';
+    protected $_eventPrefix = 'ortto_order_attributes_model';
 
     /**
      * @inheritdoc

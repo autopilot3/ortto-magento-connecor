@@ -5,6 +5,6 @@ use Magento\Framework\Component\ComponentRegistrar;
 
 ComponentRegistrar::register(
     ComponentRegistrar::MODULE,
-    'Autopilot_AP3Connector',
+    'Ortto_Connector',
     __DIR__
 );

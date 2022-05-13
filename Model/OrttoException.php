@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model;
+namespace Ortto\Connector\Model;
 
 use Exception;
 
-class AutopilotException extends Exception
+class OrttoException extends Exception
 {
     private array $params;
 

@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model\ResourceModel;
+namespace Ortto\Connector\Model\ResourceModel;
 
-use Autopilot\AP3Connector\Api\SchemaInterface as Schema;
+use Ortto\Connector\Api\SchemaInterface as Schema;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 class SyncJob extends AbstractDb
 {
-    protected $_eventPrefix = 'autopilot_sync_jobs';
+    protected $_eventPrefix = 'ortto_sync_jobs';
 
     /**
      * @inheritdoc

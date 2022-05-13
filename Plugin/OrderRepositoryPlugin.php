@@ -2,10 +2,10 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Plugin;
+namespace Ortto\Connector\Plugin;
 
-use Autopilot\AP3Connector\Helper\To;
-use Autopilot\AP3Connector\Model\ResourceModel\OrderAttributes\CollectionFactory as OrderAttributeCollectionFactory;
+use Ortto\Connector\Helper\To;
+use Ortto\Connector\Model\ResourceModel\OrderAttributes\CollectionFactory as OrderAttributeCollectionFactory;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\Data\OrderSearchResultInterface;

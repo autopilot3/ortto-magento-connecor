@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model;
+namespace Ortto\Connector\Model;
 
-use Autopilot\AP3Connector\Api\Data\SyncJobInterface;
-use Autopilot\AP3Connector\Api\SchemaInterface;
-use Autopilot\AP3Connector\Helper\To;
-use Autopilot\AP3Connector\Model\ResourceModel\SyncJob as ResourceModel;
+use Ortto\Connector\Api\Data\SyncJobInterface;
+use Ortto\Connector\Api\SchemaInterface;
+use Ortto\Connector\Helper\To;
+use Ortto\Connector\Model\ResourceModel\SyncJob as ResourceModel;
 use DateTime;
 use Magento\Framework\DataObject\IdentityInterface;
 use Magento\Framework\Model\AbstractModel;

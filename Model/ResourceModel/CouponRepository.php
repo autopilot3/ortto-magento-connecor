@@ -1,17 +1,17 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model\ResourceModel;
+namespace Ortto\Connector\Model\ResourceModel;
 
-use Autopilot\AP3Connector\Api\CouponRepositoryInterface;
-use Autopilot\AP3Connector\Api\Data\CouponInterface;
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
+use Ortto\Connector\Api\CouponRepositoryInterface;
+use Ortto\Connector\Api\Data\CouponInterface;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
 
 class CouponRepository implements CouponRepositoryInterface
 {
-    private AutopilotLoggerInterface $logger;
+    private OrttoLoggerInterface $logger;
 
-    public function __construct(AutopilotLoggerInterface $logger)
+    public function __construct(OrttoLoggerInterface $logger)
     {
         $this->logger = $logger;
     }

@@ -1,9 +1,9 @@
 <?php
 
-namespace Autopilot\AP3Connector\Model\Data;
+namespace Ortto\Connector\Model\Data;
 
-use Autopilot\AP3Connector\Api\Data\TrackingDataInterface;
-use Autopilot\AP3Connector\Helper\To;
+use Ortto\Connector\Api\Data\TrackingDataInterface;
+use Ortto\Connector\Helper\To;
 use Magento\Framework\DataObject;
 
 class TrackingData extends DataObject implements TrackingDataInterface

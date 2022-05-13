@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Block\Adminhtml\System\Config;
+namespace Ortto\Connector\Block\Adminhtml\System\Config;
 
-use Autopilot\AP3Connector\Api\ScopeManagerInterface;
-use Autopilot\AP3Connector\Helper\Data;
-use Autopilot\AP3Connector\Model\Scope;
+use Ortto\Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Model\Scope;
 use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\View\Helper\SecureHtmlRenderer;

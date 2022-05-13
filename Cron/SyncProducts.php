@@ -1,23 +1,23 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Cron;
+namespace Ortto\Connector\Cron;
 
-use Autopilot\AP3Connector\Api\AutopilotClientInterface;
-use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
-use Autopilot\AP3Connector\Api\ImportResponseInterface;
-use Autopilot\AP3Connector\Api\SyncCategoryInterface as SyncCategory;
-use Autopilot\AP3Connector\Api\ScopeManagerInterface;
-use Autopilot\AP3Connector\Helper\Config;
-use Autopilot\AP3Connector\Helper\Data;
-use Autopilot\AP3Connector\Helper\To;
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Autopilot\AP3Connector\Model\AutopilotException;
-use Autopilot\AP3Connector\Model\ImportResponse;
-use Autopilot\AP3Connector\Model\Scope;
+use Ortto\Connector\Api\OrttoClientInterface;
+use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\ConfigurationReaderInterface;
+use Ortto\Connector\Api\ImportResponseInterface;
+use Ortto\Connector\Api\SyncCategoryInterface as SyncCategory;
+use Ortto\Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Helper\To;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
+use Ortto\Connector\Model\OrttoException;
+use Ortto\Connector\Model\ImportResponse;
+use Ortto\Connector\Model\Scope;
 use Exception;
-use Autopilot\AP3Connector\Api\JobStatusInterface as Status;
+use Ortto\Connector\Api\JobStatusInterface as Status;
 use JsonException;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\Data\ProductSearchResultsInterface;
@@ -37,8 +37,8 @@ class SyncProducts
 {
     private const PAGE_SIZE = 100;
 
-    private AutopilotLoggerInterface $logger;
-    private AutopilotClientInterface $autopilotClient;
+    private OrttoLoggerInterface $logger;
+    private OrttoClientInterface $orttoClient;
     private ScopeManagerInterface $scopeManager;
     private SortOrderBuilder $sortOrderBuilder;
     private ConfigurationReaderInterface $config;
@@ -47,8 +47,8 @@ class SyncProducts
     private Visibility $productVisibility;
 
     public function __construct(
-        AutopilotLoggerInterface $logger,
-        AutopilotClientInterface $autopilotClient,
+        OrttoLoggerInterface $logger,
+        OrttoClientInterface $orttoClient,
         ScopeManagerInterface $scopeManager,
         SortOrderBuilder $sortOrderBuilder,
         ConfigurationReaderInterface $config,
@@ -56,7 +56,7 @@ class SyncProducts
         Data $helper
     ) {
         $this->logger = $logger;
-        $this->autopilotClient = $autopilotClient;
+        $this->orttoClient = $orttoClient;
         $this->scopeManager = $scopeManager;
         $this->helper = $helper;
         $this->sortOrderBuilder = $sortOrderBuilder;
@@ -65,7 +65,7 @@ class SyncProducts
     }
 
     /**
-     * Sync products with Autopilot
+     * Sync products with Ortto
      *
      * @return void
      */
@@ -97,8 +97,8 @@ class SyncProducts
                 try {
                     $scope = $this->scopeManager->initialiseScope($job->getScopeType(), $job->getScopeId());
                     if (!$scope->isExplicitlyConnected()) {
-                        $this->logger->warn("Job scope is not connected to Autopilot", $scope->toArray());
-                        $jobCollection->markAsFailed($jobId, "Not connected to Autopilot");
+                        $this->logger->warn("Job scope is not connected to Ortto", $scope->toArray());
+                        $jobCollection->markAsFailed($jobId, "Not connected to Ortto");
                         continue;
                     }
                     $jobCollection->markAsInProgress($jobId);
@@ -184,7 +184,7 @@ class SyncProducts
 
     /**
      * @return ImportResponseInterface
-     * @throws Exception|JsonException|AutopilotException|NoSuchEntityException|LocalizedException
+     * @throws Exception|JsonException|OrttoException|NoSuchEntityException|LocalizedException
      */
     private function exportAllProducts(Scope $scope, int $jobId)
     {
@@ -216,7 +216,7 @@ class SyncProducts
      * @param null $updateState
      * @param string|null $checkpoint
      * @return ImportResponseInterface
-     * @throws AutopilotException|InvalidTransitionException|JsonException|LocalizedException
+     * @throws OrttoException|InvalidTransitionException|JsonException|LocalizedException
      */
     private function exportProducts(Scope $scope, $validate = null, $updateState = null, string $checkpoint = null)
     {
@@ -238,7 +238,7 @@ class SyncProducts
             }
             $pageSize = count($products);
             $page++;
-            $importResult = $this->autopilotClient->importProducts($scope, $products);
+            $importResult = $this->orttoClient->importProducts($scope, $products);
             $response->incr($importResult);
             if ($updateState !== null) {
                 $updateState($total, $pageSize, $response->toJSON());

@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Logger;
+namespace Ortto\Connector\Logger;
 
 use Exception;
 
-interface AutopilotLoggerInterface
+interface OrttoLoggerInterface
 {
     public function info(string $message, $data = null);
 

@@ -1,23 +1,23 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Service;
+namespace Ortto\Connector\Service;
 
-use Autopilot\AP3Connector\Api\AutopilotClientInterface;
-use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
-use Autopilot\AP3Connector\Api\RoutesInterface;
-use Autopilot\AP3Connector\Helper\Data;
-use Autopilot\AP3Connector\Helper\To;
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Autopilot\AP3Connector\Model\AutopilotException;
-use Autopilot\AP3Connector\Model\ImportResponse;
-use Autopilot\AP3Connector\Model\Api\ProductDataFactory;
-use Autopilot\AP3Connector\Model\Api\CustomerDataFactory;
+use Ortto\Connector\Api\OrttoClientInterface;
+use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\ConfigurationReaderInterface;
+use Ortto\Connector\Api\RoutesInterface;
+use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Helper\To;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
+use Ortto\Connector\Model\OrttoException;
+use Ortto\Connector\Model\ImportResponse;
+use Ortto\Connector\Model\Api\ProductDataFactory;
+use Ortto\Connector\Model\Api\CustomerDataFactory;
 use Magento\Framework\HTTP\ClientInterface;
 use JsonException;
 
-class AutopilotClient implements AutopilotClientInterface
+class OrttoClient implements OrttoClientInterface
 {
     private const CUSTOMERS = 'customers';
     private const PRODUCTS = 'products';
@@ -25,7 +25,7 @@ class AutopilotClient implements AutopilotClientInterface
     private ClientInterface $curl;
     private Data $helper;
 
-    private AutopilotLoggerInterface $logger;
+    private OrttoLoggerInterface $logger;
     private ConfigurationReaderInterface $config;
     private ProductDataFactory $productDataFactory;
     private CustomerDataFactory $customerDataFactory;
@@ -33,7 +33,7 @@ class AutopilotClient implements AutopilotClientInterface
     public function __construct(
         ClientInterface $curl,
         Data $helper,
-        AutopilotLoggerInterface $logger,
+        OrttoLoggerInterface $logger,
         ConfigurationReaderInterface $config,
         ProductDataFactory $productDataFactory,
         CustomerDataFactory $customerDataFactory
@@ -56,7 +56,7 @@ class AutopilotClient implements AutopilotClientInterface
      */
     public function importContacts(ConfigScopeInterface $scope, array $customers)
     {
-        $url = $this->helper->getAutopilotURL(RoutesInterface::AP_IMPORT_CONTACTS);
+        $url = $this->helper->getOrttoURL(RoutesInterface::AP_IMPORT_CONTACTS);
 
         $payload = [];
         foreach ($customers as $customer) {
@@ -81,7 +81,7 @@ class AutopilotClient implements AutopilotClientInterface
      */
     public function importOrders(ConfigScopeInterface $scope, array $orders)
     {
-        $url = $this->helper->getAutopilotURL(RoutesInterface::AP_IMPORT_ORDERS);
+        $url = $this->helper->getOrttoURL(RoutesInterface::AP_IMPORT_ORDERS);
         $payload = $this->helper->getCustomerWithOrderFields($orders, $scope);
         if (empty($payload)) {
             $this->logger->debug("No order to export");
@@ -96,7 +96,7 @@ class AutopilotClient implements AutopilotClientInterface
      */
     public function importProducts(ConfigScopeInterface $scope, array $products)
     {
-        $url = $this->helper->getAutopilotURL(RoutesInterface::AP_IMPORT_PRODUCTS);
+        $url = $this->helper->getOrttoURL(RoutesInterface::AP_IMPORT_PRODUCTS);
         $payload = [];
         foreach ($products as $product) {
             $productData = $this->productDataFactory->create();
@@ -116,7 +116,7 @@ class AutopilotClient implements AutopilotClientInterface
      * @param ConfigScopeInterface $scope
      * @param array $request
      * @return array
-     * @throws AutopilotException
+     * @throws OrttoException
      * @throws JsonException
      */
     private function postJSON(string $url, ConfigScopeInterface $scope, array $request)
@@ -135,7 +135,7 @@ class AutopilotClient implements AutopilotClientInterface
         }
         $this->logger->debug('POST: ' . $url, ['response' => $response,]);
         if ($status !== 200) {
-            throw new AutopilotException($url, "POST", $status, $payload, $response);
+            throw new OrttoException($url, "POST", $status, $payload, $response);
         }
         return json_decode($response, true, 512, JSON_THROW_ON_ERROR);
     }

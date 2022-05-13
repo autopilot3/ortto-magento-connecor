@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Logger;
+namespace Ortto\Connector\Logger;
 
-use Autopilot\AP3Connector\Model\AutopilotException;
+use Ortto\Connector\Model\OrttoException;
 use Exception;
 use Psr\Log\LoggerInterface;
 
-class Logger implements AutopilotLoggerInterface
+class Logger implements OrttoLoggerInterface
 {
     private LoggerInterface $logger;
 
@@ -41,7 +41,7 @@ class Logger implements AutopilotLoggerInterface
         $params = [
             'code' => $exception->getCode(),
         ];
-        if ($exception instanceof AutopilotException) {
+        if ($exception instanceof OrttoException) {
             $params = $exception->toArray();
         }
         $msg = $exception->getMessage();

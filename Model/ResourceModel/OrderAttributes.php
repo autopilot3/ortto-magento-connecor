@@ -1,8 +1,8 @@
 <?php
 
-namespace Autopilot\AP3Connector\Model\ResourceModel;
+namespace Ortto\Connector\Model\ResourceModel;
 
-use Autopilot\AP3Connector\Api\SchemaInterface;
+use Ortto\Connector\Api\SchemaInterface;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 class OrderAttributes extends AbstractDb
@@ -10,7 +10,7 @@ class OrderAttributes extends AbstractDb
     /**
      * @var string
      */
-    protected $_eventPrefix = 'autopilot_order_attributes_resource_model';
+    protected $_eventPrefix = 'ortto_order_attributes_resource_model';
 
     /**
      * @inheritdoc

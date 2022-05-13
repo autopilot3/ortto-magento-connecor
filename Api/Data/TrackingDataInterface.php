@@ -1,6 +1,6 @@
 <?php
 
-namespace Autopilot\AP3Connector\Api\Data;
+namespace Ortto\Connector\Api\Data;
 
 interface TrackingDataInterface
 {

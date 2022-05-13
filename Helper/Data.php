@@ -1,16 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Helper;
+namespace Ortto\Connector\Helper;
 
-use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\SyncCategoryInterface;
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Autopilot\AP3Connector\Model\Api\OrderDataFactory;
-use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
-use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
-use Autopilot\AP3Connector\Model\ResourceModel\CronCheckpoint\CollectionFactory as CheckpointCollectionFactory;
-use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
+use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\SyncCategoryInterface;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
+use Ortto\Connector\Model\Api\OrderDataFactory;
+use Ortto\Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
+use Ortto\Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
+use Ortto\Connector\Model\ResourceModel\CronCheckpoint\CollectionFactory as CheckpointCollectionFactory;
+use Ortto\Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
 use InvalidArgumentException;
 use Magento\Customer\Api\CustomerMetadataInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
@@ -19,7 +19,7 @@ use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Newsletter\Model\Subscriber;
 use Magento\Sales\Api\Data\OrderInterface;
-use Autopilot\AP3Connector\Api\ConfigurationReaderInterface;
+use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Magento\Store\Model\ScopeInterface;
 use DateTime;
 use Exception;
@@ -34,7 +34,7 @@ class Data extends AbstractHelper
     private string $baseURL = "https://magento-integration-api.autopilotapp.com";
     private string $clientID = "mgqQkvCJWDFnxJTgQwfVuYEdQRWVAywE";
 
-    private AutopilotLoggerInterface $logger;
+    private OrttoLoggerInterface $logger;
     private TimezoneInterface $timezone;
     private CustomerMetadataInterface $customerMetadata;
     private Subscriber $subscriber;
@@ -49,7 +49,7 @@ class Data extends AbstractHelper
         TimezoneInterface $timezone,
         CustomerMetadataInterface $customerMetadata,
         Subscriber $subscriber,
-        AutopilotLoggerInterface $logger,
+        OrttoLoggerInterface $logger,
         ConfigurationReaderInterface $config,
         CheckpointCollectionFactory $checkpointCollectionFactory,
         JobCollectionFactory $jobCollectionFactory,
@@ -73,7 +73,7 @@ class Data extends AbstractHelper
      * @param string $path
      * @return string
      */
-    public function getAutopilotURL(string $path): string
+    public function getOrttoURL(string $path): string
     {
         $path = trim($path);
         $url = (string)$this->scopeConfig->getValue(Config::XML_PATH_BASE_URL);

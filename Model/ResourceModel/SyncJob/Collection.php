@@ -1,15 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Model\ResourceModel\SyncJob;
+namespace Ortto\Connector\Model\ResourceModel\SyncJob;
 
-use Autopilot\AP3Connector\Api\ConfigScopeInterface;
-use Autopilot\AP3Connector\Api\Data\SyncJobInterface;
-use Autopilot\AP3Connector\Api\Data\SyncJobInterface as Job;
-use Autopilot\AP3Connector\Api\JobStatusInterface as Status;
-use Autopilot\AP3Connector\Model\ResourceModel\SyncJob as ResourceModel;
-use Autopilot\AP3Connector\Model\SyncJobFactory;
-use Autopilot\AP3Connector\Model\SyncJob as Model;
+use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\Data\SyncJobInterface;
+use Ortto\Connector\Api\Data\SyncJobInterface as Job;
+use Ortto\Connector\Api\JobStatusInterface as Status;
+use Ortto\Connector\Model\ResourceModel\SyncJob as ResourceModel;
+use Ortto\Connector\Model\SyncJobFactory;
+use Ortto\Connector\Model\SyncJob as Model;
 use Magento\Framework\Data\Collection\Db\FetchStrategyInterface;
 use Magento\Framework\Data\Collection\EntityFactoryInterface;
 use Magento\Framework\DB\Adapter\AdapterInterface;
@@ -24,7 +24,7 @@ use Exception;
 
 class Collection extends AbstractCollection
 {
-    protected $_eventPrefix = 'autopilot_sync_jobs_collection';
+    protected $_eventPrefix = 'ortto_sync_jobs_collection';
     protected $_idFieldName = "id";
     private SyncJobFactory $syncJobFactory;
     private TimezoneInterface $time;

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Api;
+namespace Ortto\Connector\Api;
 
-use Autopilot\AP3Connector\Api\Data\CouponInterface;
+use Ortto\Connector\Api\Data\CouponInterface;
 
 /**
  *  Interface CouponRepositoryInterface

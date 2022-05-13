@@ -1,32 +1,32 @@
 <?php
 declare(strict_types=1);
 
-namespace Autopilot\AP3Connector\Controller\Adminhtml\Sync;
+namespace Ortto\Connector\Controller\Adminhtml\Sync;
 
-use Autopilot\AP3Connector\Api\RoutesInterface;
-use Autopilot\AP3Connector\Api\ScopeManagerInterface;
-use Autopilot\AP3Connector\Controller\Adminhtml\AbstractBackendJsonController;
-use Autopilot\AP3Connector\Helper\To;
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
-use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
-use Autopilot\AP3Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
+use Ortto\Connector\Api\RoutesInterface;
+use Ortto\Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Controller\Adminhtml\AbstractBackendJsonController;
+use Ortto\Connector\Helper\To;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
+use Ortto\Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
+use Ortto\Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
 use Exception;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\Result\Json;
-use Autopilot\AP3Connector\Api\SyncCategoryInterface as JobCategory;
+use Ortto\Connector\Api\SyncCategoryInterface as JobCategory;
 
 class Orders extends AbstractBackendJsonController
 {
     /**
      * Authorization level of a basic admin session
      */
-    private AutopilotLoggerInterface $logger;
+    private OrttoLoggerInterface $logger;
     private ScopeManagerInterface $scopeManager;
     private JobCollectionFactory $jobCollectionFactory;
 
     public function __construct(
         Context $context,
-        AutopilotLoggerInterface $logger,
+        OrttoLoggerInterface $logger,
         ScopeManagerInterface $scopeManager,
         JobCollectionFactory $jobCollectionFactory
     ) {
@@ -48,7 +48,7 @@ class Orders extends AbstractBackendJsonController
 
         if (!$scope->isExplicitlyConnected()) {
             return $this->error(sprintf(
-                '%s %s is not connected to Autopilot.',
+                '%s %s is not connected to Ortto.',
                 $scope->getName(),
                 $scope->getType()
             ));

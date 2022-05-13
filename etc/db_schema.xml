@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
-    <table name="autopilot_sync_jobs" resource="default" engine="innodb" comment="Autopilot Cron Job History">
+    <table name="ortto_sync_jobs" resource="default" engine="innodb" comment="Ortto Cron Job History">
         <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true"
                 comment="Job Id"/>
         <column xsi:type="varchar" name="category" nullable="false" length="64" comment="Scope ID"/>
@@ -26,7 +26,7 @@
             <column name="status"/>
         </index>
     </table>
-    <table name="autopilot_cron_checkpoint" resource="default" engine="innodb" comment="Autopilot Cron Job Checkpoint">
+    <table name="ortto_cron_checkpoint" resource="default" engine="innodb" comment="Ortto Cron Job Checkpoint">
         <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true"
                 comment="Job Id"/>
         <column xsi:type="varchar" name="category" nullable="false" length="64" comment="Scope ID"/>
@@ -44,8 +44,8 @@
             <column name="category"/>
         </constraint>
     </table>
-    <table name="autopilot_order_attributes" resource="default" engine="innodb"
-           comment="Autopilot order attributes">
+    <table name="ortto_order_attributes" resource="default" engine="innodb"
+           comment="Ortto order attributes">
         <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true"
                 comment="Entity id"/>
         <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="false" identity="false"
@@ -58,8 +58,8 @@
         <constraint xsi:type="unique" referenceId="ORDER_ID_UNIQUE_INDEX">
             <column name="order_id"/>
         </constraint>
-        <constraint xsi:type="foreign" referenceId="autopilot_order_attributes_fk"
-                    table="autopilot_order_attributes" column="order_id" referenceTable="sales_order"
+        <constraint xsi:type="foreign" referenceId="ortto_order_attributes_fk"
+                    table="ortto_order_attributes" column="order_id" referenceTable="sales_order"
                     referenceColumn="entity_id" onDelete="CASCADE"/>
     </table>
 </schema>

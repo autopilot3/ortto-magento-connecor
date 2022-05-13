@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Controller;
+namespace Ortto\Connector\Controller;
 
-use Autopilot\AP3Connector\Logger\AutopilotLoggerInterface;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Json;
@@ -14,7 +14,7 @@ use Magento\Framework\UrlInterface;
 abstract class AbstractJsonController
 {
     private JsonFactory $jsonFactory;
-    private AutopilotLoggerInterface $logger;
+    private OrttoLoggerInterface $logger;
 
     private const DEFAULT_MESSAGE = 'Internal Server Error';
     private const MESSAGE_TAG = 'message';
@@ -31,7 +31,7 @@ abstract class AbstractJsonController
 
     protected function __construct(
         Context $context,
-        AutopilotLoggerInterface $logger
+        OrttoLoggerInterface $logger
     ) {
         $this->jsonFactory = new JsonFactory($context->getObjectManager());
         $this->logger = $logger;

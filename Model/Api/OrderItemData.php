@@ -2,10 +2,10 @@
 declare(strict_types=1);
 
 
-namespace Autopilot\AP3Connector\Model\Api;
+namespace Ortto\Connector\Model\Api;
 
-use Autopilot\AP3Connector\Helper\Data;
-use Autopilot\AP3Connector\Helper\To;
+use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Helper\To;
 use Magento\Sales\Api\Data\OrderItemInterface;
 
 class OrderItemData
