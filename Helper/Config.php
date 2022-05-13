@@ -32,14 +32,9 @@ class Config
     const EMPTY_DATE_TIME = "0001-01-01T00:00:00Z";
 
     // Capture Events
-    const RESOURCE_PRODUCT = 'product';
-    const RESOURCE_ORDER = 'order';
-    const RESOURCE_CART = 'cart';
-    const EVENT_TYPE_CREATED = 'created';
-    const EVENT_TYPE_UPDATED = 'updated';
-    const EVENT_TYPE_DELETED = 'deleted';
-    const EVENT_TYPE_WAITING_ON_STOCK = 'waiting_on_stock';
-    const EVENT_TYPE_ADDED_TO_CARD = 'added_to_cart';
-    const EVENT_TYPE_ADDED_VIEWED = 'viewed';
+    const EVENT_TYPE_WAITING_ON_STOCK = 'product_waiting_on_stock';
+    const EVENT_TYPE_PRODUCT_ADDED_TO_CART = 'product_added_to_cart';
+    const EVENT_TYPE_PRODUCT_VIEWED = 'product_viewed';
     const EVENT_TYPE_CHECKOUT_STARTED = 'checkout_started';
+    const EVENT_TYPE_ORDER_CREATED = 'order_created';
 }

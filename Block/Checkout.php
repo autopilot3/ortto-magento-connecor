@@ -55,7 +55,6 @@ class Checkout extends Template
             $trackingData = $this->trackDataProvider->getData();
 
             $payload = [
-                'resource' => Config::RESOURCE_CART,
                 'event' => $event,
                 'scope' => [
                     ConfigScopeInterface::ID => $trackingData->getScopeId(),

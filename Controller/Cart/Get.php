@@ -74,8 +74,7 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
             $cartData->load($quote);
 
             $payload = [
-                'resource' => Config::RESOURCE_PRODUCT,
-                'event' => Config::EVENT_TYPE_ADDED_TO_CARD,
+                'event' => Config::EVENT_TYPE_PRODUCT_ADDED_TO_CART,
                 'scope' => [
                     ConfigScopeInterface::ID => $trackingData->getScopeId(),
                     ConfigScopeInterface::TYPE => $trackingData->getScopeType(),
