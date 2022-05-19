@@ -5,7 +5,7 @@
         <tab id="ortto" translate="label" sortOrder="99999">
             <label>Ortto</label>
         </tab>
-        <section id="ap_general" translate="label" type="text" sortOrder="100" showInDefault="0"
+        <section id="ortto_general" translate="label" type="text" sortOrder="100" showInDefault="0"
                  showInWebsite="1"
                  showInStore="1">
             <label>General</label>
@@ -50,7 +50,7 @@
                 </field>
             </group>
         </section>
-        <section id="ap_sync" translate="label" type="text" sortOrder="101" showInDefault="0"
+        <section id="ortto_sync" translate="label" type="text" sortOrder="101" showInDefault="0"
                  showInWebsite="1"
                  showInStore="1">
             <label>Data Synchronization</label>

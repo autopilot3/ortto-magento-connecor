@@ -32,8 +32,6 @@
                 type="Ortto\Connector\Logger\Logger"/>
     <preference for="Ortto\Connector\Api\CouponRepositoryInterface"
                 type="Ortto\Connector\Model\ResourceModel\CouponRepository"/>
-    <preference for="Ortto\Connector\Api\CartRepositoryInterface"
-                type="Ortto\Connector\Model\ResourceModel\CartRepository"/>
     <preference for="Ortto\Connector\Api\Data\CouponInterface"
                 type="Ortto\Connector\Model\Data\Coupon"/>
     <preference for="Ortto\Connector\Api\ScopeManagerInterface"

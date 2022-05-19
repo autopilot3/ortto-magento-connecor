@@ -121,11 +121,12 @@ class OrttoClient implements OrttoClientInterface
      */
     private function postJSON(string $url, ConfigScopeInterface $scope, array $request)
     {
-        $this->logger->debug('POST: ' . $url, ['request' => $request]);
+        $scopeData = $scope->toArray();
+        $this->logger->debug('POST: ' . $url, ['scope' => $scopeData]);
         $apiKey = $this->config->getAPIKey($scope->getType(), $scope->getId());
         $this->curl->setCredentials($this->helper->getClientId(), $apiKey);
         $this->curl->addHeader("Content-Type", "application/json");
-        $request['scope'] = $scope->toArray();
+        $request['scope'] = $scopeData;
         $payload = json_encode($request, JSON_THROW_ON_ERROR);
         $this->curl->post($url, $payload);
         $status = To::int($this->curl->getStatus());
@@ -133,7 +134,7 @@ class OrttoClient implements OrttoClientInterface
         if (empty($response)) {
             $response = "{}";
         }
-        $this->logger->debug('POST: ' . $url, ['response' => $response,]);
+        $this->logger->debug('POST: ' . $url, ['response' => $response]);
         if ($status !== 200) {
             throw new OrttoException($url, "POST", $status, $payload, $response);
         }
