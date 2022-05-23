@@ -20,6 +20,7 @@ class Config
 
     const XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED = "ortto_sync/customer/auto_sync_enabled";
     const XML_PATH_SYNC_ORDER_AUTO_ENABLED = "ortto_sync/order/auto_sync_enabled";
+    const XML_PATH_SYNC_PRODUCT_AUTO_ENABLED = "ortto_sync/product/auto_sync_enabled";
     const XML_PATH_SYNC_ANONYMOUS_ORDERS_ENABLED = "ortto_sync/order/anonymous_enabled";
     const XML_PATH_IMAGE_PLACE_HOLDER = 'catalog/placeholder/image_placeholder';
     const XML_PATH_SMALL_IMAGE_PLACE_HOLDER = 'catalog/placeholder/small_image_placeholder';

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Helper;
 
+use Magento\Catalog\Api\Data\ProductInterface;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\SyncCategoryInterface;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
@@ -249,15 +250,15 @@ class Data extends AbstractHelper
         return $customer->getStoreId() == $scope->getId() && $customer->getWebsiteId() == $scope->getWebsiteId();
     }
 
-    public function shouldExportOrder(ConfigScopeInterface $scope, OrderInterface $order): bool
+    public function shouldExportProduct(ConfigScopeInterface $scope): bool
     {
-        if (!$this->config->isAutoSyncEnabled($scope->getType(), $scope->getId(), SyncCategoryInterface::ORDER)) {
+        if (!$this->config->isAutoSyncEnabled($scope->getType(), $scope->getId(), SyncCategoryInterface::PRODUCT)) {
             $this->logger->debug(
-                sprintf("Automatic %s synchronisation is off", SyncCategoryInterface::ORDER),
+                sprintf("Automatic %s synchronisation is off", SyncCategoryInterface::PRODUCT),
                 $scope->toArray()
             );
             return false;
         }
-        return array_contains($scope->getStoreIds(), To::int($order->getStoreId()));
+        return true;
     }
 }

@@ -76,6 +76,12 @@ class ConfigurationReader implements ConfigurationReaderInterface
                     $scopeType,
                     $scopeId
                 ));
+            case SyncCategoryInterface::PRODUCT:
+                return To::bool($this->scopeConfig->getValue(
+                    Config::XML_PATH_SYNC_PRODUCT_AUTO_ENABLED,
+                    $scopeType,
+                    $scopeId
+                ));
             default:
                 return false;
         }
