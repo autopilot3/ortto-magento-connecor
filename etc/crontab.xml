@@ -14,5 +14,9 @@
              method="execute">
             <schedule>* * * * *</schedule>
         </job>
+        <job name="ortto_connector_sync_stock_alerts" instance="Ortto\Connector\Cron\SyncStockAlerts"
+             method="execute">
+            <schedule>* * * * *</schedule>
+        </job>
     </group>
 </config>

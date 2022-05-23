@@ -82,6 +82,12 @@ class ConfigurationReader implements ConfigurationReaderInterface
                     $scopeType,
                     $scopeId
                 ));
+            case SyncCategoryInterface::STOCK_ALERT:
+                return To::bool($this->scopeConfig->getValue(
+                    Config::XML_PATH_SYNC_STOCK_ALERT_AUTO_ENABLED,
+                    $scopeType,
+                    $scopeId
+                ));
             default:
                 return false;
         }

@@ -17,6 +17,9 @@
             <product>
                 <auto_sync_enabled>1</auto_sync_enabled>
             </product>
+            <stock_alert>
+                <auto_sync_enabled>1</auto_sync_enabled>
+            </stock_alert>
         </ortto_sync>
     </default>
 </config>

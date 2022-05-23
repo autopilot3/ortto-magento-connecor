@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Ortto\Connector\Helper;
 
 use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\ProductAlert\Model\Stock;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\SyncCategoryInterface;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
@@ -248,6 +249,21 @@ class Data extends AbstractHelper
             return $customer->getWebsiteId() == $scope->getId();
         }
         return $customer->getStoreId() == $scope->getId() && $customer->getWebsiteId() == $scope->getWebsiteId();
+    }
+
+    public function shouldExportStockAlert(ConfigScopeInterface $scope, Stock $alert): bool
+    {
+        if (!$this->config->isAutoSyncEnabled($scope->getType(), $scope->getId(), SyncCategoryInterface::STOCK_ALERT)) {
+            $this->logger->debug(
+                sprintf("Automatic %s synchronisation is off", SyncCategoryInterface::STOCK_ALERT),
+                $scope->toArray()
+            );
+            return false;
+        }
+        if ($scope->getType() == ScopeInterface::SCOPE_WEBSITE) {
+            return $alert->getWebsiteId() == $scope->getId();
+        }
+        return $alert->getStoreId() == $scope->getId() && $alert->getWebsiteId() == $scope->getWebsiteId();
     }
 
     public function shouldExportProduct(ConfigScopeInterface $scope): bool

@@ -29,7 +29,7 @@ class AddressData
     public function toArray($address): array
     {
         $data = [
-            'type' => $address->getAddressType(),
+            'type' => $this->getType($address),
             'city' => (string)$address->getCity(),
             'street_lines' => $address->getStreet(),
             'post_code' => (string)$address->getPostcode(),
@@ -67,5 +67,20 @@ class AddressData
         }
 
         return $data;
+    }
+
+    /**
+     * @param AddressInterface|OrderAddressInterface|\Magento\Quote\Api\Data\AddressInterface $address
+     * @return string
+     */
+    private function getType($address): string
+    {
+        if ($address->isDefaultShipping()) {
+            return "shipping";
+        }
+        if ($address->isDefaultBilling()) {
+            return "billing";
+        }
+        return "other";
     }
 }
