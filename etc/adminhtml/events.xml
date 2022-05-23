@@ -5,4 +5,8 @@
         <observer name="adminhtml_customer_save_after_admin"
                   instance="\Ortto\Connector\Observer\CustomerSavedAfterAdmin"/>
     </event>
+    <event name="catalog_product_save_after">
+        <observer name="adminhtml_catalog_product_save_after"
+                  instance="\Ortto\Connector\Observer\ProductSavedAfter"/>
+    </event>
 </config>
