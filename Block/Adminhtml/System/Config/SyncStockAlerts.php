@@ -8,22 +8,23 @@ use Ortto\Connector\Api\ScopeManagerInterface;
 use Ortto\Connector\Helper\Data;
 use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Data\Form\Element\AbstractElement;
-use Magento\Framework\View\Helper\SecureHtmlRenderer;
 
-class AuthWizard extends FieldBase
+class SyncStockAlerts extends FieldBase
 {
-    private Data $helper;
-
     public function __construct(
         Context $context,
         Data $helper,
         ScopeManagerInterface $scopeManager,
-        array $data = [],
-        ?SecureHtmlRenderer $secureRenderer = null
+        array $data = []
     ) {
-        parent::__construct($context, $scopeManager, $helper, $data, $secureRenderer);
-        $this->setTemplate('system/config/auth_wizard.phtml');
-        $this->helper = $helper;
+
+        parent::__construct($context, $scopeManager, $helper, $data);
+        $this->setTemplate('system/config/sync_stock_alerts.phtml');
+    }
+
+    public function getAjaxURL(): string
+    {
+        return $this->_escaper->escapeHtmlAttr($this->getUrl(RoutesInterface::MG_SYNC_STOCK_ALERTS));
     }
 
     protected function _getElementHtml(AbstractElement $element): string
@@ -34,10 +35,5 @@ class AuthWizard extends FieldBase
             'button_label' => $label,
         ]);
         return parent::_toHtml();
-    }
-
-    public function getAjaxURL(): string
-    {
-        return $this->_escaper->escapeHtmlAttr($this->helper->getOrttoURL(RoutesInterface::ORTTO_AUTHENTICATE));
     }
 }

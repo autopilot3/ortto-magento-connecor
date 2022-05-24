@@ -1,0 +1,27 @@
+<?php
+
+use Ortto\Connector\Block\Adminhtml\System\Config\SyncStockAlerts;
+
+/**
+ * @var $block SyncStockAlerts
+ */
+$scope = $block->getScope();
+?>
+<div>
+    <button
+        data-mage-init='{"postData":
+            {
+                "url":"<?= $block->getAjaxURL() ?>",
+                "title": "Stock Notifications",
+                "data": {
+                    "scope_id": <?= $scope->getId() ?>,
+                    "scope_type": "<?= $scope->getType() ?>"
+                }
+            }
+        }'
+        id="sync-stock-alerts">
+        <span><?= /* @noEscape */
+            $block->getButtonLabel() ?>
+        </span>
+    </button>
+</div>

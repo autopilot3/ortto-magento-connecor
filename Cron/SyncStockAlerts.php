@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Cron;
 
+use Magento\ProductAlert\Model\Stock;
+use Magento\Store\Model\ScopeInterface;
 use Ortto\Connector\Api\OrttoClientInterface;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\ConfigurationReaderInterface;
@@ -19,49 +21,37 @@ use Ortto\Connector\Model\Scope;
 use Exception;
 use Ortto\Connector\Api\JobStatusInterface as Status;
 use JsonException;
-use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Api\Data\ProductSearchResultsInterface;
-use Magento\Catalog\Api\ProductRepositoryInterface;
-use Magento\Catalog\Model\Product\Visibility;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
-use Magento\Framework\Api\SearchCriteriaBuilder;
-use Magento\Framework\Api\SortOrder;
-use Magento\Framework\Api\SortOrderBuilder;
+use Magento\ProductAlert\Model\ResourceModel\Stock\CollectionFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Exception\State\InvalidTransitionException;
-use Magento\Sales\Api\Data\OrderInterface;
 
-class SyncProducts
+class SyncStockAlerts
 {
     private const PAGE_SIZE = 100;
 
     private OrttoLoggerInterface $logger;
     private OrttoClientInterface $orttoClient;
     private ScopeManagerInterface $scopeManager;
-    private SortOrderBuilder $sortOrderBuilder;
     private ConfigurationReaderInterface $config;
     private Data $helper;
-    private CollectionFactory $productCollectionFactory;
-    private Visibility $productVisibility;
+    private CollectionFactory $stockAlertsCollectionFactory;
 
     public function __construct(
         OrttoLoggerInterface $logger,
         OrttoClientInterface $orttoClient,
         ScopeManagerInterface $scopeManager,
-        SortOrderBuilder $sortOrderBuilder,
         ConfigurationReaderInterface $config,
-        CollectionFactory $productCollectionFactory,
+        CollectionFactory $stockAlertsCollectionFactory,
         Data $helper
     ) {
         $this->logger = $logger;
         $this->orttoClient = $orttoClient;
         $this->scopeManager = $scopeManager;
         $this->helper = $helper;
-        $this->sortOrderBuilder = $sortOrderBuilder;
         $this->config = $config;
-        $this->productCollectionFactory = $productCollectionFactory;
+        $this->stockAlertsCollectionFactory = $stockAlertsCollectionFactory;
     }
 
     /**
@@ -71,8 +61,8 @@ class SyncProducts
      */
     public function execute(): void
     {
-        $category = SyncCategory::PRODUCT;
-        $this->logger->debug("Running product synchronization CRON job");
+        $category = SyncCategory::STOCK_ALERT;
+        $this->logger->debug("Running stock alerts synchronization CRON job");
         /**
          * @var ScopeConfigInterface[]
          */
@@ -89,11 +79,11 @@ class SyncProducts
 
         $jobs = $jobCollection->getQueuedJobs($category);
         if (empty($jobs)) {
-            $this->logger->debug("No product sync job was queued");
+            $this->logger->debug("No stock alerts sync job was queued");
         } else {
             foreach ($jobs as $job) {
                 $jobId = $job->getId();
-                $this->logger->info(sprintf('Processing product synchronization job ID %s', $jobId));
+                $this->logger->info(sprintf('Processing stock alerts synchronization job ID %s', $jobId));
                 try {
                     $scope = $this->scopeManager->initialiseScope($job->getScopeType(), $job->getScopeId());
                     if (!$scope->isExplicitlyConnected()) {
@@ -102,14 +92,14 @@ class SyncProducts
                         continue;
                     }
                     $jobCollection->markAsInProgress($jobId);
-                    $result = $this->exportAllProducts($scope, $jobId);
+                    $result = $this->exportAllStockAlerts($scope, $jobId);
                     $processedScopes[] = $scope;
                     $jobCollection->markAsDone($jobId, $result->toJSON());
                     $this->helper->createCheckpointCollection()->setCheckpoint($category, $now, $scope);
                     $total = $result->getCreatedTotal() + $result->getUpdatedTotal();
                     if ($total > 0) {
                         $msg = sprintf(
-                            "%d products have been manually exported. Checkpoint's been updated to %s.",
+                            "%d stock alerts have been manually exported. Checkpoint's been updated to %s.",
                             $total,
                             $now->format(Config::DATE_TIME_FORMAT)
                         );
@@ -125,7 +115,7 @@ class SyncProducts
                     } catch (NoSuchEntityException $nfe) {
                         $this->logger->error($nfe, "Failed to mark the job as failed");
                     }
-                    $this->logger->error($e, "Failed to process product synchronization job");
+                    $this->logger->error($e, "Failed to process stock alerts synchronization job");
                     continue;
                 }
             }
@@ -160,16 +150,16 @@ class SyncProducts
                     );
                     continue;
                 }
-                $this->logger->info("Checking product export checkpoint", $scope->toArray());
+                $this->logger->info("Checking stock alerts export checkpoint", $scope->toArray());
                 $checkpointCollection = $this->helper->createCheckpointCollection();
                 $productCheckpoint = $checkpointCollection->getCheckpoint($category, $scope);
-                $result = $this->exportProducts($scope, null, null, $productCheckpoint->getCheckedAt());
+                $result = $this->exportStockAlerts($scope, null, null, $productCheckpoint->getCheckedAt());
                 $checkpointCollection->setCheckpoint($category, $now, $scope);
                 $total = $result->getCreatedTotal() + $result->getUpdatedTotal();
                 if ($total > 0) {
                     $this->logger->info(
                         sprintf(
-                            "%d products have been manually exported. Checkpoint's been updated to %s.",
+                            "%d stock alerts have been manually exported. Checkpoint's been updated to %s.",
                             $total,
                             $now->format(Config::DATE_TIME_FORMAT)
                         ),
@@ -177,7 +167,7 @@ class SyncProducts
                     );
                 }
             } catch (Exception $e) {
-                $this->logger->error($e, sprintf("Failed to export %s products", $scope->toString()));
+                $this->logger->error($e, sprintf("Failed to export %s stock alerts", $scope->toString()));
             }
         }
     }
@@ -186,7 +176,7 @@ class SyncProducts
      * @return ImportResponseInterface
      * @throws Exception|JsonException|OrttoException|NoSuchEntityException|LocalizedException
      */
-    private function exportAllProducts(Scope $scope, int $jobId)
+    private function exportAllStockAlerts(Scope $scope, int $jobId)
     {
         $jobCollection = $this->helper->createJobCollection();
         $jobValidationCallback = function () use ($jobCollection, $jobId) {
@@ -194,11 +184,11 @@ class SyncProducts
                 $job = $jobCollection->getJobById($jobId);
                 $valid = $job->getStatus() === Status::IN_PROGRESS;
                 if (!$valid) {
-                    $this->logger->warn("Products synchronization job (ID: $jobId) has been changed.");
+                    $this->logger->warn("Stock alert synchronization job (ID: $jobId) has been changed.");
                 }
                 return $valid;
             } catch (Exception $e) {
-                $this->logger->error($e, "Failed to check product synchronization job status (ID: $jobId)");
+                $this->logger->error($e, "Failed to check stock alerts synchronization job status (ID: $jobId)");
             }
             return false;
         };
@@ -207,7 +197,7 @@ class SyncProducts
             $jobCollection->updateStats($jobId, $total, $processed, $metadata);
         };
 
-        return $this->exportProducts($scope, $jobValidationCallback, $stateUpdateCallback);
+        return $this->exportStockAlerts($scope, $jobValidationCallback, $stateUpdateCallback);
     }
 
     /**
@@ -218,7 +208,7 @@ class SyncProducts
      * @return ImportResponseInterface
      * @throws OrttoException|InvalidTransitionException|JsonException|LocalizedException
      */
-    private function exportProducts(Scope $scope, $validate = null, $updateState = null, string $checkpoint = null)
+    private function exportStockAlerts(Scope $scope, $validate = null, $updateState = null, string $checkpoint = null)
     {
         $page = 1;
         $response = new ImportResponse();
@@ -226,19 +216,19 @@ class SyncProducts
             if ($validate !== null && !$validate()) {
                 return $response;
             }
-            $result = $this->getProducts($page, $scope, $checkpoint);
-            /** @var ProductInterface[] $products
+            $result = $this->getStockAlerts($page, $scope, $checkpoint);
+            /** @var Stock[] $stockAlerts
              * @var int $total
              */
-            $products = $result['products'];
+            $stockAlerts = $result['alerts'];
             $total = $result['total'];
 
-            if ($total == 0 || empty($products)) {
+            if ($total == 0 || empty($stockAlerts)) {
                 return $response;
             }
-            $pageSize = count($products);
+            $pageSize = count($stockAlerts);
             $page++;
-            $importResult = $this->orttoClient->importProducts($scope, $products);
+            $importResult = $this->orttoClient->importProductStockAlerts($scope, $stockAlerts);
             $response->incr($importResult);
             if ($updateState !== null) {
                 $updateState($total, $pageSize, $response->toJSON());
@@ -254,23 +244,27 @@ class SyncProducts
      * @param string|null $checkpoint
      * @return array
      */
-    private function getProducts(
+    private function getStockAlerts(
         int $page,
         ConfigScopeInterface $scope,
         string $checkpoint = null
     ) {
-        $collection = $this->productCollectionFactory->create()
+        $collection = $this->stockAlertsCollectionFactory->create()
             ->setCurPage($page)
-            ->addAttributeToSelect('*')
+            ->addFieldToSelect('*')
             ->setPageSize(self::PAGE_SIZE)
             ->addWebsiteFilter($scope->getWebsiteId());
 
+        if ($scope->getType() == ScopeInterface::SCOPE_STORE) {
+            $collection->addFieldToFilter('store_id', ['eq' => $scope->getId()]);
+        }
+
         if (!empty($checkpoint)) {
-            $collection->addFieldToFilter(ProductInterface::UPDATED_AT, ['gteq' => $checkpoint]);
+            $collection->addFieldToFilter('add_date', ['gteq' => $checkpoint]);
         }
         return [
             'total' => To::int($collection->getSize()),
-            'products' => $collection->getItems(),
+            'alerts' => $collection->getItems(),
         ];
     }
 }

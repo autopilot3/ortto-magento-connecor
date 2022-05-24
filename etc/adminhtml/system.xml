@@ -109,6 +109,20 @@
                     <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\SyncProducts</frontend_model>
                 </field>
             </group>
+            <group id="stock_alert" translate="label" sortOrder="3" showInDefault="0" showInWebsite="1"
+                   showInStore="1">
+                <label>Back in Stock Subscriptions</label>
+                <field id="auto_sync_enabled" translate="label" sortOrder="1" type="select" showInDefault="0"
+                       showInWebsite="1" showInStore="1">
+                    <label>Automatic Sync</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
+                       showInWebsite="1">
+                    <label>Sync Subscriptions</label>
+                    <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\SyncStockAlerts</frontend_model>
+                </field>
+            </group>
         </section>
     </system>
 </config>

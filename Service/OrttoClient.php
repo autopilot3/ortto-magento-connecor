@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Service;
 
+use Magento\Framework\Exception\LocalizedException;
+use Magento\ProductAlert\Model\Stock;
+use Ortto\Connector\Api\ImportResponseInterface;
 use Ortto\Connector\Api\OrttoClientInterface;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\ConfigurationReaderInterface;
@@ -21,6 +24,7 @@ class OrttoClient implements OrttoClientInterface
 {
     private const CUSTOMERS = 'customers';
     private const PRODUCTS = 'products';
+    private const ALERTS = 'alerts';
 
     private ClientInterface $curl;
     private Data $helper;
@@ -56,7 +60,7 @@ class OrttoClient implements OrttoClientInterface
      */
     public function importContacts(ConfigScopeInterface $scope, array $customers)
     {
-        $url = $this->helper->getOrttoURL(RoutesInterface::AP_IMPORT_CONTACTS);
+        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_CONTACTS);
 
         $payload = [];
         foreach ($customers as $customer) {
@@ -81,7 +85,7 @@ class OrttoClient implements OrttoClientInterface
      */
     public function importOrders(ConfigScopeInterface $scope, array $orders)
     {
-        $url = $this->helper->getOrttoURL(RoutesInterface::AP_IMPORT_ORDERS);
+        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_ORDERS);
         $payload = $this->helper->getCustomerWithOrderFields($orders, $scope);
         if (empty($payload)) {
             $this->logger->debug("No order to export");
@@ -96,7 +100,7 @@ class OrttoClient implements OrttoClientInterface
      */
     public function importProducts(ConfigScopeInterface $scope, array $products)
     {
-        $url = $this->helper->getOrttoURL(RoutesInterface::AP_IMPORT_PRODUCTS);
+        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_PRODUCTS);
         $payload = [];
         foreach ($products as $product) {
             $productData = $this->productDataFactory->create();
@@ -108,6 +112,29 @@ class OrttoClient implements OrttoClientInterface
             return new ImportResponse();
         }
         $response = $this->postJSON($url, $scope, [self::PRODUCTS => $payload]);
+        return new ImportResponse($response);
+    }
+
+    public function importProductStockAlerts(ConfigScopeInterface $scope, array $alerts)
+    {
+        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_WAITING_ON_STOCK);
+        $payload = [];
+        foreach ($alerts as $alert) {
+            $product = $this->productDataFactory->create();
+            $product->loadById(To::int($alert->getProductId()));
+            $customer = $this->customerDataFactory->create();
+            $customer->loadById(To::int($alert->getCustomerId()));
+            $payload[] = [
+                'product' => $product->toArray(),
+                'customer' => $customer->toArray(),
+                'date_added' => $this->helper->toUTC($alert->getAddDate()),
+            ];
+        }
+        if (empty($payload)) {
+            $this->logger->debug("No stock alerts to export");
+            return new ImportResponse();
+        }
+        $response = $this->postJSON($url, $scope, [self::ALERTS => $payload]);
         return new ImportResponse($response);
     }
 
