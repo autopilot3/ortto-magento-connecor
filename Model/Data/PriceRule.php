@@ -182,15 +182,27 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
-    public function getExpirationDate(): string
+    public function getExpirationDate(): ?string
     {
-        return (string)$this->getData(self::EXPIRATION_DATE);
+        return $this->getData(self::EXPIRATION_DATE);
     }
 
     /** @inerhitDoc */
     public function setExpirationDate(?string $expirationDate): void
     {
         $this->setData(self::EXPIRATION_DATE, $expirationDate);
+    }
+
+    /** @inerhitDoc */
+    public function getStartDate(): ?string
+    {
+        return $this->getData(self::START_DATE);
+    }
+
+    /** @inerhitDoc */
+    public function setStartDate(?string $startDate): void
+    {
+        $this->setData(self::START_DATE, $startDate);
     }
 
     /** @inerhitDoc */

@@ -22,6 +22,7 @@ interface PriceRuleInterface extends SerializableInterface
     const CATEGORIES = "categories";
     const PRODUCTS = "products";
     const EXPIRATION_DATE = "expiration_date";
+    const START_DATE = "start_date";
     const TOTAL_LIMIT = "total_limit";
     const PER_CUSTOMER_LIMIT = "per_customer_limit";
     const WEBSITE_ID = 'website_id';
@@ -263,7 +264,7 @@ interface PriceRuleInterface extends SerializableInterface
      *
      * @return string|null
      */
-    public function getExpirationDate(): string;
+    public function getExpirationDate(): ?string;
 
     /**
      * Setter for ExpirationDate.
@@ -272,7 +273,23 @@ interface PriceRuleInterface extends SerializableInterface
      *
      * @return void
      */
-    public function setExpirationDate(string $expirationDate): void;
+    public function setExpirationDate(?string $expirationDate): void;
+
+    /**
+     * Getter for StartDate.
+     *
+     * @return string|null
+     */
+    public function getStartDate(): ?string;
+
+    /**
+     * Setter for StartDate.
+     *
+     * @param string|null $startDate
+     *
+     * @return void
+     */
+    public function setStartDate(?string $startDate): void;
 
     /**
      * Getter for TotalLimit.

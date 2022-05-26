@@ -106,8 +106,6 @@ class DiscountRepository implements DiscountRepositoryInterface
         }
         try {
             $newRule = $this->rule->create();
-            $now = $this->helper->nowUTC();
-            $newRule->setFromDate($this->helper->toUTC($now));
             $this->initialiseRule($newRule, $rule, false);
             $this->setCustomerGroups($newRule);
             $this->setConditions($newRule, $rule);
@@ -246,16 +244,16 @@ class DiscountRepository implements DiscountRepositoryInterface
             ->setApplyToShipping($rule->getApplyToShipping())
             ->setCouponType(RuleInterface::COUPON_TYPE_SPECIFIC_COUPON);
 
-        $maxQuantity = $rule->getMaxQuantity();
-        if (!empty($maxQuantity)) {
-            $newRule->setDiscountQty(To::float($maxQuantity));
-        }
-
-        if (!$updateMode) {
-            $newRule->setDescription($rule->getDescription())
-                ->setIsActive(true)
-                ->setIsAdvanced(true)
-                ->setWebsiteIds([$rule->getWebsiteId()]);
+        $startDate = $rule->getStartDate();
+        if (!empty($startDate)) {
+            $from = $this->helper->toUTC($startDate);
+            if ($from !== Config::EMPTY_DATE_TIME) {
+                $newRule->setFromDate($from);
+            }
+        } else {
+            if ($updateMode) {
+                $newRule->setFromDate(null);
+            }
         }
 
         $expiration = $rule->getExpirationDate();
@@ -268,6 +266,18 @@ class DiscountRepository implements DiscountRepositoryInterface
             if ($updateMode) {
                 $newRule->setToDate(null);
             }
+        }
+
+        $maxQuantity = $rule->getMaxQuantity();
+        if (!empty($maxQuantity)) {
+            $newRule->setDiscountQty(To::float($maxQuantity));
+        }
+
+        if (!$updateMode) {
+            $newRule->setDescription($rule->getDescription())
+                ->setIsActive(true)
+                ->setIsAdvanced(true)
+                ->setWebsiteIds([$rule->getWebsiteId()]);
         }
 
         $type = $rule->getType();
