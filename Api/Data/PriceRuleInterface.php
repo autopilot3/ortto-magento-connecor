@@ -61,9 +61,9 @@ interface PriceRuleInterface extends SerializableInterface
      *
      * @param int $id
      *
-     * @return $this
+     * @return void
      */
-    public function setId(int $id);
+    public function setId(int $id): void;
 
     /**
      * Getter for Priority.
@@ -77,9 +77,9 @@ interface PriceRuleInterface extends SerializableInterface
      *
      * @param int $priority
      *
-     * @return $this
+     * @return void
      */
-    public function setPriority(int $priority);
+    public function setPriority(int $priority): void;
 
     /**
      * Getter for IsUnique.

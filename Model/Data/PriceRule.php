@@ -27,10 +27,9 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
-    public function setId(int $id)
+    public function setId(int $id): void
     {
         $this->setData(self::ID, $id);
-        return $this;
     }
 
     /** @inerhitDoc */
@@ -77,10 +76,9 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
-    public function setPriority(int $priority)
+    public function setPriority(int $priority): void
     {
         $this->setData(self::PRIORITY, $priority);
-        return $this;
     }
 
     /** @inerhitDoc */
@@ -254,6 +252,7 @@ class PriceRule extends DataObject implements PriceRuleInterface
         $type = $this->getType();
         switch ($type) {
             case PriceRuleInterface::TYPE_FIXED_AMOUNT:
+            case PriceRuleInterface::TYPE_FIXED_CART:
             case PriceRuleInterface::TYPE_PERCENTAGE:
                 $value = $this->getValue();
                 if (empty($value)) {
@@ -262,6 +261,11 @@ class PriceRule extends DataObject implements PriceRuleInterface
                 $value = To::float($value);
                 if ($value > 100) {
                     $this->setValue(100);
+                }
+                break;
+            case PriceRuleInterface::TYPE_BUY_X_GET_Y_FREE:
+                if (empty($this->getQuantityStep())) {
+                    return 'Discount quantity step (Buy X) cannot be empty';
                 }
                 break;
             case PriceRuleInterface::TYPE_FREE_SHIPPING:
