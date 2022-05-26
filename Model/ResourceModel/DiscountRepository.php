@@ -240,16 +240,22 @@ class DiscountRepository implements DiscountRepositoryInterface
             ->setUsesPerCustomer($rule->getPerCustomerLimit())
             // Will generate a unique coupon code per person when sending voucher email
             ->setUseAutoGeneration($rule->getIsUnique())
+            ->setSortOrder($rule->getPriority())
+            ->setIsRss($rule->getIsRss())
+            ->setStopRulesProcessing($rule->getDiscardSubsequentRules())
+            ->setApplyToShipping($rule->getApplyToShipping())
             ->setCouponType(RuleInterface::COUPON_TYPE_SPECIFIC_COUPON);
+
+        $maxQuantity = $rule->getMaxQuantity();
+        if (!empty($maxQuantity)) {
+            $newRule->setDiscountQty(To::float($maxQuantity));
+        }
 
         if (!$updateMode) {
             $newRule->setDescription($rule->getDescription())
-                ->setIsActive(false)
-                ->setIsRss(true)
+                ->setIsActive(true)
                 ->setIsAdvanced(true)
-                ->setWebsiteIds([$rule->getWebsiteId()])
-                ->setStopRulesProcessing(false)
-                ->setStopRulesProcessing(true);
+                ->setWebsiteIds([$rule->getWebsiteId()]);
         }
 
         $expiration = $rule->getExpirationDate();
@@ -267,6 +273,10 @@ class DiscountRepository implements DiscountRepositoryInterface
         $type = $rule->getType();
         switch ($type) {
             case PriceRuleInterface::TYPE_FIXED_AMOUNT:
+                $newRule->setSimpleAction(RuleInterface::DISCOUNT_ACTION_FIXED_AMOUNT);
+                $newRule->setDiscountAmount(To::float($rule->getValue()));
+                break;
+            case PriceRuleInterface::TYPE_FIXED_CART:
                 $newRule->setSimpleAction(RuleInterface::DISCOUNT_ACTION_FIXED_AMOUNT_FOR_CART);
                 $newRule->setDiscountAmount(To::float($rule->getValue()));
                 break;
@@ -281,6 +291,13 @@ class DiscountRepository implements DiscountRepositoryInterface
                 // NOTE: There is a bug in Magento. `salesrules.simple_free_shipping` column is numeric
                 $newRule->setSimpleFreeShipping(self::FOR_SHIPMENT_WITH_MATCHING_ITEMS);
                 break;
+            case PriceRuleInterface::TYPE_BUY_X_GET_Y_FREE:
+                $newRule->setSimpleAction(RuleInterface::DISCOUNT_ACTION_BUY_X_GET_Y);
+                $newRule->setDiscountAmount(To::float($rule->getValue()));
+                $step = $rule->getQuantityStep();
+                if (!empty($step)) {
+                    $newRule->setDiscountStep(To::int($step));
+                }
         }
     }
 

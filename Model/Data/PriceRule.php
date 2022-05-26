@@ -46,6 +46,56 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
+    public function getApplyToShipping(): bool
+    {
+        return To::bool($this->getData(self::APPLY_TO_SHIPPING));
+    }
+
+    /** @inerhitDoc */
+    public function setApplyToShipping(bool $applyToShipping): void
+    {
+        $this->setData(self::APPLY_TO_SHIPPING, $applyToShipping);
+    }
+
+    /** @inerhitDoc */
+    public function getDiscardSubsequentRules(): bool
+    {
+        return To::bool($this->getData(self::DISCARD_SUBSEQUENT_RULES));
+    }
+
+    /** @inerhitDoc */
+    public function setDiscardSubsequentRules(bool $discardSubsequentRules): void
+    {
+        $this->setData(self::DISCARD_SUBSEQUENT_RULES, $discardSubsequentRules);
+    }
+
+
+    /** @inerhitDoc */
+    public function getPriority(): int
+    {
+        return To::int($this->getData(self::PRIORITY));
+    }
+
+    /** @inerhitDoc */
+    public function setPriority(int $priority)
+    {
+        $this->setData(self::PRIORITY, $priority);
+        return $this;
+    }
+
+    /** @inerhitDoc */
+    public function getIsRss(): bool
+    {
+        return To::bool($this->getData(self::IS_RSS));
+    }
+
+    /** @inerhitDoc */
+    public function setIsRss(bool $isRss): void
+    {
+        $this->setData(self::IS_RSS, $isRss);
+    }
+
+    /** @inerhitDoc */
     public function getType(): string
     {
         return (string)$this->getData(self::TYPE);
@@ -68,6 +118,32 @@ class PriceRule extends DataObject implements PriceRuleInterface
     public function setValue(?float $value): void
     {
         $this->setData(self::VALUE, $value);
+    }
+
+    /** @inerhitDoc */
+    public function getMaxQuantity(): ?float
+    {
+        return $this->getData(self::MAX_QUANTITY) === null ? null
+            : To::float($this->getData(self::MAX_QUANTITY));
+    }
+
+    /** @inerhitDoc */
+    public function setMaxQuantity(?float $maxQuantity): void
+    {
+        $this->setData(self::MAX_QUANTITY, $maxQuantity);
+    }
+
+    /** @inerhitDoc */
+    public function getQuantityStep(): ?int
+    {
+        return $this->getData(self::QUANTITY_STEP) === null ? null
+            : To::int($this->getData(self::QUANTITY_STEP));
+    }
+
+    /** @inerhitDoc */
+    public function setQuantityStep(?int $quantityStep): void
+    {
+        $this->setData(self::QUANTITY_STEP, $quantityStep);
     }
 
     /** @inerhitDoc */

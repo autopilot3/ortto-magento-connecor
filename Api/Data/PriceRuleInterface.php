@@ -4,9 +4,11 @@ namespace Ortto\Connector\Api\Data;
 
 interface PriceRuleInterface extends SerializableInterface
 {
-    public const TYPE_PERCENTAGE = "percentage";
-    public const TYPE_FIXED_AMOUNT = "fixed";
-    public const TYPE_FREE_SHIPPING = "free_shipping";
+    public const TYPE_PERCENTAGE = 'percentage';
+    public const TYPE_FIXED_AMOUNT = 'fixed';
+    public const TYPE_FIXED_CART = 'fixed_cart';
+    public const TYPE_FREE_SHIPPING = 'free_shipping';
+    public const TYPE_BUY_X_GET_Y_FREE = 'buy_x_get_y_free';
 
     /**
      * String constants for property names
@@ -24,6 +26,12 @@ interface PriceRuleInterface extends SerializableInterface
     const PER_CUSTOMER_LIMIT = "per_customer_limit";
     const WEBSITE_ID = 'website_id';
     const MIN_PURCHASE_AMOUNT = 'min_purchase_amount';
+    const IS_RSS = "is_rss";
+    const PRIORITY = "priority";
+    const DISCARD_SUBSEQUENT_RULES = "discard_subsequent_rules";
+    const MAX_QUANTITY = 'max_quantity';
+    const QUANTITY_STEP = 'quantity_step';
+    const APPLY_TO_SHIPPING = "apply_to_shipping";
 
     /**
      * Getter for Name.
@@ -56,7 +64,23 @@ interface PriceRuleInterface extends SerializableInterface
      * @return $this
      */
     public function setId(int $id);
-    
+
+    /**
+     * Getter for Priority.
+     *
+     * @return int
+     */
+    public function getPriority(): int;
+
+    /**
+     * Setter for Priority.
+     *
+     * @param int $priority
+     *
+     * @return $this
+     */
+    public function setPriority(int $priority);
+
     /**
      * Getter for IsUnique.
      *
@@ -72,6 +96,55 @@ interface PriceRuleInterface extends SerializableInterface
      * @return void
      */
     public function setIsUnique(bool $isUnique): void;
+
+
+    /**
+     * Getter for ApplyToShipping.
+     *
+     * @return bool
+     */
+    public function getApplyToShipping(): bool;
+
+    /**
+     * Setter for ApplyToShipping.
+     *
+     * @param bool $applyToShipping
+     *
+     * @return void
+     */
+    public function setApplyToShipping(bool $applyToShipping): void;
+
+    /**
+     * Getter for DiscardSubsequentRules.
+     *
+     * @return bool
+     */
+    public function getDiscardSubsequentRules(): bool;
+
+    /**
+     * Setter for DiscardSubsequentRules.
+     *
+     * @param bool $discardSubsequentRules
+     *
+     * @return void
+     */
+    public function setDiscardSubsequentRules(bool $discardSubsequentRules): void;
+
+    /**
+     * Getter for IsRss.
+     *
+     * @return bool
+     */
+    public function getIsRss(): bool;
+
+    /**
+     * Setter for IsRss.
+     *
+     * @param bool $isRss
+     *
+     * @return void
+     */
+    public function setIsRss(bool $isRss): void;
 
     /**
      * Getter for Type.
@@ -104,6 +177,38 @@ interface PriceRuleInterface extends SerializableInterface
      * @return void
      */
     public function setValue(?float $value): void;
+
+    /**
+     * Getter for MaxQuantity.
+     *
+     * @return float|null
+     */
+    public function getMaxQuantity(): ?float;
+
+    /**
+     * Setter for MaxQuantity.
+     *
+     * @param float|null $maxQuantity
+     *
+     * @return void
+     */
+    public function setMaxQuantity(?float $maxQuantity): void;
+
+    /**
+     * Getter for QuantityStep.
+     *
+     * @return int|null
+     */
+    public function getQuantityStep(): ?int;
+
+    /**
+     * Setter for QuantityStep.
+     *
+     * @param int|null $quantityStep
+     *
+     * @return void
+     */
+    public function setQuantityStep(?int $quantityStep): void;
 
     /**
      * Getter for MinPurchaseAmount.
