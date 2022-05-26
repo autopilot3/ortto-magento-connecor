@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Helper;
 
-use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\ProductAlert\Model\Stock;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\SyncCategoryInterface;
@@ -276,5 +275,10 @@ class Data extends AbstractHelper
             return false;
         }
         return true;
+    }
+
+    public function newHTTPException(string $message, int $code = 500): \Magento\Framework\Webapi\Exception
+    {
+        return new \Magento\Framework\Webapi\Exception(__($message), $code, $code);
     }
 }

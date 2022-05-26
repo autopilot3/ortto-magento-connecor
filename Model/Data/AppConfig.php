@@ -22,7 +22,7 @@ class AppConfig extends DataObject implements AppConfigInterface
      */
     public function getScopeId(): int
     {
-        return To::int($this->_getData(self::SCOPE_ID));
+        return To::int($this->getData(self::SCOPE_ID));
     }
 
     /**
@@ -38,7 +38,7 @@ class AppConfig extends DataObject implements AppConfigInterface
      */
     public function getScopeType(): string
     {
-        return trim((string)$this->_getData(self::SCOPE_TYPE));
+        return trim((string)$this->getData(self::SCOPE_TYPE));
     }
 
     /**
@@ -54,7 +54,7 @@ class AppConfig extends DataObject implements AppConfigInterface
      */
     public function getKeys(): array
     {
-        $keys = $this->_getData(self::KEYS);
+        $keys = $this->getData(self::KEYS);
         if (empty($keys)) {
             return [];
         }

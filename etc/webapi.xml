@@ -1,10 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
-    <route url="/V1/ortto/coupon/create" method="POST">
-        <service class="Ortto\Connector\Api\CouponRepositoryInterface" method="create"/>
+    <route url="/V1/ortto/price-rule/create" method="POST">
+        <service class="Ortto\Connector\Api\DiscountRepositoryInterface" method="createPriceRule"/>
         <resources>
-            <resource ref="Ortto_Connector::coupons_create"/>
+            <resource ref="Ortto_Connector::coupons"/>
+        </resources>
+    </route>
+    <route url="/V1/ortto/price-rule/update" method="PUT">
+        <service class="Ortto\Connector\Api\DiscountRepositoryInterface" method="updatePriceRule"/>
+        <resources>
+            <resource ref="Ortto_Connector::coupons"/>
+        </resources>
+    </route>
+    <route url="/V1/ortto/price-rule/delete" method="DELETE">
+        <service class="Ortto\Connector\Api\DiscountRepositoryInterface" method="deletePriceRule"/>
+        <resources>
+            <resource ref="Ortto_Connector::coupons"/>
+        </resources>
+    </route>
+    <route url="/V1/ortto/coupon/create" method="POST">
+        <service class="Ortto\Connector\Api\DiscountRepositoryInterface" method="createCoupon"/>
+        <resources>
+            <resource ref="Ortto_Connector::coupons"/>
         </resources>
     </route>
     <route url="/V1/ortto/config/update" method="PUT">
