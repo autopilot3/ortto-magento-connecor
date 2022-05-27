@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
+use Magento\Catalog\Model\Category;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Url;
+use Magento\Framework\UrlInterface;
+use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\Logger;
@@ -60,6 +66,7 @@ class ProductData
     private Grouped $grouped;
     private Selection $bundle;
     private LinkRepositoryInterface $linkRepository;
+    private Url $frontEndURL;
 
     public function __construct(
         Data $helper,
@@ -71,7 +78,8 @@ class ProductData
         Configurable $configurable,
         Grouped $grouped,
         Selection $bundle,
-        LinkRepositoryInterface $linkRepository
+        LinkRepositoryInterface $linkRepository,
+        Url $frontendURL
     ) {
         $this->helper = $helper;
         $this->productRepository = $productRepository;
@@ -95,6 +103,7 @@ class ProductData
         ];
         $this->linkRepository = $linkRepository;
         $this->links = [];
+        $this->frontEndURL = $frontendURL;
     }
 
     /**
@@ -106,8 +115,7 @@ class ProductData
         try {
             /** @var Product $product */
             $product = $this->productRepository->getById($id);
-            $this->load($product);
-            return true;
+            return $this->load($product);
         } catch (NoSuchEntityException $e) {
             $this->logger->error($e, sprintf("Product ID %d could not be found.", $id));
             return false;
@@ -123,8 +131,7 @@ class ProductData
         try {
             /** @var Product $product */
             $product = $this->productRepository->get($sku);
-            $this->load($product);
-            return true;
+            return $this->load($product);
         } catch (NoSuchEntityException $e) {
             $this->logger->error($e, sprintf("Product SKU %s could not be found.", $sku));
             return false;
@@ -133,7 +140,7 @@ class ProductData
 
     /**
      * @param Product|ProductInterface $product
-     * @return void
+     * @return bool
      */
     public function load($product)
     {
@@ -161,6 +168,7 @@ class ProductData
         }
         $this->loadStockData();
         $this->loadURLs();
+        return true;
     }
 
     public function toArray(): array
@@ -244,14 +252,28 @@ class ProductData
         }
     }
 
-    private function getCategoryData(CategoryInterface $category): array
+    /**
+     * @param CategoryInterface|Category $category
+     * @return array
+     */
+    private function getCategoryData($category): array
     {
-        return [
+        $result = [
             'id' => To::int($category->getId()),
             'name' => $category->getName(),
             'is_active' => To::bool($category->getIsActive()),
             'level' => To::int($category->getLevel()),
         ];
+        if ($category instanceof Category) {
+            try {
+                if ($imageURL = $category->getImageUrl()) {
+                    $result['image_url'] = $imageURL;
+                }
+            } catch (LocalizedException $e) {
+                $this->logger->error($e, "Failed to fetch product category image");
+            }
+        }
+        return $result;
     }
 
     private function loadURLs()
@@ -262,7 +284,21 @@ class ProductData
         }
 
         if ($this->product->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE) {
-            $this->url = $this->product->getProductUrl();
+            $routeParams = [
+                'id' => $this->product->getId(),
+                //  's' => $this->product->getUrlKey(),
+                '_nosid' => true,
+                //'_query' => ['___store' => $this->store->getCode()],
+            ];
+//            if ($categoryId = $this->product->getCategoryId()) {
+//                $routeParams['category'] = $categoryId;
+//            }
+            $this->url = $this->product->setStoreId(2)->getUrlModel()->getUrlInStore(
+                $this->product,
+                ['_escape' => true]
+            );
+//            $this->url = $this->frontEndURL->getUrl('catalog/product/view', $routeParams);
+            $this->logger->info("URL2", $this->url);
         }
     }
 

@@ -104,8 +104,9 @@ class OrttoClient implements OrttoClientInterface
         $payload = [];
         foreach ($products as $product) {
             $productData = $this->productDataFactory->create();
-            $productData->load($product);
-            $payload[] = $productData->toArray();
+            if ($productData->load($product)) {
+                $payload[] = $productData->toArray();
+            }
         }
         if (empty($payload)) {
             $this->logger->debug("No products to export");

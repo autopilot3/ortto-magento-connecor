@@ -62,6 +62,6 @@
                 type="Ortto\Connector\Model\Data\PriceRuleResponse"/>
     <preference for="Ortto\Connector\Api\Data\CouponResponseInterface"
                 type="Ortto\Connector\Model\Data\CouponResponse"/>
-    <preference for="Ortto\Connector\Api\Data\SharedCouponInterface"
-                type="Ortto\Connector\Model\Data\SharedCoupon"/>
+    <preference for="Ortto\Connector\Api\Data\DiscountInterface"
+                type="Ortto\Connector\Model\Data\Discount"/>
 </config>

@@ -46,7 +46,9 @@ class CartItemData
             return [];
         }
         $product = $this->productDataFactory->create();
-        $product->load($this->item->getProduct());
+        if (!$product->load($this->item->getProduct())) {
+            return [];
+        }
         return [
             'base_discount' => To::float($this->item->getBaseDiscountAmount()),
             'base_discount_tax_compensation' => To::float($this->item->getBaseDiscountTaxCompensationAmount()),

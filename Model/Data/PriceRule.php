@@ -45,6 +45,18 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
+    public function getFreeShippingToMatchingItemsOnly(): bool
+    {
+        return To::bool($this->getData(self::FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY));
+    }
+
+    /** @inerhitDoc */
+    public function setFreeShippingToMatchingItemsOnly(bool $freeShippingToMatchingItemsOnly): void
+    {
+        $this->setData(self::FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY, $freeShippingToMatchingItemsOnly);
+    }
+
+    /** @inerhitDoc */
     public function getApplyToShipping(): bool
     {
         return To::bool($this->getData(self::APPLY_TO_SHIPPING));
@@ -106,79 +118,111 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
-    public function getValue(): ?float
+    public function getValue(): float
     {
-        return $this->getData(self::VALUE) === null ? null
-            : To::float($this->getData(self::VALUE));
+        return To::float($this->getData(self::VALUE));
     }
 
     /** @inerhitDoc */
-    public function setValue(?float $value): void
+    public function setValue(float $value): void
     {
         $this->setData(self::VALUE, $value);
     }
 
     /** @inerhitDoc */
-    public function getMaxQuantity(): ?float
+    public function getMaxQuantity(): float
     {
-        return $this->getData(self::MAX_QUANTITY) === null ? null
-            : To::float($this->getData(self::MAX_QUANTITY));
+        return To::float($this->getData(self::MAX_QUANTITY));
     }
 
     /** @inerhitDoc */
-    public function setMaxQuantity(?float $maxQuantity): void
+    public function setMaxQuantity(float $maxQuantity): void
     {
         $this->setData(self::MAX_QUANTITY, $maxQuantity);
     }
 
     /** @inerhitDoc */
-    public function getQuantityStep(): ?int
+    public function getMinQuantity(): float
     {
-        return $this->getData(self::QUANTITY_STEP) === null ? null
-            : To::int($this->getData(self::QUANTITY_STEP));
+        return To::float($this->getData(self::MAX_QUANTITY));
     }
 
     /** @inerhitDoc */
-    public function setQuantityStep(?int $quantityStep): void
+    public function setMinQuantity(float $minQuantity): void
     {
-        $this->setData(self::QUANTITY_STEP, $quantityStep);
+        $this->setData(self::MIN_QUANTITY, $minQuantity);
     }
 
     /** @inerhitDoc */
-    public function getMinPurchaseAmount(): ?float
+    public function getMinPurchaseAmount(): float
     {
-        return $this->getData(self::MIN_PURCHASE_AMOUNT) === null ? null
-            : To::float($this->getData(self::MIN_PURCHASE_AMOUNT));
+        return To::float($this->getData(self::MIN_PURCHASE_AMOUNT));
     }
 
     /** @inerhitDoc */
-    public function setMinPurchaseAmount(?float $minPurchaseAmount): void
+    public function setMinPurchaseAmount(float $minPurchaseAmount): void
     {
         $this->setData(self::MIN_PURCHASE_AMOUNT, $minPurchaseAmount);
     }
 
     /** @inerhitDoc */
-    public function getCategories(): ?array
+    public function getBuyXQuantity(): int
     {
-        return $this->getData(self::CATEGORIES);
+        return To::int($this->getData(self::BUY_X_QUANTITY));
     }
 
     /** @inerhitDoc */
-    public function setCategories(array $categories): void
+    public function setBuyXQuantity(int $buyXQuantity): void
     {
-        $this->setData(self::CATEGORIES, $categories);
+        $this->setData(self::BUY_X_QUANTITY, $buyXQuantity);
     }
 
     /** @inerhitDoc */
-    public function getProducts(): ?array
+    public function getRuleCategories(): ?array
     {
-        return $this->getData(self::PRODUCTS);
+        return $this->getData(self::RULE_CATEGORIES);
     }
 
     /** @inerhitDoc */
-    public function setProducts(array $products): void
+    public function setRuleCategories(array $ruleCategories): void
     {
-        $this->setData(self::PRODUCTS, $products);
+        $this->setData(self::RULE_CATEGORIES, $ruleCategories);
+    }
+
+    /** @inerhitDoc */
+    public function getRuleProducts(): ?array
+    {
+        return $this->getData(self::RULE_PRODUCTS);
+    }
+
+    /** @inerhitDoc */
+    public function setRuleProducts(array $ruleProducts): void
+    {
+        $this->setData(self::RULE_PRODUCTS, $ruleProducts);
+    }
+
+    /** @inerhitDoc */
+    public function getActionCategories(): ?array
+    {
+        return $this->getData(self::ACTION_CATEGORIES);
+    }
+
+    /** @inerhitDoc */
+    public function setActionCategories(array $actionCategories): void
+    {
+        $this->setData(self::ACTION_CATEGORIES, $actionCategories);
+    }
+
+    /** @inerhitDoc */
+    public function getActionProducts(): ?array
+    {
+        return $this->getData(self::ACTION_PRODUCTS);
+    }
+
+    /** @inerhitDoc */
+    public function setActionProducts(array $actionProducts): void
+    {
+        $this->setData(self::ACTION_PRODUCTS, $actionProducts);
     }
 
     /** @inerhitDoc */
@@ -257,29 +301,24 @@ class PriceRule extends DataObject implements PriceRuleInterface
             return 'Rule name cannot be empty';
         }
 
-        if (!empty($this->getProducts()) && !empty($this->getCategories())) {
-            return 'Either product or category filter must be specified';
+        if (!empty($this->getRuleProducts()) && !empty($this->getRuleCategories())) {
+            return 'Either product or category rule filters must be specified';
+        }
+
+        if (!empty($this->getActionProducts()) && !empty($this->getActionCategories())) {
+            return 'Either product or category action filters must be specified';
         }
 
         $type = $this->getType();
         switch ($type) {
-            case PriceRuleInterface::TYPE_FIXED_AMOUNT:
-            case PriceRuleInterface::TYPE_FIXED_CART:
             case PriceRuleInterface::TYPE_PERCENTAGE:
-                $value = $this->getValue();
-                if (empty($value)) {
-                    return sprintf('The value of a %s rule cannot be empty', $type);
-                }
-                $value = To::float($value);
-                if ($value > 100) {
+                if ($this->getValue() > 100) {
                     $this->setValue(100);
                 }
                 break;
             case PriceRuleInterface::TYPE_BUY_X_GET_Y_FREE:
-                if (empty($this->getQuantityStep())) {
-                    return 'Discount quantity step (Buy X) cannot be empty';
-                }
-                break;
+            case PriceRuleInterface::TYPE_FIXED_EACH_ITEM:
+            case PriceRuleInterface::TYPE_FIXED_CART_TOTAL:
             case PriceRuleInterface::TYPE_FREE_SHIPPING:
                 return '';
             case '':

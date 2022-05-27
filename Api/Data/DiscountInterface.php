@@ -2,7 +2,7 @@
 
 namespace Ortto\Connector\Api\Data;
 
-interface SharedCouponInterface extends SerializableInterface
+interface DiscountInterface extends SerializableInterface
 {
     /**
      * String constants for property names

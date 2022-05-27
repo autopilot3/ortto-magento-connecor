@@ -5,8 +5,10 @@ namespace Ortto\Connector\Api\Data;
 interface PriceRuleInterface extends SerializableInterface
 {
     public const TYPE_PERCENTAGE = 'percentage';
-    public const TYPE_FIXED_AMOUNT = 'fixed';
-    public const TYPE_FIXED_CART = 'fixed_cart';
+    // A fix amount will be deducted from each individual item in the cart
+    public const TYPE_FIXED_EACH_ITEM = 'fixed_each_item';
+    // A fix amount will be deducted from the cart's total
+    public const TYPE_FIXED_CART_TOTAL = 'fixed_cart_total';
     public const TYPE_FREE_SHIPPING = 'free_shipping';
     public const TYPE_BUY_X_GET_Y_FREE = 'buy_x_get_y_free';
 
@@ -19,20 +21,24 @@ interface PriceRuleInterface extends SerializableInterface
     const IS_UNIQUE = "is_unique";
     const TYPE = "type";
     const VALUE = "value";
-    const CATEGORIES = "categories";
-    const PRODUCTS = "products";
+    const RULE_CATEGORIES = "rule_categories";
+    const RULE_PRODUCTS = "rule_products";
+    const ACTION_CATEGORIES = "action_categories";
+    const ACTION_PRODUCTS = "action_products";
     const EXPIRATION_DATE = "expiration_date";
     const START_DATE = "start_date";
     const TOTAL_LIMIT = "total_limit";
     const PER_CUSTOMER_LIMIT = "per_customer_limit";
     const WEBSITE_ID = 'website_id';
-    const MIN_PURCHASE_AMOUNT = 'min_purchase_amount';
     const IS_RSS = "is_rss";
     const PRIORITY = "priority";
     const DISCARD_SUBSEQUENT_RULES = "discard_subsequent_rules";
     const MAX_QUANTITY = 'max_quantity';
-    const QUANTITY_STEP = 'quantity_step';
+    const MIN_QUANTITY = 'min_quantity';
+    const MIN_PURCHASE_AMOUNT = 'min_purchase_amount';
+    const BUY_X_QUANTITY = 'buy_x_quantity';
     const APPLY_TO_SHIPPING = "apply_to_shipping";
+    const FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY = "free_shipping_to_matching_items_only";
 
     /**
      * Getter for Name.
@@ -97,6 +103,22 @@ interface PriceRuleInterface extends SerializableInterface
      * @return void
      */
     public function setIsUnique(bool $isUnique): void;
+
+    /**
+     * Getter for FreeShippingToMatchingItemsOnly.
+     *
+     * @return bool
+     */
+    public function getFreeShippingToMatchingItemsOnly(): bool;
+
+    /**
+     * Setter for FreeShippingToMatchingItemsOnly.
+     *
+     * @param bool $freeShippingToMatchingItemsOnly
+     *
+     * @return void
+     */
+    public function setFreeShippingToMatchingItemsOnly(bool $freeShippingToMatchingItemsOnly): void;
 
 
     /**
@@ -166,25 +188,25 @@ interface PriceRuleInterface extends SerializableInterface
     /**
      * Getter for Value.
      *
-     * @return float|null
+     * @return float
      */
-    public function getValue(): ?float;
+    public function getValue(): float;
 
     /**
      * Setter for Value.
      *
-     * @param float|null $value
+     * @param float $value
      *
      * @return void
      */
-    public function setValue(?float $value): void;
+    public function setValue(float $value): void;
 
     /**
      * Getter for MaxQuantity.
      *
-     * @return float|null
+     * @return float
      */
-    public function getMaxQuantity(): ?float;
+    public function getMaxQuantity(): float;
 
     /**
      * Setter for MaxQuantity.
@@ -193,71 +215,121 @@ interface PriceRuleInterface extends SerializableInterface
      *
      * @return void
      */
-    public function setMaxQuantity(?float $maxQuantity): void;
+    public function setMaxQuantity(float $maxQuantity): void;
 
     /**
-     * Getter for QuantityStep.
+     * Getter for MinQuantity.
      *
-     * @return int|null
+     * @return float
      */
-    public function getQuantityStep(): ?int;
+    public function getMinQuantity(): float;
 
     /**
-     * Setter for QuantityStep.
+     * Setter for MinQuantity.
      *
-     * @param int|null $quantityStep
+     * @param float $minQuantity
      *
      * @return void
      */
-    public function setQuantityStep(?int $quantityStep): void;
+    public function setMinQuantity(float $minQuantity): void;
 
     /**
      * Getter for MinPurchaseAmount.
      *
-     * @return float|null
+     * @return float
      */
-    public function getMinPurchaseAmount(): ?float;
+    public function getMinPurchaseAmount(): float;
 
     /**
      * Setter for MinPurchaseAmount.
      *
-     * @param float|null $minPurchaseAmount
+     * @param float $minPurchaseAmount
      *
      * @return void
      */
-    public function setMinPurchaseAmount(?float $minPurchaseAmount): void;
+    public function setMinPurchaseAmount(float $minPurchaseAmount): void;
 
     /**
-     * Getter for Categories.
+     * Getter for BuyXQuantity.
+     *
+     * @return int|null
+     */
+    public function getBuyXQuantity(): int;
+
+    /**
+     * Setter for BuyXQuantity.
+     *
+     * @param int $buyXQuantity
+     *
+     * @return void
+     */
+    public function setBuyXQuantity(int $buyXQuantity): void;
+
+    /**
+     * Getter for RuleCategories.
      *
      * @return int[]|null
      */
-    public function getCategories(): ?array;
+    public function getRuleCategories(): ?array;
 
     /**
-     * Setter for Categories.
+     * Setter for RuleCategories.
      *
-     * @param int[] $categories
+     * @param int[] $ruleCategories
      *
      * @return void
      */
-    public function setCategories(array $categories): void;
+    public function setRuleCategories(array $ruleCategories): void;
 
     /**
-     * Getter for Products.
+     * Getter for RuleProducts.
      *
      * @return int[]|null
      */
-    public function getProducts(): ?array;
+    public function getRuleProducts(): ?array;
 
     /**
-     * Setter for Products.
+     * Setter for RuleProducts.
      *
-     * @param int[] $products
+     * @param int[] $ruleProducts
      *
      * @return void
      */
-    public function setProducts(array $products): void;
+    public function setRuleProducts(array $ruleProducts): void;
+
+    //===
+
+    /**
+     * Getter for ActionCategories.
+     *
+     * @return int[]|null
+     */
+    public function getActionCategories(): ?array;
+
+    /**
+     * Setter for ActionCategories.
+     *
+     * @param int[] $actionCategories
+     *
+     * @return void
+     */
+    public function setActionCategories(array $actionCategories): void;
+
+    /**
+     * Getter for ActionProducts.
+     *
+     * @return int[]|null
+     */
+    public function getActionProducts(): ?array;
+
+    /**
+     * Setter for ActionProducts.
+     *
+     * @param int[] $actionProducts
+     *
+     * @return void
+     */
+    public function setActionProducts(array $actionProducts): void;
 
     /**
      * Getter for ExpirationDate.

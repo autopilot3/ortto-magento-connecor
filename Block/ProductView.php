@@ -70,7 +70,9 @@ class ProductView extends View
     {
         try {
             $factory = $this->productDataFactory->create();
-            $factory->load($this->getProduct());
+            if (!$factory->load($this->getProduct())) {
+                return false;
+            }
             $product = $factory->toArray();
             if (empty($product)) {
                 return false;

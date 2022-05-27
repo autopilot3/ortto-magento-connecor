@@ -3,10 +3,10 @@
 namespace Ortto\Connector\Model\Data;
 
 use Magento\Framework\DataObject;
-use Ortto\Connector\Api\Data\SharedCouponInterface;
+use Ortto\Connector\Api\Data\DiscountInterface;
 use Ortto\Connector\Helper\To;
 
-class SharedCoupon extends DataObject implements SharedCouponInterface
+class Discount extends DataObject implements DiscountInterface
 {
     /** @inerhitDoc */
     public function getCode(): string
@@ -35,9 +35,6 @@ class SharedCoupon extends DataObject implements SharedCouponInterface
     /** @inerhitDoc */
     public function validate(): string
     {
-        if (empty($this->getCode())) {
-            return 'Coupon code cannot be empty';
-        }
         if ($this->getRuleId() === 0) {
             return 'Rule ID must be specified';
         }

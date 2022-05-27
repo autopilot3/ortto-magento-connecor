@@ -6,7 +6,7 @@ namespace Ortto\Connector\Api;
 use Ortto\Connector\Api\Data\CouponResponseInterface;
 use Ortto\Connector\Api\Data\PriceRuleResponseInterface;
 use Ortto\Connector\Api\Data\PriceRuleInterface;
-use Ortto\Connector\Api\Data\SharedCouponInterface;
+use Ortto\Connector\Api\Data\DiscountInterface;
 
 /**
  *  Interface DiscountRepositoryInterface
@@ -33,8 +33,8 @@ interface DiscountRepositoryInterface
     public function deletePriceRule(int $ruleId): void;
 
     /**
-     * @param SharedCouponInterface $coupon
-     * @return CouponResponseInterface
+     * @param DiscountInterface $discount
+     * @return DiscountInterface
      */
-    public function createCoupon(SharedCouponInterface $coupon): CouponResponseInterface;
+    public function createDiscount(DiscountInterface $discount): DiscountInterface;
 }

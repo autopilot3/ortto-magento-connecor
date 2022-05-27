@@ -8,6 +8,7 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Customer\Api\GroupRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\AlreadyExistsException;
+use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Webapi\Exception;
@@ -19,12 +20,12 @@ use Magento\SalesRule\Model\CouponFactory;
 use Magento\SalesRule\Api\Data\RuleInterface;
 use Magento\SalesRule\Api\RuleRepositoryInterface;
 use Magento\SalesRule\Api\Data\ConditionInterfaceFactory;
-use Ortto\Connector\Api\Data\CouponResponseInterface;
+use Magento\SalesRule\Model\CouponGenerator;
+use Ortto\Connector\Api\Data\DiscountInterface;
 use Ortto\Connector\Api\Data\PriceRuleResponseInterface;
-use Ortto\Connector\Model\Data\CouponResponseFactory;
+use Ortto\Connector\Model\Data\DiscountFactory;
 use Ortto\Connector\Model\Data\PriceRuleResponseFactory;
 use Ortto\Connector\Api\Data\PriceRuleInterface;
-use Ortto\Connector\Api\Data\SharedCouponInterface;
 use Ortto\Connector\Api\DiscountRepositoryInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
@@ -34,7 +35,9 @@ use Magento\SalesRule\Api\Data\RuleInterfaceFactory;
 
 class DiscountRepository implements DiscountRepositoryInterface
 {
-    const FOR_SHIPMENT_WITH_MATCHING_ITEMS = 2;
+    const NO_FREE_SHIPPING = 0;
+    const APPLY_FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY = 1;
+    const APPLY_FREE_SHIPPING_TO_CART_WITH_MATCHING_ITEMS = 2;
 
     private OrttoLoggerInterface $logger;
     private RuleRepositoryInterface $ruleRepository;
@@ -47,8 +50,9 @@ class DiscountRepository implements DiscountRepositoryInterface
     private ProductRepositoryInterface $productRepository;
     private CouponFactory $couponFactory;
     private Data $helper;
-    private CouponResponseFactory $couponResponseFactory;
+    private DiscountFactory $discountFactory;
     private PriceRuleResponseFactory $ruleResponseFactory;
+    private CouponGenerator $couponGenerator;
 
     /**
      * @param OrttoLoggerInterface $logger
@@ -61,8 +65,9 @@ class DiscountRepository implements DiscountRepositoryInterface
      * @param CategoryRepositoryInterface $categoryRepository
      * @param ProductRepositoryInterface $productRepository
      * @param CouponFactory $couponFactory
-     * @param CouponResponseFactory $couponResponseFactory
+     * @param DiscountFactory $discountFactory
      * @param PriceRuleResponseFactory $ruleResponseFactory
+     * @param CouponGenerator $couponGenerator
      * @param Data $helper
      */
     public function __construct(
@@ -76,8 +81,9 @@ class DiscountRepository implements DiscountRepositoryInterface
         CategoryRepositoryInterface $categoryRepository,
         ProductRepositoryInterface $productRepository,
         CouponFactory $couponFactory,
-        CouponResponseFactory $couponResponseFactory,
+        DiscountFactory $discountFactory,
         PriceRuleResponseFactory $ruleResponseFactory,
+        CouponGenerator $couponGenerator,
         Data $helper
     ) {
         $this->logger = $logger;
@@ -91,8 +97,9 @@ class DiscountRepository implements DiscountRepositoryInterface
         $this->categoryRepository = $categoryRepository;
         $this->productRepository = $productRepository;
         $this->couponFactory = $couponFactory;
-        $this->couponResponseFactory = $couponResponseFactory;
+        $this->discountFactory = $discountFactory;
         $this->ruleResponseFactory = $ruleResponseFactory;
+        $this->couponGenerator = $couponGenerator;
     }
 
     /**
@@ -107,8 +114,8 @@ class DiscountRepository implements DiscountRepositoryInterface
         try {
             $newRule = $this->rule->create();
             $this->initialiseRule($newRule, $rule, false);
+            $this->setConditions($newRule, $rule, false);
             $this->setCustomerGroups($newRule);
-            $this->setConditions($newRule, $rule);
             $priceRule = $this->ruleRepository->save($newRule);
             $response = $this->ruleResponseFactory->create();
             $response->setId(To::int($priceRule->getRuleId()));
@@ -125,6 +132,10 @@ class DiscountRepository implements DiscountRepositoryInterface
      */
     public function updatePriceRule(PriceRuleInterface $rule): PriceRuleResponseInterface
     {
+        $err = $rule->validate();
+        if (!empty($err)) {
+            throw $this->helper->newHTTPException($err, 400);
+        }
         try {
             $existing = $this->ruleRepository->getById($rule->getId());
             // This should not happen. Just in case
@@ -132,7 +143,7 @@ class DiscountRepository implements DiscountRepositoryInterface
                 throw $this->helper->newHTTPException(sprintf('Rule ID %d was not found', $rule->getId()), 404);
             }
             $this->initialiseRule($existing, $rule, true);
-            $this->setConditions($existing, $rule);
+            $this->setConditions($existing, $rule, true);
             $priceRule = $this->ruleRepository->save($existing);
             $response = $this->ruleResponseFactory->create();
             $response->setId(To::int($priceRule->getRuleId()));
@@ -161,17 +172,17 @@ class DiscountRepository implements DiscountRepositoryInterface
      * @throws Exception
      * @throws LocalizedException
      */
-    public function createCoupon(SharedCouponInterface $coupon): CouponResponseInterface
+    public function createDiscount(DiscountInterface $discount): DiscountInterface
     {
-        $err = $coupon->validate();
+        $err = $discount->validate();
         if (!empty($err)) {
             throw $this->helper->newHTTPException($err, 400);
         }
         try {
-            $rule = $this->ruleRepository->getById($coupon->getRuleId());
+            $rule = $this->ruleRepository->getById($discount->getRuleId());
             // This should not happen. Just in case
             if (empty($rule)) {
-                throw $this->helper->newHTTPException(sprintf('Rule ID %d was not found', $coupon->getRuleId()), 404);
+                throw $this->helper->newHTTPException(sprintf('Rule ID %d was not found', $discount->getRuleId()), 404);
             }
             if ($rule->getCouponType() === RuleInterface::COUPON_TYPE_NO_COUPON) {
                 throw $this->helper->newHTTPException(
@@ -180,51 +191,79 @@ class DiscountRepository implements DiscountRepositoryInterface
                 );
             }
         } catch (NoSuchEntityException $e) {
-            throw $this->helper->newHTTPException(sprintf('Rule ID %d was not found', $coupon->getRuleId()), 404);
+            throw $this->helper->newHTTPException(sprintf('Rule ID %d was not found', $discount->getRuleId()), 404);
         }
 
+        $code = $discount->getCode();
+        $autoGenerate = $rule->getUseAutoGeneration();
+        if (!$autoGenerate && empty($code)) {
+            throw $this->helper->newHTTPException('Coupon code cannot be empty', 400);
+        }
+
+        $ruleID = To::int($rule->getRuleId());
+
         try {
-            if (!$rule->getUseAutoGeneration()) {
-                $this->searchCriteriaBuilder->addFilter(Coupon::KEY_IS_PRIMARY, true)
-                    ->addFilter(Coupon::KEY_RULE_ID, $coupon->getRuleId());
-                $primary = $this->couponRepository->getList($this->searchCriteriaBuilder->create())->getItems();
-                if (!empty($primary)) {
-                    // Only one coupon can be primary
-                    // Update the code if needed and return the same coupon
-                    foreach ($primary as $primaryCoupon) {
-                        if ($primaryCoupon->getCode() !== $coupon->getCode()) {
-                            $primaryCoupon->setCode($coupon->getCode());
-                            $primaryCoupon->setUsagePerCustomer($rule->getUsesPerCustomer());
-                            $primaryCoupon->setUsageLimit($rule->getUsesPerCoupon());
-                            $this->couponRepository->save($primaryCoupon);
-                        }
-                        $response = $this->couponResponseFactory->create();
-                        $response->setId(To::int($primaryCoupon->getCouponId()))
-                            ->setCode((string)$primaryCoupon->getCode());
-                        return $response;
+            // Auto generate (aka Unique) coupon
+            if ($autoGenerate) {
+                $data = [
+                    'rule_id' => $ruleID,
+                    'qty' => '1',
+                    'length' => '12',
+                    'format' => 'alphanum',
+                ];
+                if ($prefix = $discount->getCode()) {
+                    $data['prefix'] = $prefix;
+                }
+                $discountCodes = $this->couponGenerator->generateCodes($data);
+                if (empty($discountCodes)) {
+                    $this->logger->warn("No discount code was generated", ['rule' => $ruleID]);
+                    throw new \Exception(__('Could not generate discount codes'));
+                }
+                $response = $this->discountFactory->create();
+                $response->setRuleId($ruleID);
+                $response->setCode($discountCodes[0]);
+                return $response;
+            }
+
+            // Shared coupon
+
+            $this->searchCriteriaBuilder->addFilter(Coupon::KEY_IS_PRIMARY, true)
+                ->addFilter(Coupon::KEY_RULE_ID, $ruleID);
+            $primary = $this->couponRepository->getList($this->searchCriteriaBuilder->create())->getItems();
+            if (!empty($primary)) {
+                // Only one coupon can be primary
+                // Update the code if needed and return the same coupon
+                foreach ($primary as $primaryCoupon) {
+                    if ($primaryCoupon->getCode() !== $discount->getCode()) {
+                        $primaryCoupon->setCode($discount->getCode());
+                        $primaryCoupon->setUsagePerCustomer($rule->getUsesPerCustomer());
+                        $primaryCoupon->setUsageLimit($rule->getUsesPerCoupon());
+                        $this->couponRepository->save($primaryCoupon);
                     }
+                    $response = $this->discountFactory->create();
+                    $response->setRuleId($ruleID);
+                    $response->setCode((string)$primaryCoupon->getCode());
+                    return $response;
                 }
             }
 
             $now = $this->helper->nowUTC();
-            $autoGenerate = $rule->getUseAutoGeneration();
             $newCoupon = $this->couponFactory->create();
-            $newCoupon->setCode($coupon->getCode())
-                ->setRuleId($coupon->getRuleId())
-                ->setType($autoGenerate ? CouponInterface::TYPE_GENERATED : CouponInterface::TYPE_MANUAL)
-                ->setIsPrimary(!$autoGenerate)
+            $newCoupon->setCode($discount->getCode())
+                ->setRuleId($ruleID)
+                ->setType(CouponInterface::TYPE_MANUAL)
+                ->setIsPrimary(true)
                 ->setUsagePerCustomer($rule->getUsesPerCustomer())
                 ->setCreatedAt($this->helper->toUTC($now))
                 ->setUsageLimit($rule->getUsesPerCoupon());
-
-
             $created = $this->couponRepository->save($newCoupon);
-            $response = $this->couponResponseFactory->create();
-            $response->setId(To::int($created->getCouponId()))
-                ->setCode((string)$created->getCode());
+            $response = $this->discountFactory->create();
+            $response->setRuleId($ruleID);
+            $response->setCode((string)$created->getCode());
             return $response;
         } catch (AlreadyExistsException $e) {
-            throw $this->helper->newHTTPException(sprintf('Duplicate coupon code %s', $coupon->getCode()), 400);
+            $this->logger->error($e, "Duplicate coupon code");
+            throw $this->helper->newHTTPException(sprintf('Duplicate coupon code %s', $discount->getCode()), 409);
         } catch (\Exception $e) {
             $this->logger->error($e, "Failed to create new coupon");
             throw $this->helper->newHTTPException(sprintf('Internal Server Error: %s', $e->getMessage()));
@@ -242,7 +281,17 @@ class DiscountRepository implements DiscountRepositoryInterface
             ->setIsRss($rule->getIsRss())
             ->setStopRulesProcessing($rule->getDiscardSubsequentRules())
             ->setApplyToShipping($rule->getApplyToShipping())
+            ->setDiscountQty($rule->getMaxQuantity())
+            ->setDiscountAmount($rule->getValue())
+            ->setSimpleFreeShipping(self::NO_FREE_SHIPPING)
             ->setCouponType(RuleInterface::COUPON_TYPE_SPECIFIC_COUPON);
+
+        if (!$updateMode) {
+            $newRule->setDescription($rule->getDescription())
+                ->setIsActive(true)
+                ->setIsAdvanced(true)
+                ->setWebsiteIds([$rule->getWebsiteId()]);
+        }
 
         $startDate = $rule->getStartDate();
         if (!empty($startDate)) {
@@ -252,7 +301,7 @@ class DiscountRepository implements DiscountRepositoryInterface
             }
         } else {
             if ($updateMode) {
-                $newRule->setFromDate(null);
+                $newRule->setFromDate('');
             }
         }
 
@@ -264,50 +313,39 @@ class DiscountRepository implements DiscountRepositoryInterface
             }
         } else {
             if ($updateMode) {
-                $newRule->setToDate(null);
+                $newRule->setToDate('');
             }
-        }
-
-        $maxQuantity = $rule->getMaxQuantity();
-        if (!empty($maxQuantity)) {
-            $newRule->setDiscountQty(To::float($maxQuantity));
-        }
-
-        if (!$updateMode) {
-            $newRule->setDescription($rule->getDescription())
-                ->setIsActive(true)
-                ->setIsAdvanced(true)
-                ->setWebsiteIds([$rule->getWebsiteId()]);
         }
 
         $type = $rule->getType();
         switch ($type) {
-            case PriceRuleInterface::TYPE_FIXED_AMOUNT:
+            case PriceRuleInterface::TYPE_FIXED_EACH_ITEM:
                 $newRule->setSimpleAction(RuleInterface::DISCOUNT_ACTION_FIXED_AMOUNT);
-                $newRule->setDiscountAmount(To::float($rule->getValue()));
                 break;
-            case PriceRuleInterface::TYPE_FIXED_CART:
+            case PriceRuleInterface::TYPE_FIXED_CART_TOTAL:
                 $newRule->setSimpleAction(RuleInterface::DISCOUNT_ACTION_FIXED_AMOUNT_FOR_CART);
-                $newRule->setDiscountAmount(To::float($rule->getValue()));
                 break;
             case PriceRuleInterface::TYPE_PERCENTAGE:
                 $newRule->setSimpleAction(RuleInterface::DISCOUNT_ACTION_BY_PERCENT);
-                $newRule->setDiscountAmount(To::float($rule->getValue()));
                 break;
             case PriceRuleInterface::TYPE_FREE_SHIPPING:
                 // https://docs.magento.com/user-guide/marketing/price-rules-cart-free-shipping.html
                 $newRule->setSimpleAction(RuleInterface::DISCOUNT_ACTION_BY_PERCENT);
                 $newRule->setApplyToShipping(true);
                 // NOTE: There is a bug in Magento. `salesrules.simple_free_shipping` column is numeric
-                $newRule->setSimpleFreeShipping(self::FOR_SHIPMENT_WITH_MATCHING_ITEMS);
+                if ($rule->getFreeShippingToMatchingItemsOnly()) {
+                    $newRule->setSimpleFreeShipping(self::APPLY_FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY);
+                } else {
+                    $newRule->setSimpleFreeShipping(self::APPLY_FREE_SHIPPING_TO_CART_WITH_MATCHING_ITEMS);
+                }
+                $newRule->setDiscountAmount(0);
                 break;
             case PriceRuleInterface::TYPE_BUY_X_GET_Y_FREE:
+                $newRule->setApplyToShipping(false);
                 $newRule->setSimpleAction(RuleInterface::DISCOUNT_ACTION_BUY_X_GET_Y);
-                $newRule->setDiscountAmount(To::float($rule->getValue()));
-                $step = $rule->getQuantityStep();
-                if (!empty($step)) {
-                    $newRule->setDiscountStep(To::int($step));
-                }
+                // DiscountAmount (Rule value) = Y
+                // DiscountStep = X
+                $newRule->setDiscountStep($rule->getBuyXQuantity());
         }
     }
 
@@ -328,89 +366,161 @@ class DiscountRepository implements DiscountRepositoryInterface
         }
     }
 
-    private function setConditions(RuleInterface $newRule, PriceRuleInterface $rule)
+    private function setConditions(RuleInterface $newRule, PriceRuleInterface $rule, bool $updateMode)
     {
-        $rootCondition = $this->conditionFactory->create();
-        $rootCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Combine');
-        $rootCondition->setAggregatorType(ConditionInterface::AGGREGATOR_TYPE_ALL);
-        $rootCondition->setValue(true);
+        /** @var ConditionInterface[] $ruleConditions */
+        $ruleConditions = [];
+        /** @var ConditionInterface[] $actionConditions */
+        $actionConditions = [];
 
-        /** @var ConditionInterface[] $conditions */
-        $conditions = [];
-
-        $min = $rule->getMinPurchaseAmount();
-        if (!empty($min)) {
-            $minTotalCondition = $this->conditionFactory->create();
-            $minTotalCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Address');
-            $minTotalCondition->setAttributeName('base_subtotal');
-            $minTotalCondition->setOperator(">=");
-            $minTotalCondition->setValue(To::float($min));
-            $conditions[] = $minTotalCondition;
+        $minAmount = $rule->getMinPurchaseAmount();
+        if ($minAmount > 0) {
+            $minAmountCondition = $this->conditionFactory->create();
+            $minAmountCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Address');
+            $minAmountCondition->setAttributeName('base_subtotal');
+            $minAmountCondition->setOperator(">=");
+            $minAmountCondition->setValue($minAmount);
+            $ruleConditions[] = $minAmountCondition;
         }
 
-        $categories = $rule->getCategories();
-        if (!empty($categories)) {
-            $categoryIDs = [];
-            foreach ($categories as $categoryId) {
-                try {
-                    if ($this->categoryRepository->get($categoryId)) {
-                        $categoryIDs[] = $categoryId;
-                    }
-                } catch (NoSuchEntityException $e) {
-                    $this->logger->warn('Product category was not found', ['category_id' => $categoryId]);
-                    continue;
+        $minQuantity = $rule->getMinQuantity();
+        if ($minQuantity > 0) {
+            $minQuantityCondition = $this->conditionFactory->create();
+            $minQuantityCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Address');
+            $minQuantityCondition->setAttributeName('total_qty');
+            $minQuantityCondition->setOperator(">=");
+            $minQuantityCondition->setValue($minQuantity);
+            $ruleConditions[] = $minQuantityCondition;
+        }
+
+        // Categories and Product rules are mutually exclusive (See $rule->validate())
+        $ruleCategoryIDs = $rule->getRuleCategories();
+        if (!empty($ruleCategoryIDs)) {
+            $condition = $this->getCategoryConditions($ruleCategoryIDs);
+            if (!empty($condition)) {
+                $ruleConditions[] = $condition;
+            }
+        }
+
+        $ruleProductIDs = $rule->getRuleProducts();
+        if (!empty($ruleProductIDs)) {
+            $condition = $this->getProductConditions($ruleProductIDs);
+            if (!empty($condition)) {
+                $ruleConditions[] = $condition;
+            }
+        }
+
+        // Categories and Product rules are mutually exclusive (See $rule->validate())
+        $actionCategoryIDs = $rule->getActionCategories();
+        if (!empty($actionCategoryIDs)) {
+            $condition = $this->getCategoryConditions($actionCategoryIDs);
+            if (!empty($condition)) {
+                $actionConditions[] = $condition;
+            }
+        }
+
+        $actionProductIDs = $rule->getActionProducts();
+        if (!empty($actionProductIDs)) {
+            $condition = $this->getProductConditions($actionProductIDs);
+            if (!empty($condition)) {
+                $actionConditions[] = $condition;
+            }
+        }
+
+        if (!empty($ruleConditions)) {
+            $newRule->setCondition($this->initialiseCondition($ruleConditions));
+        } else {
+            if ($updateMode) {
+                $newRule->setCondition($this->initialiseCondition());
+            }
+        }
+
+        if (!empty($actionConditions)) {
+            $newRule->setActionCondition($this->initialiseCondition($actionConditions));
+        } else {
+            if ($updateMode) {
+                $newRule->setActionCondition($this->initialiseCondition());
+            }
+        }
+    }
+
+    private function initialiseCondition(array $children = null): ConditionInterface
+    {
+        $condition = $this->conditionFactory->create();
+        $condition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Combine');
+        $condition->setAggregatorType(ConditionInterface::AGGREGATOR_TYPE_ALL);
+        $condition->setValue(true);
+        $condition->setConditions($children);
+        return $condition;
+    }
+
+    /**
+     * @param int[] $categoryIDs
+     * @return ConditionInterface|null
+     */
+    private function getCategoryConditions(array $categoryIDs): ?ConditionInterface
+    {
+        $validIDs = [];
+        foreach ($categoryIDs as $categoryId) {
+            try {
+                if ($this->categoryRepository->get($categoryId)) {
+                    $validIDs[] = $categoryId;
                 }
-            }
-            if (!empty($categoryIDs)) {
-                $productCondition = $this->conditionFactory->create();
-                $productCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product');
-                $productCondition->setAttributeName('category_ids');
-                $productCondition->setValue($categoryIDs);
-                $productCondition->setOperator("()");
-
-                $condition = $this->conditionFactory->create();
-                $condition->setValue(1);
-                $condition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product\Found');
-                $condition->setConditions([$productCondition]);
-                $conditions[] = $condition;
+            } catch (NoSuchEntityException $e) {
+                $this->logger->warn('Product category was not found', ['category_id' => $categoryId]);
+                continue;
             }
         }
+        if (!empty($validIDs)) {
+            $productCondition = $this->conditionFactory->create();
+            $productCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product');
+            $productCondition->setAttributeName('category_ids');
+            $productCondition->setValue($validIDs);
+            $productCondition->setOperator("()");
 
-        $productIDs = $rule->getProducts();
-        if (!empty($productIDs)) {
-            $productSKUs = [];
-            $this->searchCriteriaBuilder->addFilter('entity_id', $productIDs, 'in');
-            $products = $this->productRepository->getList($this->searchCriteriaBuilder->create())->getItems();
-            foreach ($products as $product) {
-                $productSKUs[] = $product->getSku();
-            }
+            $condition = $this->conditionFactory->create();
+            $condition->setValue(1);
+            $condition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product\Found');
+            $condition->setConditions([$productCondition]);
+            return $condition;
+        }
+        return null;
+    }
 
-            if (count($productSKUs) != count($productIDs)) {
-                $this->logger->warn(
-                    'Some products was not found for the price rule',
-                    ['requested' => $productIDs, 'found' => $productSKUs]
-                );
-            }
-
-            if (!empty($productSKUs)) {
-                $productCondition = $this->conditionFactory->create();
-                $productCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product');
-                $productCondition->setAttributeName('sku');
-                $productCondition->setValue($productSKUs);
-                $productCondition->setOperator("()");
-
-                $condition = $this->conditionFactory->create();
-                $condition->setValue(1);
-                $condition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product\Found');
-                $condition->setConditions([$productCondition]);
-                $condition->setAggregatorType(ConditionInterface::AGGREGATOR_TYPE_ALL);
-                $conditions[] = $condition;
-            }
+    /**
+     * @param int[] $productIDs
+     * @return ConditionInterface|null
+     */
+    private function getProductConditions(array $productIDs): ?ConditionInterface
+    {
+        $productSKUs = [];
+        $this->searchCriteriaBuilder->addFilter('entity_id', $productIDs, 'in');
+        $products = $this->productRepository->getList($this->searchCriteriaBuilder->create())->getItems();
+        foreach ($products as $product) {
+            $productSKUs[] = $product->getSku();
         }
 
-        if (!empty($conditions)) {
-            $rootCondition->setConditions($conditions);
+        if (count($productSKUs) != count($productIDs)) {
+            $this->logger->warn(
+                'Some products was not found for the price rule',
+                ['requested' => $productIDs, 'found' => $productSKUs]
+            );
         }
-        $newRule->setCondition($rootCondition);
+
+        if (!empty($productSKUs)) {
+            $productCondition = $this->conditionFactory->create();
+            $productCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product');
+            $productCondition->setAttributeName('sku');
+            $productCondition->setValue($productSKUs);
+            $productCondition->setOperator("()");
+
+            $condition = $this->conditionFactory->create();
+            $condition->setValue(1);
+            $condition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product\Found');
+            $condition->setConditions([$productCondition]);
+            $condition->setAggregatorType(ConditionInterface::AGGREGATOR_TYPE_ALL);
+            return $condition;
+        }
+        return null;
     }
 }
