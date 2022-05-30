@@ -46,7 +46,7 @@ class CartItemData
             return [];
         }
         $product = $this->productDataFactory->create();
-        if (!$product->load($this->item->getProduct())) {
+        if (!$product->load($this->item->getProduct(), To::int($this->item->getStoreId()))) {
             return [];
         }
         return [

@@ -4,22 +4,16 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
-use Magento\Catalog\Model\Category;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Url;
-use Magento\Framework\UrlInterface;
-use Magento\Store\Api\Data\StoreInterface;
-use Magento\Store\Model\StoreManagerInterface;
+use Magento\Store\Model\ScopeInterface;
+use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\Logger;
 use Magento\Bundle\Model\ResourceModel\Selection;
-use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Helper\ImageFactory;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ProductRepository;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Downloadable\Api\Data\LinkInterface;
 use Magento\Downloadable\Api\LinkRepositoryInterface;
@@ -42,13 +36,9 @@ class ProductData
     private Product $product;
     private string $imageURL;
     private string $url;
-
     private array $parents;
-
-    /** @var ProductData[] $variations */
     private array $stockData;
     private array $stocks;
-
     /** @var int[] $children */
     private array $children;
 
@@ -59,32 +49,27 @@ class ProductData
     private Data $helper;
     private ProductRepository $productRepository;
     private ImageFactory $imageFactory;
-    private CategoryCollectionFactory $categoryCollectionFactory;
     private Logger $logger;
     private GetSalableQuantityDataBySku $salableQty;
     private Configurable $configurable;
     private Grouped $grouped;
     private Selection $bundle;
     private LinkRepositoryInterface $linkRepository;
-    private Url $frontEndURL;
 
     public function __construct(
         Data $helper,
         ProductRepository $productRepository,
         ImageFactory $imageFactory,
-        CategoryCollectionFactory $categoryCollectionFactory,
         Logger $logger,
         GetSalableQuantityDataBySku $salableQty,
         Configurable $configurable,
         Grouped $grouped,
         Selection $bundle,
-        LinkRepositoryInterface $linkRepository,
-        Url $frontendURL
+        LinkRepositoryInterface $linkRepository
     ) {
         $this->helper = $helper;
         $this->productRepository = $productRepository;
         $this->imageFactory = $imageFactory;
-        $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->salableQty = $salableQty;
         $this->logger = $logger;
         $this->categoriesData = [];
@@ -103,19 +88,19 @@ class ProductData
         ];
         $this->linkRepository = $linkRepository;
         $this->links = [];
-        $this->frontEndURL = $frontendURL;
     }
 
     /**
      * @param int $id
+     * @param int $storeID
      * @return bool
      */
-    public function loadById(int $id)
+    public function loadById(int $id, int $storeID)
     {
         try {
             /** @var Product $product */
             $product = $this->productRepository->getById($id);
-            return $this->load($product);
+            return $this->load($product, $storeID);
         } catch (NoSuchEntityException $e) {
             $this->logger->error($e, sprintf("Product ID %d could not be found.", $id));
             return false;
@@ -123,29 +108,13 @@ class ProductData
     }
 
     /**
-     * @param string $sku
-     * @return bool
-     */
-    public function loadBySKU(string $sku)
-    {
-        try {
-            /** @var Product $product */
-            $product = $this->productRepository->get($sku);
-            return $this->load($product);
-        } catch (NoSuchEntityException $e) {
-            $this->logger->error($e, sprintf("Product SKU %s could not be found.", $sku));
-            return false;
-        }
-    }
-
-    /**
      * @param Product|ProductInterface $product
+     * @param int $storeID
      * @return bool
      */
-    public function load($product)
+    public function load($product, int $storeID)
     {
         $this->product = $product;
-        $this->loadCategories();
         switch ($product->getTypeId()) {
             case Configurable::TYPE_CODE:
             case Grouped::TYPE_CODE:
@@ -167,7 +136,7 @@ class ProductData
                 break;
         }
         $this->loadStockData();
-        $this->loadURLs();
+        $this->loadURLs($storeID);
         return true;
     }
 
@@ -198,9 +167,18 @@ class ProductData
             'custom_attributes' => [],
             'is_visible' => $this->product->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE,
             'parents' => $this->parents,
+            'short_description' => $this->product->getShortDescription() ?? '',
+            'description' => $this->product->getDescription() ?? '',
             self::LINKS => [],
             self::CHILDREN => $this->children,
         ];
+
+        $categoryIDs = [];
+        foreach ($this->product->getCategoryIds() as $categoryId) {
+            $categoryIDs[] = To::int($categoryId);
+        }
+
+        $fields['category_ids'] = $categoryIDs;
 
         foreach ($this->links as $link) {
             $fields[self::LINKS][] = [
@@ -216,15 +194,6 @@ class ProductData
             ];
         }
 
-
-        $customAttrs = $this->product->getCustomAttributes();
-        foreach ($customAttrs as $attr) {
-            $fields['custom_attributes'][] = [
-                'code' => $attr->getAttributeCode(),
-                'value' => $attr->getValue(),
-            ];
-        }
-
         return $fields;
     }
 
@@ -236,70 +205,16 @@ class ProductData
         return JsonConverter::convert($this->toArray());
     }
 
-    private function loadCategories()
-    {
-        $ids = $this->product->getCategoryIds();
-        if (empty($ids)) {
-            return;
-        }
-        $collection = $this->categoryCollectionFactory->create();
-        $collection->addFieldToSelect("*")
-            ->addFieldToFilter('entity_id', ['in' => implode(',', $ids)]);
-
-        /** @var CategoryInterface $category */
-        foreach ($collection->getItems() as $category) {
-            $this->categoriesData[] = $this->getCategoryData($category);
-        }
-    }
-
-    /**
-     * @param CategoryInterface|Category $category
-     * @return array
-     */
-    private function getCategoryData($category): array
-    {
-        $result = [
-            'id' => To::int($category->getId()),
-            'name' => $category->getName(),
-            'is_active' => To::bool($category->getIsActive()),
-            'level' => To::int($category->getLevel()),
-        ];
-        if ($category instanceof Category) {
-            try {
-                if ($imageURL = $category->getImageUrl()) {
-                    $result['image_url'] = $imageURL;
-                }
-            } catch (LocalizedException $e) {
-                $this->logger->error($e, "Failed to fetch product category image");
-            }
-        }
-        return $result;
-    }
-
-    private function loadURLs()
+    private function loadURLs(int $storeID)
     {
         $image = $this->product->getImage();
         if (!empty($image) && $image != self::NO_SELECT) {
             $this->imageURL = $this->resolveProductImageURL($this->product);
         }
-
-        if ($this->product->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE) {
-            $routeParams = [
-                'id' => $this->product->getId(),
-                //  's' => $this->product->getUrlKey(),
-                '_nosid' => true,
-                //'_query' => ['___store' => $this->store->getCode()],
-            ];
-//            if ($categoryId = $this->product->getCategoryId()) {
-//                $routeParams['category'] = $categoryId;
-//            }
-            $this->url = $this->product->setStoreId(2)->getUrlModel()->getUrlInStore(
-                $this->product,
-                ['_escape' => true]
-            );
-//            $this->url = $this->frontEndURL->getUrl('catalog/product/view', $routeParams);
-            $this->logger->info("URL2", $this->url);
-        }
+        $this->url = $this->product->setStoreId($storeID)->getUrlModel()->getUrlInStore(
+            $this->product,
+            ['_escape' => true]
+        );
     }
 
     private function loadStockData()

@@ -6,27 +6,27 @@
             <label>Ortto</label>
         </tab>
         <section id="ortto_general" translate="label" type="text" sortOrder="100" showInDefault="0"
-                 showInWebsite="1"
+                 showInWebsite="0"
                  showInStore="1">
             <label>General</label>
             <tab>ortto</tab>
             <resource>Ortto_Connector::config</resource>
-            <group id="authentication" translate="label" sortOrder="1" showInDefault="0" showInWebsite="1"
+            <group id="authentication" translate="label" sortOrder="1" showInDefault="0" showInWebsite="0"
                    showInStore="1">
                 <label>Authentication</label>
-                <field id="active" translate="label" type="select" showInDefault="0" showInWebsite="1" showInStore="1">
+                <field id="active" translate="label" type="select" showInDefault="0" showInWebsite="0" showInStore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="oauth_wizard" translate="label" sortOrder="2" showInDefault="0" showInStore="1"
-                       showInWebsite="1">
+                       showInWebsite="0">
                     <label>Get API credentials</label>
                     <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\AuthWizard</frontend_model>
                     <depends>
                         <field id="*/*/active">1</field>
                     </depends>
                 </field>
-                <field id="api_key" translate="label" type="obscure" sortOrder="3" showInDefault="0" showInWebsite="1"
+                <field id="api_key" translate="label" type="obscure" sortOrder="3" showInDefault="0" showInWebsite="0"
                        showInStore="1">
                     <label>API Key</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
@@ -35,15 +35,15 @@
                     </depends>
                 </field>
             </group>
-            <group id="tracking" translate="label" sortOrder="2" showInDefault="0" showInWebsite="1"
+            <group id="tracking" translate="label" sortOrder="2" showInDefault="0" showInWebsite="0"
                    showInStore="1">
                 <label>Tracking</label>
-                <field id="enabled" translate="label" type="select" showInDefault="0" showInWebsite="1"
+                <field id="enabled" translate="label" type="select" showInDefault="0" showInWebsite="0"
                        showInStore="1">
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="code" translate="label" type="text" showInDefault="0" showInWebsite="1"
+                <field id="code" translate="label" type="text" showInDefault="0" showInWebsite="0"
                        showInStore="1">
                     <label>Code</label>
                     <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\DisabledText</frontend_model>
@@ -51,74 +51,74 @@
             </group>
         </section>
         <section id="ortto_sync" translate="label" type="text" sortOrder="101" showInDefault="0"
-                 showInWebsite="1"
+                 showInWebsite="0"
                  showInStore="1">
             <label>Data Synchronization</label>
             <tab>ortto</tab>
             <resource>Ortto_Connector::config</resource>
-            <group id="customer" translate="label" sortOrder="2" showInDefault="0" showInWebsite="1"
+            <group id="customer" translate="label" sortOrder="2" showInDefault="0" showInWebsite="0"
                    showInStore="1">
                 <label>Customers</label>
                 <field id="non_subscribed_enabled" translate="label" sortOrder="1" type="select" showInDefault="0"
-                       showInWebsite="1"
+                       showInWebsite="0"
                        showInStore="1">
                     <label>Sync Non-subscribed Contacts</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="auto_sync_enabled" translate="label" sortOrder="2" type="select" showInDefault="0"
-                       showInWebsite="1" showInStore="1">
+                       showInWebsite="0" showInStore="1">
                     <label>Automatic Sync</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
                 <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
-                       showInWebsite="1">
+                       showInWebsite="0">
                     <label>Sync Customers</label>
                     <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\SyncCustomers</frontend_model>
                 </field>
             </group>
-            <group id="order" translate="label" sortOrder="3" showInDefault="0" showInWebsite="1"
+            <group id="order" translate="label" sortOrder="3" showInDefault="0" showInWebsite="0"
                    showInStore="1">
                 <label>Orders</label>
                 <field id="auto_sync_enabled" translate="label" sortOrder="1" type="select" showInDefault="0"
-                       showInWebsite="1" showInStore="1">
+                       showInWebsite="0" showInStore="1">
                     <label>Automatic Sync</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
                 <field id="anonymous_enabled" translate="label" sortOrder="2" type="select" showInDefault="0"
-                       showInWebsite="1" showInStore="1">
+                       showInWebsite="0" showInStore="1">
                     <label>Sync Anonymous Orders</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
                 <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
-                       showInWebsite="1">
+                       showInWebsite="0">
                     <label>Sync Orders</label>
                     <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\SyncOrders</frontend_model>
                 </field>
             </group>
-            <group id="product" translate="label" sortOrder="3" showInDefault="0" showInWebsite="1"
+            <group id="product" translate="label" sortOrder="3" showInDefault="0" showInWebsite="0"
                    showInStore="1">
                 <label>Products</label>
                 <field id="auto_sync_enabled" translate="label" sortOrder="1" type="select" showInDefault="0"
-                       showInWebsite="1" showInStore="1">
+                       showInWebsite="0" showInStore="1">
                     <label>Automatic Sync</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
                 <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
-                       showInWebsite="1">
+                       showInWebsite="0">
                     <label>Sync Products</label>
                     <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\SyncProducts</frontend_model>
                 </field>
             </group>
-            <group id="stock_alert" translate="label" sortOrder="3" showInDefault="0" showInWebsite="1"
+            <group id="stock_alert" translate="label" sortOrder="3" showInDefault="0" showInWebsite="0"
                    showInStore="1">
                 <label>Back in Stock Subscriptions</label>
                 <field id="auto_sync_enabled" translate="label" sortOrder="1" type="select" showInDefault="0"
-                       showInWebsite="1" showInStore="1">
+                       showInWebsite="0" showInStore="1">
                     <label>Automatic Sync</label>
                     <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
                 </field>
                 <field id="sync" translate="label" sortOrder="3" showInDefault="0" showInStore="1"
-                       showInWebsite="1">
+                       showInWebsite="0">
                     <label>Sync Subscriptions</label>
                     <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\SyncStockAlerts</frontend_model>
                 </field>
