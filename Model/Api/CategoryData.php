@@ -54,6 +54,7 @@ class CategoryData
             'id' => To::int($this->category->getId()),
             'name' => $this->category->getName(),
             'description' => $this->category->getDescription() ?? '',
+            'products_count' => $this->category->getProductCount(),
         ];
         try {
             if ($imageURL = $this->category->getImageUrl()) {
