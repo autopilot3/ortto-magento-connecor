@@ -184,7 +184,7 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
-    public function setRuleCategories(array $ruleCategories): void
+    public function setRuleCategories(?array $ruleCategories): void
     {
         $this->setData(self::RULE_CATEGORIES, $ruleCategories);
     }
@@ -196,7 +196,7 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
-    public function setRuleProducts(array $ruleProducts): void
+    public function setRuleProducts(?array $ruleProducts): void
     {
         $this->setData(self::RULE_PRODUCTS, $ruleProducts);
     }
@@ -208,7 +208,7 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
-    public function setActionCategories(array $actionCategories): void
+    public function setActionCategories(?array $actionCategories): void
     {
         $this->setData(self::ACTION_CATEGORIES, $actionCategories);
     }
@@ -220,7 +220,7 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
-    public function setActionProducts(array $actionProducts): void
+    public function setActionProducts(?array $actionProducts): void
     {
         $this->setData(self::ACTION_PRODUCTS, $actionProducts);
     }

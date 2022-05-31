@@ -275,11 +275,11 @@ interface PriceRuleInterface extends SerializableInterface
     /**
      * Setter for RuleCategories.
      *
-     * @param int[] $ruleCategories
+     * @param int[]|null $ruleCategories
      *
      * @return void
      */
-    public function setRuleCategories(array $ruleCategories): void;
+    public function setRuleCategories(?array $ruleCategories): void;
 
     /**
      * Getter for RuleProducts.
@@ -291,13 +291,11 @@ interface PriceRuleInterface extends SerializableInterface
     /**
      * Setter for RuleProducts.
      *
-     * @param int[] $ruleProducts
+     * @param int[]|null $ruleProducts
      *
      * @return void
      */
-    public function setRuleProducts(array $ruleProducts): void;
-
-    //===
+    public function setRuleProducts(?array $ruleProducts): void;
 
     /**
      * Getter for ActionCategories.
@@ -313,7 +311,7 @@ interface PriceRuleInterface extends SerializableInterface
      *
      * @return void
      */
-    public function setActionCategories(array $actionCategories): void;
+    public function setActionCategories(?array $actionCategories): void;
 
     /**
      * Getter for ActionProducts.
@@ -325,11 +323,11 @@ interface PriceRuleInterface extends SerializableInterface
     /**
      * Setter for ActionProducts.
      *
-     * @param int[] $actionProducts
+     * @param int[]|null $actionProducts
      *
      * @return void
      */
-    public function setActionProducts(array $actionProducts): void;
+    public function setActionProducts(?array $actionProducts): void;
 
     /**
      * Getter for ExpirationDate.
