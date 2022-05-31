@@ -31,7 +31,7 @@ class OrderItemData
         $result = [];
         foreach ($items as $item) {
             $product = $this->productDataFactory->create();
-            if (!$product->loadById(To::int($item->getProductId()))) {
+            if (!$product->loadById(To::int($item->getProductId()), To::int($item->getStoreId()))) {
                 continue;
             }
             $result[] = [

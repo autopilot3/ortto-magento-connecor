@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Api;
 
+use Magento\Catalog\Api\Data\CategoryInterface;
+use Magento\Catalog\Model\Product;
 use Magento\ProductAlert\Model\Stock;
 use Ortto\Connector\Model\OrttoException;
 use JsonException;
@@ -31,7 +33,7 @@ interface OrttoClientInterface
 
     /**
      * @param ConfigScopeInterface $scope
-     * @param ProductInterface[] $products
+     * @param ProductInterface[]|Product[] $products
      * @return ImportResponseInterface|null
      * @throws JsonException|OrttoException|LocalizedException
      */

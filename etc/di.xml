@@ -34,10 +34,8 @@
     </type>
     <preference for="Ortto\Connector\Logger\OrttoLoggerInterface"
                 type="Ortto\Connector\Logger\Logger"/>
-    <preference for="Ortto\Connector\Api\CouponRepositoryInterface"
-                type="Ortto\Connector\Model\ResourceModel\CouponRepository"/>
-    <preference for="Ortto\Connector\Api\Data\CouponInterface"
-                type="Ortto\Connector\Model\Data\Coupon"/>
+    <preference for="Ortto\Connector\Api\DiscountRepositoryInterface"
+                type="Ortto\Connector\Model\ResourceModel\DiscountRepository"/>
     <preference for="Ortto\Connector\Api\ScopeManagerInterface"
                 type="Ortto\Connector\Service\ScopeManager"/>
     <preference for="Ortto\Connector\Api\ConfigScopeInterface"
@@ -58,4 +56,12 @@
                 type="Ortto\Connector\Service\TrackDataProvider"/>
     <preference for="Ortto\Connector\Api\Data\TrackingDataInterface"
                 type="Ortto\Connector\Model\Data\TrackingData"/>
+    <preference for="Ortto\Connector\Api\Data\PriceRuleInterface"
+                type="Ortto\Connector\Model\Data\PriceRule"/>
+    <preference for="Ortto\Connector\Api\Data\PriceRuleResponseInterface"
+                type="Ortto\Connector\Model\Data\PriceRuleResponse"/>
+    <preference for="Ortto\Connector\Api\Data\CouponResponseInterface"
+                type="Ortto\Connector\Model\Data\CouponResponse"/>
+    <preference for="Ortto\Connector\Api\Data\DiscountInterface"
+                type="Ortto\Connector\Model\Data\Discount"/>
 </config>

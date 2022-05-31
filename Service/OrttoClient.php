@@ -3,9 +3,6 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Service;
 
-use Magento\Framework\Exception\LocalizedException;
-use Magento\ProductAlert\Model\Stock;
-use Ortto\Connector\Api\ImportResponseInterface;
 use Ortto\Connector\Api\OrttoClientInterface;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\ConfigurationReaderInterface;
@@ -16,6 +13,7 @@ use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Ortto\Connector\Model\OrttoException;
 use Ortto\Connector\Model\ImportResponse;
 use Ortto\Connector\Model\Api\ProductDataFactory;
+use Ortto\Connector\Model\Api\CategoryDataFactory;
 use Ortto\Connector\Model\Api\CustomerDataFactory;
 use Magento\Framework\HTTP\ClientInterface;
 use JsonException;
@@ -24,6 +22,7 @@ class OrttoClient implements OrttoClientInterface
 {
     private const CUSTOMERS = 'customers';
     private const PRODUCTS = 'products';
+    private const CATEGORIES = 'categories';
     private const ALERTS = 'alerts';
 
     private ClientInterface $curl;
@@ -33,6 +32,7 @@ class OrttoClient implements OrttoClientInterface
     private ConfigurationReaderInterface $config;
     private ProductDataFactory $productDataFactory;
     private CustomerDataFactory $customerDataFactory;
+    private CategoryDataFactory $categoryDataFactory;
 
     public function __construct(
         ClientInterface $curl,
@@ -40,6 +40,7 @@ class OrttoClient implements OrttoClientInterface
         OrttoLoggerInterface $logger,
         ConfigurationReaderInterface $config,
         ProductDataFactory $productDataFactory,
+        CategoryDataFactory $categoryDataFactory,
         CustomerDataFactory $customerDataFactory
     ) {
         // In Seconds
@@ -53,6 +54,7 @@ class OrttoClient implements OrttoClientInterface
         $this->config = $config;
         $this->productDataFactory = $productDataFactory;
         $this->customerDataFactory = $customerDataFactory;
+        $this->categoryDataFactory = $categoryDataFactory;
     }
 
     /**
@@ -101,17 +103,34 @@ class OrttoClient implements OrttoClientInterface
     public function importProducts(ConfigScopeInterface $scope, array $products)
     {
         $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_PRODUCTS);
-        $payload = [];
+        $productList = [];
+        $categoryIDs = [];
+        $uniqueCategories = [];
         foreach ($products as $product) {
             $productData = $this->productDataFactory->create();
-            $productData->load($product);
-            $payload[] = $productData->toArray();
+            if ($productData->load($product, $scope->getId())) {
+                $productList[] = $productData->toArray();
+            }
+            foreach ($product->getCategoryIds() as $cid) {
+                $categoryID = To::int($cid);
+                if (array_key_exists($categoryID, $categoryIDs)) {
+                    continue;
+                }
+                $categoryData = $this->categoryDataFactory->create();
+                if ($categoryData->loadById($categoryID)) {
+                    $uniqueCategories[] = $categoryData->toArray();
+                    $categoryIDs[$categoryID] = true;
+                }
+            }
         }
-        if (empty($payload)) {
+        if (empty($productList)) {
             $this->logger->debug("No products to export");
             return new ImportResponse();
         }
-        $response = $this->postJSON($url, $scope, [self::PRODUCTS => $payload]);
+        $response = $this->postJSON($url, $scope, [
+            self::PRODUCTS => $productList,
+            self::CATEGORIES => $uniqueCategories,
+        ]);
         return new ImportResponse($response);
     }
 
@@ -121,7 +140,7 @@ class OrttoClient implements OrttoClientInterface
         $payload = [];
         foreach ($alerts as $alert) {
             $product = $this->productDataFactory->create();
-            $product->loadById(To::int($alert->getProductId()));
+            $product->loadById(To::int($alert->getProductId()), $scope->getId());
             $customer = $this->customerDataFactory->create();
             $customer->loadById(To::int($alert->getCustomerId()));
             $payload[] = [

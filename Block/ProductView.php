@@ -70,13 +70,14 @@ class ProductView extends View
     {
         try {
             $factory = $this->productDataFactory->create();
-            $factory->load($this->getProduct());
+            $trackingData = $this->trackDataProvider->getData();
+            if (!$factory->load($this->getProduct(), $trackingData->getScopeId())) {
+                return false;
+            }
             $product = $factory->toArray();
             if (empty($product)) {
                 return false;
             }
-
-            $trackingData = $this->trackDataProvider->getData();
 
             $payload = [
                 'event' => $event,

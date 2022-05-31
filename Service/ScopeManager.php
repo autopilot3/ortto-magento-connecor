@@ -158,7 +158,7 @@ class ScopeManager implements ScopeManagerInterface
                 $scope->setWebsiteId($websiteId);
                 $websiteAPIKey = $this->configReader->getAPIKey(ScopeInterface::SCOPE_WEBSITE, $websiteId);
                 $storeAPIKey = $this->configReader->getAPIKey($type, $id);
-                $scope->setIsExplicitlyConnected($websiteAPIKey !== $storeAPIKey && !empty($storeAPIKey));
+                $scope->setIsExplicitlyConnected(!empty($storeAPIKey));
                 $scope->setName($store->getName());
                 $scope->setBaseURL((string)$store->getBaseUrl(UrlInterface::URL_TYPE_WEB, true));
                 $scope->setCode($store->getCode());
