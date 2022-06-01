@@ -4,20 +4,25 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Ortto\Connector\Helper\To;
 use Magento\Framework\Serialize\JsonConverter;
 use Magento\Quote\Model\Quote;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
 
 class CartItemData
 {
     private ProductDataFactory $productDataFactory;
 
     private Quote\Item $item;
+    private OrttoLoggerInterface $logger;
 
     public function __construct(
-        ProductDataFactory $productDataFactory
+        ProductDataFactory $productDataFactory,
+        OrttoLoggerInterface $logger
     ) {
         $this->productDataFactory = $productDataFactory;
+        $this->logger = $logger;
     }
 
     /**
@@ -45,11 +50,13 @@ class CartItemData
         if (empty($this->item)) {
             return [];
         }
+        $cartProduct = $this->item->getProduct();
+        $storeId = To::int($this->item->getStoreId());
         $product = $this->productDataFactory->create();
-        if (!$product->load($this->item->getProduct(), To::int($this->item->getStoreId()))) {
+        if (!$product->load($cartProduct, $storeId)) {
             return [];
         }
-        return [
+        $fields = [
             'base_discount' => To::float($this->item->getBaseDiscountAmount()),
             'base_discount_tax_compensation' => To::float($this->item->getBaseDiscountTaxCompensationAmount()),
             'base_discount_calculated' => To::float($this->item->getBaseDiscountCalculationPrice()),
@@ -73,5 +80,29 @@ class CartItemData
             'quantity' => To::float($this->item->getQty()),
             'product' => $product->toArray(),
         ];
+        if ($this->item->getProductType() == Configurable::TYPE_CODE &&
+            $variant = $this->getVariant((string)$cartProduct->getSku(), $storeId)) {
+            $fields['variant'] = $variant;
+        }
+        return $fields;
+    }
+
+    /**
+     * @param string $sku
+     * @param int $storeId
+     * @return array|null
+     */
+    private function getVariant(string $sku, int $storeId): ?array
+    {
+        // The SKU of a configurable product's quote is set to the variant's SKU
+        $variant = $this->productDataFactory->create();
+        if ($variant->loadBySKU($sku, $storeId)) {
+            return $variant->toArray();
+        }
+        $this->logger->warn(
+            "No variant was found for the specified SKU",
+            ['sku' => $sku, 'store_id' => $storeId, 'quote_id' => $this->item->getId()]
+        );
+        return null;
     }
 }
