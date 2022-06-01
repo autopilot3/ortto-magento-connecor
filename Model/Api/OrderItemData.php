@@ -4,19 +4,24 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Magento\Sales\Model\Order\Item;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Magento\Sales\Api\Data\OrderItemInterface;
+use Ortto\Connector\Logger\OrttoLoggerInterface;
 
 class OrderItemData
 {
     private Data $helper;
     private ProductDataFactory $productDataFactory;
+    private OrttoLoggerInterface $logger;
 
-    public function __construct(Data $helper, ProductDataFactory $productDataFactory)
+    public function __construct(Data $helper, ProductDataFactory $productDataFactory, OrttoLoggerInterface $logger)
     {
         $this->helper = $helper;
         $this->productDataFactory = $productDataFactory;
+        $this->logger = $logger;
     }
 
     /**
@@ -30,12 +35,18 @@ class OrderItemData
         }
         $result = [];
         foreach ($items as $item) {
+            // An item with parent ID = variant
+            // We don't want to send the variant product instead of the ordered parent product
+            if ($item->getParentItemId()) {
+                continue;
+            }
+            $itemID = To::int($item->getItemId());
             $product = $this->productDataFactory->create();
             if (!$product->loadById(To::int($item->getProductId()), To::int($item->getStoreId()))) {
                 continue;
             }
-            $result[] = [
-                'id' => To::int($item->getItemId()),
+            $itemFields = [
+                'id' => $itemID,
                 'is_virtual' => To::bool($item->getIsVirtual()),
                 'name' => (string)$item->getName(),
                 'sku' => (string)$item->getSku(),
@@ -75,7 +86,37 @@ class OrderItemData
                 'store_id' => To::int($item->getStoreId()),
                 'product' => $product->toArray(),
             ];
+
+            if ($item->getProductType() == Configurable::TYPE_CODE && $variant = $this->getVariant($item)) {
+                $itemFields['variant'] = $variant;
+            }
+
+            $result[] = $itemFields;
         }
         return $result;
+    }
+
+
+    /**
+     * @param OrderItemInterface $item
+     * @return array|null
+     */
+    private function getVariant(OrderItemInterface $item): ?array
+    {
+        $options = $item->getProductOptions();
+        if (!isset($options['simple_sku'])) {
+            $this->logger->warn("SKU was not set on the order item options");
+            return null;
+        }
+        $sku = (string)$options['simple_sku'];
+        $variant = $this->productDataFactory->create();
+        if ($variant->loadBySKU($sku, To::int($item->getStoreId()))) {
+            return $variant->toArray();
+        }
+        $this->logger->warn(
+            "Could not load product variant",
+            ['product_id' => $item->getProductId(), 'sku' => $item->getSku()]
+        );
+        return null;
     }
 }

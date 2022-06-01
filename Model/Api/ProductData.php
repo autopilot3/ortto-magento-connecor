@@ -108,6 +108,22 @@ class ProductData
     }
 
     /**
+     * @param string $sku
+     * @return bool
+     */
+    public function loadBySKU(string $sku, int $storeID)
+    {
+        try {
+            /** @var Product $product */
+            $product = $this->productRepository->get($sku);
+            return $this->load($product, $storeID);
+        } catch (NoSuchEntityException $e) {
+            $this->logger->error($e, sprintf("Product SKU %s could not be found.", $sku));
+            return false;
+        }
+    }
+
+    /**
      * @param Product|ProductInterface $product
      * @param int $storeID
      * @return bool
@@ -115,6 +131,7 @@ class ProductData
     public function load($product, int $storeID)
     {
         $this->product = $product;
+        $this->product->setStoreId($storeID);
         switch ($product->getTypeId()) {
             case Configurable::TYPE_CODE:
             case Grouped::TYPE_CODE:
@@ -136,7 +153,7 @@ class ProductData
                 break;
         }
         $this->loadStockData();
-        $this->loadURLs($storeID);
+        $this->loadURLs();
         return true;
     }
 
@@ -169,10 +186,11 @@ class ProductData
             'parents' => $this->parents,
             'short_description' => $this->product->getShortDescription() ?? '',
             'description' => $this->product->getDescription() ?? '',
+            'is_option_required' => To::int($this->product->getData('required_options')) > 0,
+            'currency_code' => $this->product->getStore()->getCurrentCurrencyCode(),
             self::LINKS => [],
             self::CHILDREN => $this->children,
         ];
-
         $categoryIDs = [];
         foreach ($this->product->getCategoryIds() as $categoryId) {
             $categoryIDs[] = To::int($categoryId);
@@ -205,13 +223,13 @@ class ProductData
         return JsonConverter::convert($this->toArray());
     }
 
-    private function loadURLs(int $storeID)
+    private function loadURLs()
     {
         $image = $this->product->getImage();
         if (!empty($image) && $image != self::NO_SELECT) {
             $this->imageURL = $this->resolveProductImageURL($this->product);
         }
-        $this->url = $this->product->setStoreId($storeID)->getUrlModel()->getUrlInStore(
+        $this->url = $this->product->getUrlModel()->getUrlInStore(
             $this->product,
             ['_escape' => true]
         );

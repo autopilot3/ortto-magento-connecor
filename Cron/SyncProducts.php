@@ -44,7 +44,6 @@ class SyncProducts
     private ConfigurationReaderInterface $config;
     private Data $helper;
     private CollectionFactory $productCollectionFactory;
-    private Visibility $productVisibility;
 
     public function __construct(
         OrttoLoggerInterface $logger,

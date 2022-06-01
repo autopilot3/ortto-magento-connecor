@@ -75,12 +75,15 @@ class AddressData
      */
     private function getType($address): string
     {
-        if ($address->isDefaultShipping()) {
-            return "shipping";
+        if ($address instanceof AddressInterface) {
+            if ($address->isDefaultShipping()) {
+                return "shipping";
+            }
+            if ($address->isDefaultBilling()) {
+                return "billing";
+            }
+            return "other";
         }
-        if ($address->isDefaultBilling()) {
-            return "billing";
-        }
-        return "other";
+        return (string)$address->getAddressType();
     }
 }
