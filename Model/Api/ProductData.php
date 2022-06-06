@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
-use Magento\Store\Model\ScopeInterface;
-use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
@@ -22,6 +20,8 @@ use Magento\Catalog\Model\Product\Visibility;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\InventorySalesAdminUi\Model\GetSalableQuantityDataBySku;
 use Magento\Framework\Serialize\JsonConverter;
+use Magento\InventoryConfigurationApi\Model\IsSourceItemManagementAllowedForProductTypeInterface
+    as CheckSourceItemSupport;
 
 class ProductData
 {
@@ -55,6 +55,7 @@ class ProductData
     private Grouped $grouped;
     private Selection $bundle;
     private LinkRepositoryInterface $linkRepository;
+    private CheckSourceItemSupport $checkSourceItemSupport;
 
     public function __construct(
         Data $helper,
@@ -65,7 +66,8 @@ class ProductData
         Configurable $configurable,
         Grouped $grouped,
         Selection $bundle,
-        LinkRepositoryInterface $linkRepository
+        LinkRepositoryInterface $linkRepository,
+        CheckSourceItemSupport $checkSourceItemSupport
     ) {
         $this->helper = $helper;
         $this->productRepository = $productRepository;
@@ -81,6 +83,7 @@ class ProductData
         $this->configurable = $configurable;
         $this->grouped = $grouped;
         $this->bundle = $bundle;
+        $this->checkSourceItemSupport = $checkSourceItemSupport;
         $this->parents = [
             self::CONFIGURABLE => [],
             self::GROUPED => [],
@@ -109,6 +112,7 @@ class ProductData
 
     /**
      * @param string $sku
+     * @param int $storeID
      * @return bool
      */
     public function loadBySKU(string $sku, int $storeID)
@@ -237,16 +241,21 @@ class ProductData
 
     private function loadStockData()
     {
-        $salableItems = $this->salableQty->execute($this->product->getSku());
         $total = 0.0;
-        foreach ($salableItems as $salable) {
-            $quantity = To::float($salable['qty']);
-            $total += $quantity;
-            $this->stocks[] = [
-                'name' => $salable['stock_name'],
-                'quantity' => $quantity,
-                'is_manage' => To::bool($salable['manage_stock']),
-            ];
+        $sku = $this->product->getSku();
+        if ($this->checkSourceItemSupport->execute($this->product->getTypeId())) {
+            $salableItems = $this->salableQty->execute($sku);
+            foreach ($salableItems as $salable) {
+                $quantity = To::float($salable['qty']);
+                $total += $quantity;
+                $this->stocks[] = [
+                    'name' => $salable['stock_name'],
+                    'quantity' => $quantity,
+                    'is_manage' => To::bool($salable['manage_stock']),
+                ];
+            }
+        } else {
+            $this->logger->warn("Product does not support source item", ['sku' => $sku]);
         }
         $this->stockData = [
             'is_in_stock' => To::bool($this->product->isInStock()),
