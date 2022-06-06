@@ -243,7 +243,8 @@ class ProductData
     {
         $total = 0.0;
         $sku = $this->product->getSku();
-        if ($this->checkSourceItemSupport->execute($this->product->getTypeId())) {
+        $typeId = $this->product->getTypeId();
+        if ($this->checkSourceItemSupport->execute($typeId)) {
             $salableItems = $this->salableQty->execute($sku);
             foreach ($salableItems as $salable) {
                 $quantity = To::float($salable['qty']);
@@ -255,7 +256,10 @@ class ProductData
                 ];
             }
         } else {
-            $this->logger->warn("Product does not support source item", ['sku' => $sku]);
+            $this->logger->info(
+                "Product does not support source item",
+                ['sku' => $sku, 'type' => $typeId]
+            );
         }
         $this->stockData = [
             'is_in_stock' => To::bool($this->product->isInStock()),

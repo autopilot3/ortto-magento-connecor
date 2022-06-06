@@ -134,7 +134,7 @@ class SyncJobRepository implements SyncJobRepositoryInterface
             $connection->quoteInto(sprintf('%s = ?', SyncJobInterface::ENTITY_ID), $jobId),
         ];
         $data = [
-            Job::STATUS => Status::SUCCESS,
+            Job::STATUS => Status::SUCCEEDED,
             Job::FINISHED_AT => $this->helper->toUTC($this->time->date()),
             Job::METADATA => $metadata,
         ];

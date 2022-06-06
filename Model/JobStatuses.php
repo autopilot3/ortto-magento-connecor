@@ -14,7 +14,7 @@ class JobStatuses implements OptionSourceInterface
         $statuses = [
             JobStatusInterface::QUEUED => "Queued",
             JobStatusInterface::IN_PROGRESS => "In progress",
-            JobStatusInterface::SUCCESS => "Succeeded",
+            JobStatusInterface::SUCCEEDED => "Succeeded",
             JobStatusInterface::FAILED => "Failed",
         ];
 
