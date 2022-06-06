@@ -127,7 +127,7 @@ class Scope extends DataObject implements ConfigScopeInterface
      */
     public function toString($format = ''): string
     {
-        return sprintf("%s:%s:%d", $this->getType(), $this->getCode(), $this->getId());
+        return sprintf("%s:%s:%d", $this->getName(), $this->getType(), $this->getId());
     }
 
     /**
@@ -157,7 +157,7 @@ class Scope extends DataObject implements ConfigScopeInterface
      */
     public function equals(ConfigScopeInterface $scope): bool
     {
-        return $this->getType() === $scope->getType() && $this->getType() === $scope->getCode();
+        return $this->getType() === $scope->getType() && $this->getId() === $scope->getId();
     }
 
     /**
@@ -203,7 +203,7 @@ class Scope extends DataObject implements ConfigScopeInterface
     public function toArray(array $keys = [])
     {
         if (empty($keys)) {
-            $keys = [self::ID, self::CODE, self::NAME, self::TYPE, self::URL, self::STORE_IDS];
+            $keys = [self::ID, self::NAME, self::TYPE, self::URL, self::STORE_IDS];
         }
         $result = parent::toArray($keys);
         $result[self::PARENT] = null;
