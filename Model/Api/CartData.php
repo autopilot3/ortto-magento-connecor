@@ -6,7 +6,7 @@ namespace Ortto\Connector\Model\Api;
 
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
-use Ortto\Connector\Logger\Logger;
+use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\JsonConverter;
 use Magento\Framework\UrlInterface;
@@ -20,7 +20,7 @@ class CartData
     private $cart;
 
     private Data $helper;
-    private Logger $logger;
+    private OrttoLogger $logger;
     private CartRepositoryInterface $cartRepository;
     private ProductDataFactory $productDataFactory;
     private array $items;
@@ -31,7 +31,7 @@ class CartData
     public function __construct(
         Data $helper,
         CartRepositoryInterface $cartRepository,
-        Logger $logger,
+        OrttoLogger $logger,
         ProductDataFactory $productDataFactory,
         AddressDataFactory $addressDataFactory,
         UrlInterface $url,
@@ -83,7 +83,7 @@ class CartData
             return [];
         }
         $fields = [
-            'id' => To::int($this->cart->getId()),
+            'id' => To::int($this->cart->getEntityId()),
             'created_at' => $this->helper->toUTC($this->cart->getCreatedAt()),
             'updated_at' => $this->helper->toUTC($this->cart->getUpdatedAt()),
             'ip_address' => $this->cart->getRemoteIp(),

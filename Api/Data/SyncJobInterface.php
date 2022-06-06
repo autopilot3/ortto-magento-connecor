@@ -10,7 +10,7 @@ interface SyncJobInterface
     /**
      * String constants for property names
      */
-    const ID = "id";
+    const ENTITY_ID = "entity_id";
     const CATEGORY = "category";
     const SCOPE_TYPE = "scope_type";
     const SCOPE_ID = "scope_id";
@@ -26,18 +26,18 @@ interface SyncJobInterface
     /**
      * Getter for Id.
      *
-     * @return mixed
+     * @return int
      */
-    public function getId();
+    public function getEntityId();
 
     /**
      * Setter for Id.
      *
-     * @param mixed
+     * @param int
      *
      * @return $this
      */
-    public function setId($value);
+    public function setEntityId($entityId);
 
     /**
      * Getter for Category.

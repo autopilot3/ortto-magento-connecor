@@ -22,7 +22,9 @@
             </argument>
         </arguments>
     </virtualType>
-    <type name="Ortto\Connector\Logger\Logger">
+    <preference for="Ortto\Connector\Logger\OrttoLoggerInterface"
+                type="Ortto\Connector\Logger\OrttoLogger"/>
+    <type name="Ortto\Connector\Logger\OrttoLogger">
         <arguments>
             <argument name="logger" xsi:type="object">OrttoLogger</argument>
         </arguments>
@@ -32,8 +34,6 @@
             <argument name="curl" xsi:type="object">Magento\Framework\HTTP\Client\Curl</argument>
         </arguments>
     </type>
-    <preference for="Ortto\Connector\Logger\OrttoLoggerInterface"
-                type="Ortto\Connector\Logger\Logger"/>
     <preference for="Ortto\Connector\Api\DiscountRepositoryInterface"
                 type="Ortto\Connector\Model\ResourceModel\DiscountRepository"/>
     <preference for="Ortto\Connector\Api\ScopeManagerInterface"
@@ -60,8 +60,24 @@
                 type="Ortto\Connector\Model\Data\PriceRule"/>
     <preference for="Ortto\Connector\Api\Data\PriceRuleResponseInterface"
                 type="Ortto\Connector\Model\Data\PriceRuleResponse"/>
-    <preference for="Ortto\Connector\Api\Data\CouponResponseInterface"
-                type="Ortto\Connector\Model\Data\CouponResponse"/>
     <preference for="Ortto\Connector\Api\Data\DiscountInterface"
                 type="Ortto\Connector\Model\Data\Discount"/>
+    <preference for="Ortto\Connector\Api\SyncJobRepositoryInterface"
+                type="Ortto\Connector\Model\ResourceModel\SyncJobRepository"/>
+    <!-- JOBS ADMIN GRID -->
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="ortto_sync_jobs_listing_data_source" xsi:type="string">OrttoSyncJobsCollection</item>
+            </argument>
+        </arguments>
+    </type>
+    <virtualType name="OrttoSyncJobsCollection"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">ortto_sync_jobs</argument>
+            <argument name="resourceModel" xsi:type="string">Ortto\Connector\Model\ResourceModel\SyncJob</argument>
+        </arguments>
+    </virtualType>
+    <!-- END JOBS ADMIN GRID -->
 </config>

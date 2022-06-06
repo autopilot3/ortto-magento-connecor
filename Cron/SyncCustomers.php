@@ -8,6 +8,7 @@ use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\ImportResponseInterface;
 use Ortto\Connector\Api\SyncCategoryInterface as SyncCategory;
 use Ortto\Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Api\SyncJobRepositoryInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
@@ -35,6 +36,7 @@ class SyncCustomers
     private SearchCriteriaBuilder $searchCriteriaBuilder;
     private CustomerRepositoryInterface $customerRepository;
     private ConfigurationReaderInterface $config;
+    private SyncJobRepositoryInterface $jobRepository;
 
     const PAGE_SIZE = 100;
 
@@ -45,7 +47,8 @@ class SyncCustomers
         SearchCriteriaBuilder $searchCriteriaBuilder,
         CustomerRepositoryInterface $customerRepository,
         ConfigurationReaderInterface $config,
-        Data $helper
+        Data $helper,
+        SyncJobRepositoryInterface $jobRepository
     ) {
         $this->logger = $logger;
         $this->orttoClient = $orttoClient;
@@ -54,6 +57,7 @@ class SyncCustomers
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->customerRepository = $customerRepository;
         $this->config = $config;
+        $this->jobRepository = $jobRepository;
     }
 
     /**
@@ -72,31 +76,24 @@ class SyncCustomers
 
         $now = $this->helper->nowUTC();
 
-        try {
-            $jobCollection = $this->helper->createJobCollection();
-        } catch (Exception $e) {
-            $this->logger->error($e);
-            return;
-        }
-
-        $jobs = $jobCollection->getQueuedJobs($category);
+        $jobs = $this->jobRepository->getQueuedJobs($category);
         if (empty($jobs)) {
             $this->logger->debug("No customer sync job was queued");
         } else {
             foreach ($jobs as $job) {
-                $jobId = $job->getId();
+                $jobId = $job->getEntityId();
                 $this->logger->info(sprintf('Processing customer synchronization job ID %s', $jobId));
                 try {
                     $scope = $this->scopeManager->initialiseScope($job->getScopeType(), $job->getScopeId());
                     if (!$scope->isExplicitlyConnected()) {
                         $this->logger->warn("Job scope is not connected to Ortto", $scope->toArray());
-                        $jobCollection->markAsFailed($jobId, "Not connected to Ortto");
+                        $this->jobRepository->markAsFailed($jobId, "Not connected to Ortto");
                         continue;
                     }
-                    $jobCollection->markAsInProgress($jobId);
+                    $this->jobRepository->markAsInProgress($jobId);
                     $result = $this->exportAllCustomers($scope, $jobId);
                     $processedScopes[] = $scope;
-                    $jobCollection->markAsDone($jobId, $result->toJSON());
+                    $this->jobRepository->markAsDone($jobId, $result->toJSON());
                     $this->helper->createCheckpointCollection()->setCheckpoint($category, $now, $scope);
                     $total = $result->getUpdatedTotal() + $result->getCreatedTotal();
                     if ($total > 0) {
@@ -115,7 +112,7 @@ class SyncCustomers
                         if (!empty($result)) {
                             $metadata = $result->toJSON();
                         }
-                        $jobCollection->markAsFailed($job->getId(), $e->getMessage(), $metadata);
+                        $this->jobRepository->markAsFailed($job->getEntityId(), $e->getMessage(), $metadata);
                     } catch (NoSuchEntityException $nfe) {
                         $this->logger->error($nfe, "Failed to mark the job as failed");
                     }
@@ -184,8 +181,7 @@ class SyncCustomers
         $page = 1;
         $total = new ImportResponse();
         do {
-            $jobCollection = $this->helper->createJobCollection();
-            $job = $jobCollection->getJobById($jobId);
+            $job = $this->jobRepository->getJobById($jobId);
             if ($job->getStatus() !== Status::IN_PROGRESS) {
                 throw new NoSuchEntityException(new Phrase("Customer synchronization job status changed (ID: $jobId)"));
             }
@@ -198,7 +194,7 @@ class SyncCustomers
                 $importResult = $this->orttoClient->importContacts($scope, $customers);
                 $total->incr($importResult);
                 ++$page;
-                $jobCollection->updateStats($jobId, $result->getTotalCount(), $pageSize, $total->toJSON());
+                $this->jobRepository->updateStats($jobId, $result->getTotalCount(), $pageSize, $total->toJSON());
             }
         } while ($pageSize === self::PAGE_SIZE);
         return $total;

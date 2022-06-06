@@ -13,21 +13,14 @@ use Magento\Framework\Model\AbstractModel;
 
 class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterface
 {
+    protected $_eventPrefix = SchemaInterface::TABLE_SYNC_JOBS;
     const CACHE_TAG = SchemaInterface::TABLE_SYNC_JOBS;
 
     public function getIdentities()
     {
-        return [self::CACHE_TAG . '_' . $this->getId()];
+        return [self::CACHE_TAG . '_' . $this->getEntityId()];
     }
 
-    /**
-     * @var string
-     */
-    protected $_eventPrefix = SchemaInterface::TABLE_SYNC_JOBS;
-
-    /**
-     * @inheritdoc
-     */
     protected function _construct()
     {
         $this->_init(ResourceModel::class);
@@ -36,17 +29,17 @@ class SyncJob extends AbstractModel implements SyncJobInterface, IdentityInterfa
     /**
      * @inheritDoc
      */
-    public function getId()
+    public function getEntityId()
     {
-        return To::int($this->getData(self::ID));
+        return To::int($this->getData(self::ENTITY_ID));
     }
 
     /**
      * @inheritDoc
      */
-    public function setId($value)
+    public function setEntityId($entityId)
     {
-        return $this->setData(self::ID, $value);
+        return $this->setData(self::ENTITY_ID, $entityId);
     }
 
     /**

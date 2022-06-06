@@ -9,7 +9,6 @@ use Ortto\Connector\Api\SyncCategoryInterface;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Ortto\Connector\Model\Api\OrderDataFactory;
 use Ortto\Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
-use Ortto\Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
 use Ortto\Connector\Model\ResourceModel\CronCheckpoint\CollectionFactory as CheckpointCollectionFactory;
 use Ortto\Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
 use InvalidArgumentException;
@@ -220,19 +219,6 @@ class Data extends AbstractHelper
             return $collection;
         }
         throw new InvalidArgumentException("Invalid checkpoint collection type");
-    }
-
-    /**
-     * @return JobCollection
-     * @throws InvalidArgumentException
-     */
-    public function createJobCollection()
-    {
-        $collection = $this->jobCollectionFactory->create();
-        if ($collection instanceof JobCollection) {
-            return $collection;
-        }
-        throw new InvalidArgumentException("Invalid job collection type");
     }
 
     public function shouldExportCustomer(ConfigScopeInterface $scope, CustomerInterface $customer): bool

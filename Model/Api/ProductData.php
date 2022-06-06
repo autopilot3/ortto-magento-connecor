@@ -8,7 +8,7 @@ use Magento\Store\Model\ScopeInterface;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
-use Ortto\Connector\Logger\Logger;
+use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Bundle\Model\ResourceModel\Selection;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Helper\ImageFactory;
@@ -49,7 +49,7 @@ class ProductData
     private Data $helper;
     private ProductRepository $productRepository;
     private ImageFactory $imageFactory;
-    private Logger $logger;
+    private OrttoLogger $logger;
     private GetSalableQuantityDataBySku $salableQty;
     private Configurable $configurable;
     private Grouped $grouped;
@@ -60,7 +60,7 @@ class ProductData
         Data $helper,
         ProductRepository $productRepository,
         ImageFactory $imageFactory,
-        Logger $logger,
+        OrttoLogger $logger,
         GetSalableQuantityDataBySku $salableQty,
         Configurable $configurable,
         Grouped $grouped,

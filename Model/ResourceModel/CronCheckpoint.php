@@ -9,14 +9,14 @@ use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
 class CronCheckpoint extends AbstractDb
 {
-    protected $_eventPrefix = Schema::TABLE_CRON_CHECKPOINT;
+    protected $_eventPrefix = Schema::TABLE_CRON_CHECKPOINT . '_model';
 
     /**
      * @inheritdoc
      */
     protected function _construct()
     {
-        $this->_init(Schema::TABLE_CRON_CHECKPOINT, CronCheckpointInterface::ID);
+        $this->_init(Schema::TABLE_CRON_CHECKPOINT, CronCheckpointInterface::ENTITY_ID);
         $this->_useIsObjectNew = true;
     }
 }

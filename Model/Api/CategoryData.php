@@ -9,18 +9,18 @@ use Magento\Catalog\Model\Category;
 use Magento\Framework\Exception\LocalizedException;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
-use Ortto\Connector\Logger\Logger;
+use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\JsonConverter;
 
 class CategoryData
 {
-    private Logger $logger;
+    private OrttoLogger $logger;
     private CategoryRepositoryInterface $categoryRepository;
 
     public function __construct(
-        Logger $logger,
+        OrttoLogger $logger,
         CategoryRepositoryInterface $categoryRepository
     ) {
         $this->logger = $logger;
@@ -51,7 +51,7 @@ class CategoryData
             return [];
         }
         $result = [
-            'id' => To::int($this->category->getId()),
+            'id' => To::int($this->category->getEntityId()),
             'name' => $this->category->getName(),
             'description' => $this->category->getDescription() ?? '',
             'products_count' => $this->category->getProductCount(),

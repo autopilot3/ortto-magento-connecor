@@ -7,6 +7,7 @@ use DateTime;
 
 interface OrderAttributesInterface
 {
+    public const ENTITY_ID = 'entity_id';
     public const CANCELED_AT = 'canceled_at';
     public const COMPLETED_AT = 'completed_at';
     public const ORDER_ID = 'order_id';

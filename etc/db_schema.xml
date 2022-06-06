@@ -2,7 +2,7 @@
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
     <table name="ortto_sync_jobs" resource="default" engine="innodb" comment="Ortto Cron Job History">
-        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true"
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true"
                 comment="Job Id"/>
         <column xsi:type="varchar" name="category" nullable="false" length="64" comment="Scope ID"/>
         <column xsi:type="varchar" name="scope_type" nullable="false" length="12" comment="Scope Type"/>
@@ -19,7 +19,7 @@
         <column xsi:type="text" name="error" nullable="true" comment="Error"/>
         <column xsi:type="text" name="metadata" nullable="true" comment="Metadata"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
-            <column name="id"/>
+            <column name="entity_id"/>
         </constraint>
         <index referenceId="CATEGORY_STATUS_INDEX" indexType="btree">
             <column name="category"/>
@@ -27,8 +27,8 @@
         </index>
     </table>
     <table name="ortto_cron_checkpoint" resource="default" engine="innodb" comment="Ortto Cron Job Checkpoint">
-        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true"
-                comment="Job Id"/>
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Checkpoint Id"/>
         <column xsi:type="varchar" name="category" nullable="false" length="64" comment="Scope ID"/>
         <column xsi:type="varchar" name="scope_type" nullable="false" length="12" comment="Scope Type"/>
         <column xsi:type="int" name="scope_id" padding="11" unsigned="false" nullable="false" identity="false"
@@ -36,7 +36,7 @@
         <column xsi:type="timestamp" name="last_checked_at" on_update="false" nullable="true"
                 comment="Last checked at"/>
         <constraint xsi:type="primary" referenceId="PRIMARY">
-            <column name="id"/>
+            <column name="entity_id"/>
         </constraint>
         <constraint xsi:type="unique" referenceId="SCOPE_CATEGORY_UNIQUE_INDEX">
             <column name="scope_type"/>

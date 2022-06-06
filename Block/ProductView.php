@@ -7,7 +7,7 @@ namespace Ortto\Connector\Block;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
 use Ortto\Connector\Api\TrackDataProviderInterface;
-use Ortto\Connector\Logger\Logger;
+use Ortto\Connector\Logger\OrttoLogger;
 use Ortto\Connector\Model\Api\ProductDataFactory;
 use Exception;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -26,7 +26,7 @@ class ProductView extends View
 {
     private ProductDataFactory $productDataFactory;
     private TrackDataProviderInterface $trackDataProvider;
-    private Logger $logger;
+    private OrttoLogger $logger;
 
     public function __construct(
         Context $context,
@@ -41,7 +41,7 @@ class ProductView extends View
         PriceCurrencyInterface $priceCurrency,
         ProductDataFactory $productDataFactory,
         TrackDataProviderInterface $trackDataProvider,
-        Logger $logger,
+        OrttoLogger $logger,
         array $data = []
     ) {
         parent::__construct(

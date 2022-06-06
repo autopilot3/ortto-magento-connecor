@@ -11,6 +11,7 @@ use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\ImportResponseInterface;
 use Ortto\Connector\Api\SyncCategoryInterface as SyncCategory;
 use Ortto\Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Api\SyncJobRepositoryInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
@@ -37,6 +38,7 @@ class SyncStockAlerts
     private ConfigurationReaderInterface $config;
     private Data $helper;
     private CollectionFactory $stockAlertsCollectionFactory;
+    private SyncJobRepositoryInterface $jobRepository;
 
     public function __construct(
         OrttoLoggerInterface $logger,
@@ -44,7 +46,8 @@ class SyncStockAlerts
         ScopeManagerInterface $scopeManager,
         ConfigurationReaderInterface $config,
         CollectionFactory $stockAlertsCollectionFactory,
-        Data $helper
+        Data $helper,
+        SyncJobRepositoryInterface $jobRepository
     ) {
         $this->logger = $logger;
         $this->orttoClient = $orttoClient;
@@ -52,6 +55,7 @@ class SyncStockAlerts
         $this->helper = $helper;
         $this->config = $config;
         $this->stockAlertsCollectionFactory = $stockAlertsCollectionFactory;
+        $this->jobRepository = $jobRepository;
     }
 
     /**
@@ -70,31 +74,24 @@ class SyncStockAlerts
 
         $now = $this->helper->nowUTC();
 
-        try {
-            $jobCollection = $this->helper->createJobCollection();
-        } catch (Exception $e) {
-            $this->logger->error($e);
-            return;
-        }
-
-        $jobs = $jobCollection->getQueuedJobs($category);
+        $jobs = $this->jobRepository->getQueuedJobs($category);
         if (empty($jobs)) {
             $this->logger->debug("No stock alerts sync job was queued");
         } else {
             foreach ($jobs as $job) {
-                $jobId = $job->getId();
+                $jobId = $job->getEntityId();
                 $this->logger->info(sprintf('Processing stock alerts synchronization job ID %s', $jobId));
                 try {
                     $scope = $this->scopeManager->initialiseScope($job->getScopeType(), $job->getScopeId());
                     if (!$scope->isExplicitlyConnected()) {
                         $this->logger->warn("Job scope is not connected to Ortto", $scope->toArray());
-                        $jobCollection->markAsFailed($jobId, "Not connected to Ortto");
+                        $this->jobRepository->markAsFailed($jobId, "Not connected to Ortto");
                         continue;
                     }
-                    $jobCollection->markAsInProgress($jobId);
+                    $this->jobRepository->markAsInProgress($jobId);
                     $result = $this->exportAllStockAlerts($scope, $jobId);
                     $processedScopes[] = $scope;
-                    $jobCollection->markAsDone($jobId, $result->toJSON());
+                    $this->jobRepository->markAsDone($jobId, $result->toJSON());
                     $this->helper->createCheckpointCollection()->setCheckpoint($category, $now, $scope);
                     $total = $result->getCreatedTotal() + $result->getUpdatedTotal();
                     if ($total > 0) {
@@ -111,7 +108,7 @@ class SyncStockAlerts
                         if (!empty($result)) {
                             $metadata = $result->toJSON();
                         }
-                        $jobCollection->markAsFailed($job->getId(), $e->getMessage(), $metadata);
+                        $this->jobRepository->markAsFailed($job->getEntityId(), $e->getMessage(), $metadata);
                     } catch (NoSuchEntityException $nfe) {
                         $this->logger->error($nfe, "Failed to mark the job as failed");
                     }
@@ -178,10 +175,9 @@ class SyncStockAlerts
      */
     private function exportAllStockAlerts(Scope $scope, int $jobId)
     {
-        $jobCollection = $this->helper->createJobCollection();
-        $jobValidationCallback = function () use ($jobCollection, $jobId) {
+        $jobValidationCallback = function () use ($jobId) {
             try {
-                $job = $jobCollection->getJobById($jobId);
+                $job = $this->jobRepository->getJobById($jobId);
                 $valid = $job->getStatus() === Status::IN_PROGRESS;
                 if (!$valid) {
                     $this->logger->warn("Stock alert synchronization job (ID: $jobId) has been changed.");
@@ -193,8 +189,8 @@ class SyncStockAlerts
             return false;
         };
 
-        $stateUpdateCallback = function (int $total, int $processed, string $metadata) use ($jobCollection, $jobId) {
-            $jobCollection->updateStats($jobId, $total, $processed, $metadata);
+        $stateUpdateCallback = function (int $total, int $processed, string $metadata) use ($jobId) {
+            $this->jobRepository->updateStats($jobId, $total, $processed, $metadata);
         };
 
         return $this->exportStockAlerts($scope, $jobValidationCallback, $stateUpdateCallback);

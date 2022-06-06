@@ -23,8 +23,9 @@ use Exception;
 
 class Collection extends AbstractCollection
 {
-    protected $_eventPrefix = 'ortto_cron_checkpoint_collection';
-    protected $_idFieldName = "id";
+    protected $_eventPrefix = SchemaInterface::TABLE_CRON_CHECKPOINT . '_collection';
+    protected $_eventObject = 'cron_checkpoint_collection';
+    protected $_idFieldName = CronCheckpointInterface::ENTITY_ID;
 
     private CronCheckpointFactory $cronCheckpointFactory;
 

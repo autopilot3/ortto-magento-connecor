@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
-use Ortto\Connector\Logger\Logger;
+use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\RegionInterface;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
@@ -13,10 +13,10 @@ use Magento\Sales\Api\Data\OrderAddressInterface;
 
 class AddressData
 {
-    private Logger $logger;
+    private OrttoLogger $logger;
     private CountryInformationAcquirerInterface $countryRepository;
 
-    public function __construct(Logger $logger, CountryInformationAcquirerInterface $countryRepository)
+    public function __construct(OrttoLogger $logger, CountryInformationAcquirerInterface $countryRepository)
     {
         $this->logger = $logger;
         $this->countryRepository = $countryRepository;

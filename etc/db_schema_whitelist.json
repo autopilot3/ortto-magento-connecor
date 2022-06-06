@@ -1,7 +1,7 @@
 {
     "ortto_sync_jobs": {
         "column": {
-            "id": true,
+            "entity_id": true,
             "category": true,
             "scope_type": true,
             "scope_id": true,
@@ -23,7 +23,7 @@
     },
     "ortto_cron_checkpoint": {
         "column": {
-            "id": true,
+            "entity_id": true,
             "category": true,
             "scope_type": true,
             "scope_id": true,

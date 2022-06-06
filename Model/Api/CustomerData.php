@@ -6,7 +6,7 @@ namespace Ortto\Connector\Model\Api;
 
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
-use Ortto\Connector\Logger\Logger;
+use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
@@ -28,7 +28,7 @@ class CustomerData
     private array $customAttributes;
 
     private CustomerRepositoryInterface $customerRepository;
-    private Logger $logger;
+    private OrttoLogger $logger;
     private Subscriber $subscriber;
     private GroupRepositoryInterface $groupRepository;
     private Data $helper;
@@ -38,7 +38,7 @@ class CustomerData
         CustomerRepositoryInterface $customerRepository,
         Subscriber $subscriber,
         GroupRepositoryInterface $groupRepository,
-        Logger $logger,
+        OrttoLogger $logger,
         AddressDataFactory $addressDataFactory,
         Data $helper
     ) {

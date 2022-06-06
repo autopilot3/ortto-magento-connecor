@@ -4,12 +4,13 @@
     <acl>
         <resources>
             <resource id="Magento_Backend::admin">
-                <resource id="Ortto_Connector::menu" title="Ortto">
-                    <resource id="Ortto_Connector::config" title="Configuration" sortOrder="100"/>
-                    <resource id="Ortto_Connector::view_logs" title="View Logs" sortOrder="101"/>
-                    <resource id="Ortto_Connector::api" title="API" sortOrder="103">
-                        <resource id="Ortto_Connector::coupons" title="Coupons"/>
-                        <resource id="Ortto_Connector::update_app_config" title="Update Settings"/>
+                <resource id="Ortto_Connector::sync_jobs_admin" title="Synchronization Jobs Administration"
+                          sortOrder="99"/>
+                <resource id="Ortto_Connector::menu" title="Ortto" sortOrder="100">
+                    <resource id="Ortto_Connector::config" title="Configuration" sortOrder="1"/>
+                    <resource id="Ortto_Connector::api" title="API" sortOrder="2">
+                        <resource id="Ortto_Connector::coupons" title="Coupons" sortOrder="1"/>
+                        <resource id="Ortto_Connector::update_app_config" title="Update Settings" sortOrder="2"/>
                     </resource>
                 </resource>
             </resource>

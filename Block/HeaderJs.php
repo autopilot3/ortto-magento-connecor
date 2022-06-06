@@ -7,7 +7,7 @@ namespace Ortto\Connector\Block;
 use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
 use Ortto\Connector\Helper\To;
-use Ortto\Connector\Logger\Logger;
+use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Framework\View\Element\Template;
 use Exception;
 use Magento\Store\Model\ScopeInterface;
@@ -20,14 +20,14 @@ class HeaderJs extends Template
     public const CAPTURE_API = 'ca';
 
     private ConfigurationReaderInterface $configReader;
-    private Logger $logger;
+    private OrttoLogger $logger;
     private ScopeManagerInterface $scopeManager;
 
     public function __construct(
         Template\Context $context,
         ConfigurationReaderInterface $configReader,
         ScopeManagerInterface $scopeManager,
-        Logger $logger,
+        OrttoLogger $logger,
         array $data = []
     ) {
         parent::__construct($context, $data);

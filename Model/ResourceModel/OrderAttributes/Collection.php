@@ -7,15 +7,17 @@ use Ortto\Connector\Api\SchemaInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Model\OrderAttributes as Model;
 use Ortto\Connector\Model\ResourceModel\OrderAttributes as ResourceModel;
-use DateTime;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
+use DateTime;
 
 class Collection extends AbstractCollection
 {
     /**
      * @var string
      */
-    protected $_eventPrefix = 'ortto_order_attributes_collection';
+    protected $_eventPrefix = SchemaInterface::TABLE_ORDER_ATTRIBUTES . '_collection';
+    protected $_eventObject = 'order_attributes_collection';
+    protected $_idFieldName = OrderAttributesInterface::ENTITY_ID;
 
     /**
      * @inheritdoc

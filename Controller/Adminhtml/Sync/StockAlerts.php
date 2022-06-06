@@ -5,15 +5,14 @@ namespace Ortto\Connector\Controller\Adminhtml\Sync;
 
 use Ortto\Connector\Api\RoutesInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Api\SyncJobRepositoryInterface;
 use Ortto\Connector\Controller\Adminhtml\AbstractBackendJsonController;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
-use Ortto\Connector\Model\ResourceModel\SyncJob\Collection as JobCollection;
-use Ortto\Connector\Model\ResourceModel\SyncJob\CollectionFactory as JobCollectionFactory;
-use Exception;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\Result\Json;
 use Ortto\Connector\Api\SyncCategoryInterface as JobCategory;
+use Exception;
 
 class StockAlerts extends AbstractBackendJsonController
 {
@@ -22,18 +21,18 @@ class StockAlerts extends AbstractBackendJsonController
      */
     private OrttoLoggerInterface $logger;
     private ScopeManagerInterface $scopeManager;
-    private JobCollectionFactory $jobCollectionFactory;
+    private SyncJobRepositoryInterface $jobRepository;
 
     public function __construct(
         Context $context,
         OrttoLoggerInterface $logger,
         ScopeManagerInterface $scopeManager,
-        JobCollectionFactory $jobCollectionFactory
+        SyncJobRepositoryInterface $jobRepository
     ) {
         parent::__construct($context, $logger);
         $this->logger = $logger;
         $this->scopeManager = $scopeManager;
-        $this->jobCollectionFactory = $jobCollectionFactory;
+        $this->jobRepository = $jobRepository;
     }
 
     /**
@@ -54,24 +53,20 @@ class StockAlerts extends AbstractBackendJsonController
             ));
         }
 
-        $jobCollection = $this->jobCollectionFactory->create();
-        if ($jobCollection instanceof JobCollection) {
-            $job = $jobCollection->getActiveScopeJob(JobCategory::STOCK_ALERT, $scope);
-            if ($job) {
-                $message = sprintf(
-                    'Another job is already in "%s" state [Job ID=%d].',
-                    $job->getStatus(),
-                    $job->getId()
-                );
-                return $this->error($message);
-            }
-            try {
-                $jobCollection->enqueueNewScopeJob(JobCategory::STOCK_ALERT, $scope);
-            } catch (Exception $e) {
-                return $this->error("Failed to add a new job to the queue!", $e);
-            }
-            return $this->successMessage("A new synchronization job has been queued.");
+        $job = $this->jobRepository->getActiveScopeJob(JobCategory::STOCK_ALERT, $scope);
+        if ($job) {
+            $message = sprintf(
+                'Another job is already in "%s" state [Job ID=%d].',
+                $job->getStatus(),
+                $job->getEntityId()
+            );
+            return $this->error($message);
         }
-        return $this->error("Failed to initialise a new sync job.", new Exception("Invalid job collection type"));
+        try {
+            $this->jobRepository->enqueueNewScopeJob(JobCategory::STOCK_ALERT, $scope);
+        } catch (Exception $e) {
+            return $this->error("Failed to add a new job to the queue!", $e);
+        }
+        return $this->successMessage("A new synchronization job has been queued.");
     }
 }

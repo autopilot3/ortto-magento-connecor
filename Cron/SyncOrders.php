@@ -9,6 +9,7 @@ use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\ImportResponseInterface;
 use Ortto\Connector\Api\SyncCategoryInterface as SyncCategory;
 use Ortto\Connector\Api\ScopeManagerInterface;
+use Ortto\Connector\Api\SyncJobRepositoryInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
@@ -41,6 +42,7 @@ class SyncOrders
     private SortOrderBuilder $sortOrderBuilder;
     private ConfigurationReaderInterface $config;
     private Data $helper;
+    private SyncJobRepositoryInterface $jobRepository;
 
     public function __construct(
         OrttoLoggerInterface $logger,
@@ -50,7 +52,8 @@ class SyncOrders
         OrderRepositoryInterface $orderRepository,
         SortOrderBuilder $sortOrderBuilder,
         ConfigurationReaderInterface $config,
-        Data $helper
+        Data $helper,
+        SyncJobRepositoryInterface $jobRepository
     ) {
         $this->logger = $logger;
         $this->orttoClient = $orttoClient;
@@ -60,6 +63,7 @@ class SyncOrders
         $this->orderRepository = $orderRepository;
         $this->sortOrderBuilder = $sortOrderBuilder;
         $this->config = $config;
+        $this->jobRepository = $jobRepository;
     }
 
     /**
@@ -78,31 +82,24 @@ class SyncOrders
 
         $now = $this->helper->nowUTC();
 
-        try {
-            $jobCollection = $this->helper->createJobCollection();
-        } catch (Exception $e) {
-            $this->logger->error($e);
-            return;
-        }
-
-        $jobs = $jobCollection->getQueuedJobs($category);
+        $jobs = $this->jobRepository->getQueuedJobs($category);
         if (empty($jobs)) {
             $this->logger->debug("No order sync job was queued");
         } else {
             foreach ($jobs as $job) {
-                $jobId = $job->getId();
+                $jobId = $job->getEntityId();
                 $this->logger->info(sprintf('Processing order synchronization job ID %s', $jobId));
                 try {
                     $scope = $this->scopeManager->initialiseScope($job->getScopeType(), $job->getScopeId());
                     if (!$scope->isExplicitlyConnected()) {
                         $this->logger->warn("Job scope is not connected to Ortto", $scope->toArray());
-                        $jobCollection->markAsFailed($jobId, "Not connected to Ortto");
+                        $this->jobRepository->markAsFailed($jobId, "Not connected to Ortto");
                         continue;
                     }
-                    $jobCollection->markAsInProgress($jobId);
+                    $this->jobRepository->markAsInProgress($jobId);
                     $result = $this->exportAllOrders($scope, $jobId);
                     $processedScopes[] = $scope;
-                    $jobCollection->markAsDone($jobId, $result->toJSON());
+                    $this->jobRepository->markAsDone($jobId, $result->toJSON());
                     $this->helper->createCheckpointCollection()->setCheckpoint($category, $now, $scope);
                     $total = $result->getCreatedTotal() + $result->getUpdatedTotal();
                     if ($total > 0) {
@@ -119,7 +116,7 @@ class SyncOrders
                         if (!empty($result)) {
                             $metadata = $result->toJSON();
                         }
-                        $jobCollection->markAsFailed($job->getId(), $e->getMessage(), $metadata);
+                        $this->jobRepository->markAsFailed($job->getEntityId(), $e->getMessage(), $metadata);
                     } catch (NoSuchEntityException $nfe) {
                         $this->logger->error($nfe, "Failed to mark the job as failed");
                     }
@@ -186,10 +183,9 @@ class SyncOrders
      */
     private function exportAllOrders(Scope $scope, int $jobId)
     {
-        $jobCollection = $this->helper->createJobCollection();
-        $jobValidationCallback = function () use ($jobCollection, $jobId) {
+        $jobValidationCallback = function () use ($jobId) {
             try {
-                $job = $jobCollection->getJobById($jobId);
+                $job = $this->jobRepository->getJobById($jobId);
                 $valid = $job->getStatus() === Status::IN_PROGRESS;
                 if (!$valid) {
                     $this->logger->warn("Order synchronization job (ID: $jobId) has been changed.");
@@ -201,8 +197,8 @@ class SyncOrders
             return false;
         };
 
-        $stateUpdateCallback = function (int $total, int $processed, string $metadata) use ($jobCollection, $jobId) {
-            $jobCollection->updateStats($jobId, $total, $processed, $metadata);
+        $stateUpdateCallback = function (int $total, int $processed, string $metadata) use ($jobId) {
+            $this->jobRepository->updateStats($jobId, $total, $processed, $metadata);
         };
 
         return $this->exportOrders($scope, $jobValidationCallback, $stateUpdateCallback);

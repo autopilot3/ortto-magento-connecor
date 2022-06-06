@@ -16,9 +16,10 @@ class OrttoException extends Exception
         string $payload,
         string $response
     ) {
-        parent::__construct($method . ': ' . $url, $status);
+        parent::__construct(sprintf('%s (Server Response: %d)', $url, $status), $status);
         $this->params = [
             'status' => $status,
+            'method' => $method,
         ];
 
         if (!empty($response)) {

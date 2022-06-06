@@ -10,7 +10,7 @@ interface CronCheckpointInterface
     /**
      * String constants for property names
      */
-    const ID = "id";
+    const ENTITY_ID = "entity_id";
     const CATEGORY = "category";
     const SCOPE_TYPE = "scope_type";
     const SCOPE_ID = "scope_id";

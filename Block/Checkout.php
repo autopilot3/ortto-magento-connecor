@@ -8,7 +8,7 @@ use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
 use Ortto\Connector\Api\TrackDataProviderInterface;
 use Ortto\Connector\Helper\Config;
-use Ortto\Connector\Logger\Logger;
+use Ortto\Connector\Logger\OrttoLogger;
 use Ortto\Connector\Model\Api\CartDataFactory;
 use Exception;
 
@@ -19,7 +19,7 @@ use Magento\Framework\View\Element\Template;
 class Checkout extends Template
 {
     private TrackDataProviderInterface $trackDataProvider;
-    private Logger $logger;
+    private OrttoLogger $logger;
     private Session $session;
     private CartDataFactory $cartDataFactory;
 
@@ -27,7 +27,7 @@ class Checkout extends Template
         Template\Context $context,
         TrackDataProviderInterface $trackDataProvider,
         CartDataFactory $cartDataFactory,
-        Logger $logger,
+        OrttoLogger $logger,
         Session $session,
         array $data = []
     ) {

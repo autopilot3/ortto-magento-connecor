@@ -7,7 +7,7 @@ use Ortto\Connector\Model\OrttoException;
 use Exception;
 use Psr\Log\LoggerInterface;
 
-class Logger implements OrttoLoggerInterface
+class OrttoLogger implements OrttoLoggerInterface
 {
     private LoggerInterface $logger;
 

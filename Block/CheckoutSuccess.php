@@ -8,7 +8,7 @@ use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
 use Ortto\Connector\Api\TrackDataProviderInterface;
 use Ortto\Connector\Helper\Config;
-use Ortto\Connector\Logger\Logger;
+use Ortto\Connector\Logger\OrttoLogger;
 use Ortto\Connector\Model\Api\OrderDataFactory;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Serialize\JsonConverter;
@@ -18,7 +18,7 @@ use Exception;
 class CheckoutSuccess extends Template
 {
     private TrackDataProviderInterface $trackDataProvider;
-    private Logger $logger;
+    private OrttoLogger $logger;
     private Session $session;
     private OrderDataFactory $orderDataFactory;
 
@@ -26,7 +26,7 @@ class CheckoutSuccess extends Template
         Template\Context $context,
         TrackDataProviderInterface $trackDataProvider,
         OrderDataFactory $cartDataFactory,
-        Logger $logger,
+        OrttoLogger $logger,
         Session $session,
         array $data = []
     ) {
