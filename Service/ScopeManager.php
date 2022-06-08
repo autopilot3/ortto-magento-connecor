@@ -160,7 +160,7 @@ class ScopeManager implements ScopeManagerInterface
                 $storeAPIKey = $this->configReader->getAPIKey($type, $id);
                 $scope->setIsExplicitlyConnected(!empty($storeAPIKey));
                 $scope->setName($store->getName());
-                $scope->setBaseURL((string)$store->getBaseUrl(UrlInterface::URL_TYPE_WEB, true));
+                $scope->setBaseURL((string)$store->getBaseUrl(UrlInterface::URL_TYPE_LINK, true));
                 $scope->setCode($store->getCode());
                 $scope->addStoreId($id);
                 $scope->setParent($this->initialiseScope(ScopeInterface::SCOPE_WEBSITE, $websiteId));
