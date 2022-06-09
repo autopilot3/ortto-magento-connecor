@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Observer;
 
+use Magento\Store\Model\ScopeInterface;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
@@ -52,13 +53,12 @@ class CustomerSubscriptionSavedAfterFrontend implements ObserverInterface
                 return;
             }
             $customer = $this->customerRepository->get($email);
-            $scopes = $this->scopeManager->getActiveScopes();
-            foreach ($scopes as $scope) {
-                if (!$this->helper->shouldExportCustomer($scope, $customer)) {
-                    continue;
-                }
-                $this->orttoClient->importContacts($scope, [$customer]);
+            $storeId = To::int($customer->getStoreId());
+            $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, $storeId);
+            if (!$this->helper->shouldExportCustomer($scope, $customer)) {
+                return;
             }
+            $this->orttoClient->importContacts($scope, [$customer]);
         } catch (Exception $e) {
             $this->logger->error($e, 'CustomerSubscriptionSavedAfterFrontend: Failed to export the customer');
         }

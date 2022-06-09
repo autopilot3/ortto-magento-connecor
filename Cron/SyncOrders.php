@@ -253,7 +253,7 @@ class SyncOrders
     ) {
         $this->searchCriteriaBuilder->setPageSize(self::PAGE_SIZE)
             ->setCurrentPage($page)
-            ->addFilter(OrderInterface::STORE_ID, implode(',', $scope->getStoreIds()), 'in');
+            ->addFilter(OrderInterface::STORE_ID, $scope->getId());
 
         if (!empty($checkpoint)) {
             $this->searchCriteriaBuilder->addFilter(OrderInterface::UPDATED_AT, $checkpoint, 'gteq');

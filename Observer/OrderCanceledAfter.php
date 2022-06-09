@@ -3,9 +3,14 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Observer;
 
+use Magento\Framework\Exception\InvalidArgumentException;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Model\ScopeInterface;
 use Ortto\Connector\Api\OrttoClientInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
 use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Magento\Framework\Event\Observer;
 use Ortto\Connector\Model\ResourceModel\OrderAttributes\CollectionFactory as OrderAttributeCollectionFactory;
@@ -41,14 +46,13 @@ class OrderCanceledAfter implements ObserverInterface
         /** @var OrderInterface $order */
         $order = $event->getData('order');
         $now = $this->helper->nowUTC();
+        $orderId = To::int($order->getEntityId());
+        $storeId = To::int($order->getStoreId());
         try {
             $collection = $this->collectionFactory->create();
             $collection->setCancellationDate((int)$order->getEntityId(), $now);
         } catch (Exception $e) {
-            $msg = sprintf(
-                'Failed to update order cancellation attribute (ID: %d)',
-                (int)$order->getEntityId()
-            );
+            $msg = sprintf('Failed to update order cancellation attribute (ID: %d, Store: %d)', $orderId, $storeId);
             $this->logger->error($e, $msg);
         }
 
@@ -56,20 +60,12 @@ class OrderCanceledAfter implements ObserverInterface
         $attr->setOrttoCanceledAt($this->helper->toUTC($now));
         $order->setExtensionAttributes($attr);
 
-        $scopes = $this->scopeManager->getActiveScopes();
-        foreach ($scopes as $scope) {
-            if (array_contains($scope->getStoreIds(), (int)$order->getStoreId())) {
-                try {
-                    $this->orttoClient->importOrders($scope, [$order]);
-                } catch (Exception $e) {
-                    $msg = sprintf(
-                        'Failed to export the cancelled order ID %d to %s',
-                        (int)$order->getEntityId(),
-                        $scope->getCode()
-                    );
-                    $this->logger->error($e, $msg);
-                }
-            }
+        try {
+            $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, $storeId);
+            $this->orttoClient->importOrders($scope, [$order]);
+        } catch (\Exception $e) {
+            $msg = sprintf('Failed to export the cancelled order ID %d for store ID %d', $orderId, $storeId);
+            $this->logger->error($e, $msg);
         }
     }
 }

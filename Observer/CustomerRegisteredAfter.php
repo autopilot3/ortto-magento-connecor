@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Observer;
 
+use Magento\Store\Model\ScopeInterface;
 use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Ortto\Connector\Api\OrttoClientInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
@@ -37,13 +39,12 @@ class CustomerRegisteredAfter implements ObserverInterface
             $event = $observer->getEvent();
             /** @var CustomerInterface $customer */
             $customer = $event->getData('customer');
-            $scopes = $this->scopeManager->getActiveScopes();
-            foreach ($scopes as $scope) {
-                if (!$this->helper->shouldExportCustomer($scope, $customer)) {
-                    continue;
-                }
-                $this->orttoClient->importContacts($scope, [$customer]);
+            $storeId = To::int($customer->getStoreId());
+            $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, $storeId);
+            if (!$this->helper->shouldExportCustomer($scope, $customer)) {
+                return;
             }
+            $this->orttoClient->importContacts($scope, [$customer]);
         } catch (Exception $e) {
             $this->logger->error($e, 'CustomerRegisteredAfter: Failed to export the customer');
         }

@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Ortto\Connector\Observer;
 
 use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Ortto\Connector\Api\OrttoClientInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
-use Ortto\Connector\Api\ConfigScopeInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Model\ResourceModel\CustomerRepository;
 use Magento\Framework\Event\ObserverInterface;
@@ -48,13 +48,12 @@ class CustomerSavedAfterFrontend implements ObserverInterface
                 return;
             }
             $customer = $this->customerRepository->get($email);
-            $scopes = $this->scopeManager->getActiveScopes();
-            foreach ($scopes as $scope) {
-                if (!$this->helper->shouldExportCustomer($scope, $customer)) {
-                    continue;
-                }
-                $this->orttoClient->importContacts($scope, [$customer]);
+            $storeId = To::int($customer->getStoreId());
+            $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, $storeId);
+            if (!$this->helper->shouldExportCustomer($scope, $customer)) {
+                return;
             }
+            $this->orttoClient->importContacts($scope, [$customer]);
         } catch (Exception $e) {
             $this->logger->error($e, 'CustomerSavedAfterFrontend: Failed to export the customer');
         }

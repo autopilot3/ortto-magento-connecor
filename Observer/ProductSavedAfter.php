@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Observer;
 
-use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\Product;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Ortto\Connector\Api\OrttoClientInterface;
@@ -35,12 +35,12 @@ class ProductSavedAfter implements ObserverInterface
     {
         try {
             $event = $observer->getEvent();
-            /** @var ProductInterface $product */
+            /** @var Product $product */
             $product = $event->getData('product');
             $this->logger->debug("Product Created/Updated", ["sku" => $product->getSku(), 'id' => $product->getId()]);
             $scopes = $this->scopeManager->getActiveScopes();
             foreach ($scopes as $scope) {
-                if (!$this->helper->shouldExportProduct($scope)) {
+                if (!$this->helper->shouldExportProduct($scope, $product)) {
                     continue;
                 }
                 $this->orttoClient->importProducts($scope, [$product]);

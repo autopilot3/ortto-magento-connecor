@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Helper;
 
+use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Model\Product;
 use Magento\ProductAlert\Model\Stock;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\SyncCategoryInterface;
@@ -251,7 +253,7 @@ class Data extends AbstractHelper
         return $alert->getStoreId() == $scope->getId() && $alert->getWebsiteId() == $scope->getWebsiteId();
     }
 
-    public function shouldExportProduct(ConfigScopeInterface $scope): bool
+    public function shouldExportProduct(ConfigScopeInterface $scope, Product $product): bool
     {
         if (!$this->config->isAutoSyncEnabled($scope->getType(), $scope->getId(), SyncCategoryInterface::PRODUCT)) {
             $this->logger->debug(
@@ -260,7 +262,7 @@ class Data extends AbstractHelper
             );
             return false;
         }
-        return true;
+        return array_contains($product->getWebsiteIds(), $scope->getWebsiteId(), false);
     }
 
     public function newHTTPException(string $message, int $code = 500): \Magento\Framework\Webapi\Exception

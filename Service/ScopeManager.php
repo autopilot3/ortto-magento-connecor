@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Service;
 
-use _PHPStan_76800bfb5\Nette\ArgumentOutOfRangeException;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
@@ -11,18 +12,14 @@ use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Ortto\Connector\Model\Scope;
 use Ortto\Connector\Model\ScopeFactory;
-use Exception;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\InvalidArgumentException;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Phrase;
 use Magento\Framework\UrlInterface;
-use Magento\Store\Api\Data\StoreInterface;
-use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
+use Exception;
 
 class ScopeManager implements ScopeManagerInterface
 {
@@ -52,26 +49,24 @@ class ScopeManager implements ScopeManagerInterface
     public function getActiveScopes(): array
     {
         $result = [];
-        $websites = $this->storeManager->getWebsites();
-        foreach ($websites as $website) {
-            try {
-                $scope = $this->initialiseScope(ScopeInterface::SCOPE_WEBSITE, To::int($website->getId()), $websites);
-                if ($scope->isExplicitlyConnected()) {
-                    $result[] = $scope;
-                }
-            } catch (Exception $e) {
-                $this->logger->error($e, "Failed to initialise website scope");
-            }
-        }
+//        $websites = $this->storeManager->getWebsites();
+//        foreach ($websites as $website) {
+//            try {
+//                $scope = $this->initialiseScope(ScopeInterface::SCOPE_WEBSITE, To::int($website->getId()), $websites);
+//                if ($scope->isExplicitlyConnected()) {
+//                    $result[] = $scope;
+//                }
+//            } catch (Exception $e) {
+//                $this->logger->error($e, "Failed to initialise website scope");
+//            }
+//        }
 
         $stores = $this->storeManager->getStores();
         foreach ($stores as $store) {
             try {
                 $scope = $this->initialiseScope(
                     ScopeInterface::SCOPE_STORE,
-                    To::int($store->getId()),
-                    $websites,
-                    $stores
+                    To::int($store->getId())
                 );
                 if ($scope->isExplicitlyConnected()) {
                     $result[] = $scope;
@@ -117,27 +112,20 @@ class ScopeManager implements ScopeManagerInterface
     }
 
     /**
-     * @param string $type
-     * @param int $id
-     * @param WebsiteInterface[] $websites
-     * @param StoreInterface[] $stores
-     * @return ConfigScopeInterface
-     * @throws InvalidArgumentException
-     * @throws LocalizedException
+     * @inheirtDoc
      * @throws NoSuchEntityException
+     * @throws LocalizedException
      */
     public function initialiseScope(
         string $type,
-        int $id,
-        array $websites = [],
-        array $stores = []
+        int $id
     ): ConfigScopeInterface {
+        if (empty($type)) {
+            throw new InvalidArgumentException(__("Scope type cannot be empty"));
+        }
         $scope = $this->scopeFactory->create();
         $scope->setId($id);
         $scope->setType($type);
-        if (empty($stores)) {
-            $stores = $this->storeManager->getStores();
-        }
         switch ($type) {
             case ScopeInterface::SCOPE_WEBSITE:
                 $scope->setWebsiteId($id);
@@ -150,6 +138,7 @@ class ScopeManager implements ScopeManagerInterface
                     throw new InvalidArgumentException(__("Website base URL cannot be empty"));
                 }
                 $scope->setBaseURL(rtrim($baseURL, '/'));
+                $stores = $this->storeManager->getStores();
                 foreach ($stores as $store) {
                     if (To::int($store->getWebsiteId()) === $id) {
                         $scope->addStoreId(To::int($store->getId()));
