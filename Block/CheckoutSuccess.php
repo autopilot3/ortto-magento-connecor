@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Block;
 
-use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
 use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Api\TrackDataProviderInterface;
@@ -57,10 +56,7 @@ class CheckoutSuccess extends Template
 
             $payload = [
                 'event' => Config::EVENT_TYPE_ORDER_CREATED,
-                'scope' => [
-                    ConfigScopeInterface::ID => $trackingData->getScopeId(),
-                    ConfigScopeInterface::TYPE => $trackingData->getScopeType(),
-                ],
+                'scope' => $trackingData->getScope()->toArray(),
                 'data' => [
                     'order' => $orderData,
                 ],

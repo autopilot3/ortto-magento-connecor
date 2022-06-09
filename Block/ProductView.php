@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Block;
 
-use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
 use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Api\TrackDataProviderInterface;
@@ -74,7 +73,8 @@ class ProductView extends View
         try {
             $factory = $this->productDataFactory->create();
             $trackingData = $this->trackDataProvider->getData();
-            if (!$factory->load($this->getProduct(), $trackingData->getScopeId())) {
+            $scope = $trackingData->getScope();
+            if (!$factory->load($this->getProduct(), $scope->getId())) {
                 return false;
             }
             $product = $factory->toArray();
@@ -84,14 +84,12 @@ class ProductView extends View
 
             $payload = [
                 'event' => $event,
-                'scope' => [
-                    ConfigScopeInterface::ID => $trackingData->getScopeId(),
-                    ConfigScopeInterface::TYPE => $trackingData->getScopeType(),
-                ],
+                'scope' => $scope->toArray(),
                 'data' => [
                     'product' => $product,
                 ],
             ];
+
             return [
                 TD::EMAIL => $trackingData->getEmail(),
                 TD::PHONE => $trackingData->getPhone(),

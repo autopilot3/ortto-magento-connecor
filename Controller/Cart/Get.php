@@ -2,7 +2,6 @@
 
 namespace Ortto\Connector\Controller\Cart;
 
-use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\RoutesInterface;
 use Ortto\Connector\Api\TrackDataProviderInterface;
 use Ortto\Connector\Controller\AbstractJsonController;
@@ -26,7 +25,6 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
     public function __construct(
         Context $context,
         OrttoLoggerInterface $logger,
-        CartItemDataFactory $cartItemDataFactory,
         CartDataFactory $cartDataFactory,
         Session $session,
         TrackDataProviderInterface $trackDataProvider
@@ -75,10 +73,7 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
 
             $payload = [
                 'event' => Config::EVENT_TYPE_PRODUCT_ADDED_TO_CART,
-                'scope' => [
-                    ConfigScopeInterface::ID => $trackingData->getScopeId(),
-                    ConfigScopeInterface::TYPE => $trackingData->getScopeType(),
-                ],
+                'scope' => $trackingData->getScope()->toArray(),
                 'data' => [
                     'cart' => $cartData->toArray(),
                     'new_product_ids' => $newProductIds,

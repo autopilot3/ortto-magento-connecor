@@ -2,8 +2,8 @@
 
 namespace Ortto\Connector\Model\Data;
 
+use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\TrackingDataInterface;
-use Ortto\Connector\Helper\To;
 use Magento\Framework\DataObject;
 
 class TrackingData extends DataObject implements TrackingDataInterface
@@ -11,34 +11,17 @@ class TrackingData extends DataObject implements TrackingDataInterface
     /**
      * @inheritDoc
      */
-    public function getScopeId(): int
+    public function getScope(): ConfigScopeInterface
     {
-        return To::int($this->getData(self::SCOPE_ID));
+        return $this->getData(self::SCOPE);
     }
 
     /**
      * @inheritDoc
      */
-    public function setScopeId(int $scopeId)
+    public function setScope(ConfigScopeInterface $scope)
     {
-        return $this->setData(self::SCOPE_ID, $scopeId);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getScopeType(): string
-    {
-        $value = $this->getData(self::SCOPE_TYPE);
-        return $value ? (string)$value : '';
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setScopeType(string $scopeType)
-    {
-        return $this->setData(self::SCOPE_TYPE, $scopeType);
+        return $this->setData(self::SCOPE, $scope);
     }
 
     /**

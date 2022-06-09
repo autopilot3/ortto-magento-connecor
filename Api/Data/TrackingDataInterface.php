@@ -2,48 +2,33 @@
 
 namespace Ortto\Connector\Api\Data;
 
+use Ortto\Connector\Api\ConfigScopeInterface;
+
 interface TrackingDataInterface
 {
     /**
      * String constants for property names
      */
-    public const SCOPE_ID = "scope_id";
-    public const SCOPE_TYPE = "scope_type";
+    public const SCOPE = "scope";
     public const PAYLOAD = 'payload';
     public const EMAIL = "email";
     public const PHONE = "phone";
 
     /**
-     * Getter for ScopeId.
+     * Getter for Scope.
      *
-     * @return int
+     * @return ConfigScopeInterface
      */
-    public function getScopeId(): int;
+    public function getScope(): ConfigScopeInterface;
 
     /**
-     * Setter for ScopeId.
+     * Setter for Scope.
      *
-     * @param int $scopeId
+     * @param ConfigScopeInterface $scope
      *
      * @return $this
      */
-    public function setScopeId(int $scopeId);
-
-    /**
-     * Getter for ScopeType.
-     *
-     * @return string
-     */
-    public function getScopeType(): string;
-
-    /**
-     * Setter for ScopeType.
-     *
-     * @param string $scopeType
-     *
-     * @return $this
-     */
-    public function setScopeType(string $scopeType);
+    public function setScope(ConfigScopeInterface $scope);
 
     /**
      * Getter for Email.

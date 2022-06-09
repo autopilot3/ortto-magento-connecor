@@ -5,6 +5,7 @@ namespace Ortto\Connector\Service;
 
 use Ortto\Connector\Api\Data\TrackingDataInterface;
 use Ortto\Connector\Api\Data\TrackingDataInterfaceFactory;
+use Ortto\Connector\Api\ScopeManagerInterface;
 use Ortto\Connector\Api\TrackDataProviderInterface;
 use Ortto\Connector\Helper\To;
 use Magento\Customer\Model\Address;
@@ -20,15 +21,18 @@ class TrackDataProvider implements TrackDataProviderInterface
     private StoreManagerInterface $storeManager;
     private Session $session;
     private TrackingDataInterfaceFactory $factory;
+    private ScopeManagerInterface $scopeManager;
 
     public function __construct(
         StoreManagerInterface $storeManager,
         Session $session,
-        TrackingDataInterfaceFactory $factory
+        TrackingDataInterfaceFactory $factory,
+        ScopeManagerInterface $scopeManager
     ) {
         $this->storeManager = $storeManager;
         $this->session = $session;
         $this->factory = $factory;
+        $this->scopeManager = $scopeManager;
     }
 
     /**
@@ -39,9 +43,9 @@ class TrackDataProvider implements TrackDataProviderInterface
     {
         $store = $this->storeManager->getStore();
         $storeId = To::int($store->getId());
+        $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, $storeId);
         $data = $this->factory->create();
-        $data->setScopeId($storeId);
-        $data->setScopeType(ScopeInterface::SCOPE_STORE);
+        $data->setScope($scope);
         if ($this->session->isLoggedIn()) {
             $customer = $this->session->getCustomer();
             $data->setEmail($customer->getEmail());

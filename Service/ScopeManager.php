@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Service;
 
+use _PHPStan_76800bfb5\Nette\ArgumentOutOfRangeException;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
@@ -144,7 +145,11 @@ class ScopeManager implements ScopeManagerInterface
                 $scope->setName($website->getName());
                 $scope->setCode($website->getCode());
                 $scope->setIsExplicitlyConnected(!empty($this->configReader->getAPIKey($type, $id)));
-                $scope->setBaseURL((string)$this->urlInterface->getBaseUrl());
+                $baseURL = (string)$this->urlInterface->getBaseUrl(["_secure" => true]);
+                if (empty($baseURL)) {
+                    throw new InvalidArgumentException(__("Website base URL cannot be empty"));
+                }
+                $scope->setBaseURL(rtrim($baseURL, '/'));
                 foreach ($stores as $store) {
                     if (To::int($store->getWebsiteId()) === $id) {
                         $scope->addStoreId(To::int($store->getId()));
@@ -160,7 +165,11 @@ class ScopeManager implements ScopeManagerInterface
                 $storeAPIKey = $this->configReader->getAPIKey($type, $id);
                 $scope->setIsExplicitlyConnected(!empty($storeAPIKey));
                 $scope->setName($store->getName());
-                $scope->setBaseURL((string)$store->getBaseUrl(UrlInterface::URL_TYPE_LINK, true));
+                $baseURL = (string)$store->getBaseUrl(UrlInterface::URL_TYPE_LINK, true);
+                if (empty($baseURL)) {
+                    throw new InvalidArgumentException(__("Store base URL cannot be empty"));
+                }
+                $scope->setBaseURL(rtrim($baseURL, "/"));
                 $scope->setCode($store->getCode());
                 $scope->addStoreId($id);
                 $scope->setParent($this->initialiseScope(ScopeInterface::SCOPE_WEBSITE, $websiteId));
