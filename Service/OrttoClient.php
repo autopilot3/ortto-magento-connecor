@@ -170,6 +170,7 @@ class OrttoClient implements OrttoClientInterface
         $scopeData = $scope->toArray();
         $this->logger->debug('POST: ' . $url, ['scope' => $scopeData]);
         $apiKey = $this->config->getAPIKey($scope->getType(), $scope->getId());
+        $this->logger->warn("POSTING", ['t' => $scope->getType(), 'id' => $scope->getId(), 'api' => $apiKey]);
         $this->curl->setCredentials($this->helper->getClientId(), $apiKey);
         $this->curl->addHeader("Content-Type", "application/json");
         $request['scope'] = $scopeData;

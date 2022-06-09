@@ -3,9 +3,6 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Observer;
 
-use Magento\Framework\Exception\InvalidArgumentException;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\ScopeInterface;
 use Ortto\Connector\Api\OrttoClientInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
@@ -50,7 +47,7 @@ class OrderCanceledAfter implements ObserverInterface
         $storeId = To::int($order->getStoreId());
         try {
             $collection = $this->collectionFactory->create();
-            $collection->setCancellationDate((int)$order->getEntityId(), $now);
+            $collection->setCancellationDate($orderId, $now);
         } catch (Exception $e) {
             $msg = sprintf('Failed to update order cancellation attribute (ID: %d, Store: %d)', $orderId, $storeId);
             $this->logger->error($e, $msg);
