@@ -17,13 +17,10 @@ class ConfigurationReader implements ConfigurationReaderInterface
     private EncryptorInterface $encryptor;
     private ScopeConfigInterface $scopeConfig;
 
-    private string $apiKey;
-
     public function __construct(EncryptorInterface $encryptor, ScopeConfigInterface $scopeConfig)
     {
         $this->encryptor = $encryptor;
         $this->scopeConfig = $scopeConfig;
-        $this->apiKey = '';
     }
 
     /**
@@ -47,15 +44,11 @@ class ConfigurationReader implements ConfigurationReaderInterface
      */
     public function getAPIKey(string $scopeType, int $scopeId): string
     {
-        if ($this->apiKey !== '') {
-            return $this->apiKey;
-        }
         $encrypted = trim((string)$this->scopeConfig->getValue(Config::XML_PATH_API_KEY, $scopeType, $scopeId));
         if (empty($encrypted)) {
             return "";
         }
-        $this->apiKey = $this->encryptor->decrypt($encrypted);
-        return $this->apiKey;
+        return $this->encryptor->decrypt($encrypted);
     }
 
     /**
