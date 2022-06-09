@@ -34,6 +34,8 @@
             <argument name="curl" xsi:type="object">Magento\Framework\HTTP\Client\Curl</argument>
         </arguments>
     </type>
+    <preference for="Ortto\Connector\Api\OrttoSerializerInterface"
+                type="Ortto\Connector\Service\OrttoSerializer"/>
     <preference for="Ortto\Connector\Api\DiscountRepositoryInterface"
                 type="Ortto\Connector\Model\ResourceModel\DiscountRepository"/>
     <preference for="Ortto\Connector\Api\ScopeManagerInterface"

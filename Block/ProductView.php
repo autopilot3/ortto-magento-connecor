@@ -6,6 +6,7 @@ namespace Ortto\Connector\Block;
 
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
+use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Api\TrackDataProviderInterface;
 use Ortto\Connector\Logger\OrttoLogger;
 use Ortto\Connector\Model\Api\ProductDataFactory;
@@ -18,7 +19,6 @@ use Magento\Catalog\Model\ProductTypes\ConfigInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Locale\FormatInterface;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
-use Magento\Framework\Serialize\JsonConverter;
 use Magento\Framework\Stdlib\StringUtils;
 use Magento\Framework\Url\EncoderInterface;
 
@@ -27,6 +27,7 @@ class ProductView extends View
     private ProductDataFactory $productDataFactory;
     private TrackDataProviderInterface $trackDataProvider;
     private OrttoLogger $logger;
+    private OrttoSerializerInterface $serializer;
 
     public function __construct(
         Context $context,
@@ -42,6 +43,7 @@ class ProductView extends View
         ProductDataFactory $productDataFactory,
         TrackDataProviderInterface $trackDataProvider,
         OrttoLogger $logger,
+        OrttoSerializerInterface $serializer,
         array $data = []
     ) {
         parent::__construct(
@@ -60,6 +62,7 @@ class ProductView extends View
         $this->productDataFactory = $productDataFactory;
         $this->trackDataProvider = $trackDataProvider;
         $this->logger = $logger;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -92,7 +95,7 @@ class ProductView extends View
             return [
                 TD::EMAIL => $trackingData->getEmail(),
                 TD::PHONE => $trackingData->getPhone(),
-                TD::PAYLOAD => JsonConverter::convert($payload),
+                TD::PAYLOAD => $this->serializer->serializeJson($payload),
             ];
         } catch (Exception $e) {
             $this->logger->error($e, "Failed to get product data");

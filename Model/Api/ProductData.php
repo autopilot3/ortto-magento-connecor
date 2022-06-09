@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
+use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
@@ -19,7 +20,6 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\InventorySalesAdminUi\Model\GetSalableQuantityDataBySku;
-use Magento\Framework\Serialize\JsonConverter;
 use Magento\InventoryConfigurationApi\Model\IsSourceItemManagementAllowedForProductTypeInterface
     as CheckSourceItemSupport;
 
@@ -56,6 +56,7 @@ class ProductData
     private Selection $bundle;
     private LinkRepositoryInterface $linkRepository;
     private CheckSourceItemSupport $checkSourceItemSupport;
+    private OrttoSerializerInterface $serializer;
 
     public function __construct(
         Data $helper,
@@ -67,7 +68,8 @@ class ProductData
         Grouped $grouped,
         Selection $bundle,
         LinkRepositoryInterface $linkRepository,
-        CheckSourceItemSupport $checkSourceItemSupport
+        CheckSourceItemSupport $checkSourceItemSupport,
+        OrttoSerializerInterface $serializer
     ) {
         $this->helper = $helper;
         $this->productRepository = $productRepository;
@@ -91,6 +93,7 @@ class ProductData
         ];
         $this->linkRepository = $linkRepository;
         $this->links = [];
+        $this->serializer = $serializer;
     }
 
     /**
@@ -224,7 +227,7 @@ class ProductData
      */
     public function toJSON()
     {
-        return JsonConverter::convert($this->toArray());
+        return $this->serializer->serializeJson($this->toArray());
     }
 
     private function loadURLs()

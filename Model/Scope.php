@@ -6,7 +6,6 @@ namespace Ortto\Connector\Model;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Helper\To;
 use Magento\Framework\DataObject;
-use Magento\Framework\Serialize\JsonConverter;
 
 class Scope extends DataObject implements ConfigScopeInterface
 {
@@ -193,8 +192,7 @@ class Scope extends DataObject implements ConfigScopeInterface
      */
     public function toJson(array $keys = [])
     {
-        $result = $this->toArray($keys);
-        return JsonConverter::convert($result);
+        return json_encode($this->toArray($keys), JSON_HEX_APOS | JSON_UNESCAPED_SLASHES);
     }
 
     /**

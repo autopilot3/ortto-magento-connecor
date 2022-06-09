@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Ortto\Connector\Model\Api;
 
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
+use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Helper\To;
-use Magento\Framework\Serialize\JsonConverter;
 use Magento\Quote\Model\Quote;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
 
@@ -16,13 +16,16 @@ class CartItemData
 
     private Quote\Item $item;
     private OrttoLoggerInterface $logger;
+    private OrttoSerializerInterface $serializer;
 
     public function __construct(
         ProductDataFactory $productDataFactory,
-        OrttoLoggerInterface $logger
+        OrttoLoggerInterface $logger,
+        OrttoSerializerInterface $serializer
     ) {
         $this->productDataFactory = $productDataFactory;
         $this->logger = $logger;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -39,7 +42,7 @@ class CartItemData
      */
     public function toJSON()
     {
-        return JsonConverter::convert($this->toArray());
+        return $this->serializer->serializeJson($this->toArray());
     }
 
     /**

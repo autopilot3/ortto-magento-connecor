@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
+use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Serialize\JsonConverter;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Api\Data\CartInterface;
@@ -22,29 +22,29 @@ class CartData
     private Data $helper;
     private OrttoLogger $logger;
     private CartRepositoryInterface $cartRepository;
-    private ProductDataFactory $productDataFactory;
     private array $items;
     private AddressDataFactory $addressDataFactory;
     private UrlInterface $url;
     private CartItemDataFactory $cartItemDataFactory;
+    private OrttoSerializerInterface $serializer;
 
     public function __construct(
         Data $helper,
         CartRepositoryInterface $cartRepository,
         OrttoLogger $logger,
-        ProductDataFactory $productDataFactory,
         AddressDataFactory $addressDataFactory,
         UrlInterface $url,
-        CartItemDataFactory $cartItemDataFactory
+        CartItemDataFactory $cartItemDataFactory,
+        OrttoSerializerInterface $serializer
     ) {
         $this->items = [];
         $this->helper = $helper;
         $this->logger = $logger;
         $this->cartRepository = $cartRepository;
-        $this->productDataFactory = $productDataFactory;
         $this->addressDataFactory = $addressDataFactory;
         $this->url = $url;
         $this->cartItemDataFactory = $cartItemDataFactory;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -131,7 +131,7 @@ class CartData
      */
     public function toJSON()
     {
-        return JsonConverter::convert($this->toArray());
+        return $this->serializer->serializeJson($this->toArray());
     }
 
     private function loadItems()

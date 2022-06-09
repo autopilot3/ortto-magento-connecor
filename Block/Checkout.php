@@ -7,14 +7,12 @@ namespace Ortto\Connector\Block;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
 use Ortto\Connector\Api\TrackDataProviderInterface;
-use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Logger\OrttoLogger;
 use Ortto\Connector\Model\Api\CartDataFactory;
-use Exception;
-
 use Magento\Checkout\Model\Session;
-use Magento\Framework\Serialize\JsonConverter;
 use Magento\Framework\View\Element\Template;
+use Ortto\Connector\Service\OrttoSerializer;
+use Exception;
 
 class Checkout extends Template
 {
@@ -22,6 +20,7 @@ class Checkout extends Template
     private OrttoLogger $logger;
     private Session $session;
     private CartDataFactory $cartDataFactory;
+    private OrttoSerializer $serializer;
 
     public function __construct(
         Template\Context $context,
@@ -29,6 +28,7 @@ class Checkout extends Template
         CartDataFactory $cartDataFactory,
         OrttoLogger $logger,
         Session $session,
+        OrttoSerializer $serializer,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -36,6 +36,7 @@ class Checkout extends Template
         $this->cartDataFactory = $cartDataFactory;
         $this->logger = $logger;
         $this->session = $session;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -67,7 +68,7 @@ class Checkout extends Template
             return [
                 TD::EMAIL => $trackingData->getEmail(),
                 TD::PHONE => $trackingData->getPhone(),
-                TD::PAYLOAD => JsonConverter::convert($payload),
+                TD::PAYLOAD => $this->serializer->serializeJson($payload),
             ];
         } catch (Exception $e) {
             $this->logger->error($e, "Failed to get cart data");

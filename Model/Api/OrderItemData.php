@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ortto\Connector\Model\Api;
 
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Magento\Sales\Model\Order\Item;
+use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Magento\Sales\Api\Data\OrderItemInterface;
@@ -17,8 +17,11 @@ class OrderItemData
     private ProductDataFactory $productDataFactory;
     private OrttoLoggerInterface $logger;
 
-    public function __construct(Data $helper, ProductDataFactory $productDataFactory, OrttoLoggerInterface $logger)
-    {
+    public function __construct(
+        Data $helper,
+        ProductDataFactory $productDataFactory,
+        OrttoLoggerInterface $logger
+    ) {
         $this->helper = $helper;
         $this->productDataFactory = $productDataFactory;
         $this->logger = $logger;

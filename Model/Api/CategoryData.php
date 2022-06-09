@@ -7,24 +7,26 @@ namespace Ortto\Connector\Model\Api;
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Model\Category;
 use Magento\Framework\Exception\LocalizedException;
-use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Serialize\JsonConverter;
 
 class CategoryData
 {
     private OrttoLogger $logger;
     private CategoryRepositoryInterface $categoryRepository;
+    private OrttoSerializerInterface $serializer;
 
     public function __construct(
         OrttoLogger $logger,
-        CategoryRepositoryInterface $categoryRepository
+        CategoryRepositoryInterface $categoryRepository,
+        OrttoSerializerInterface $serializer
     ) {
         $this->logger = $logger;
         $this->categoryRepository = $categoryRepository;
+        $this->serializer = $serializer;
     }
 
     /** @var CategoryInterface|Category */
@@ -71,6 +73,6 @@ class CategoryData
      */
     public function toJSON()
     {
-        return JsonConverter::convert($this->toArray());
+        return $this->serializer->serializeJson($this->toArray());
     }
 }
