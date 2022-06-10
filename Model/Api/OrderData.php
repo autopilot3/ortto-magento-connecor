@@ -46,10 +46,15 @@ class OrderData
 
     /**
      * @param OrderInterface|Order $order
+     * @return bool
      */
     public function load(OrderInterface $order)
     {
+        if (empty($order)) {
+            return false;
+        }
         $this->order = $order;
+        return true;
     }
 
     /**

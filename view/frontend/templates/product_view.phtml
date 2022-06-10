@@ -1,22 +1,24 @@
 <?php
 
-use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
 use Ortto\Connector\Block\ProductView;
 use Ortto\Connector\Helper\Config;
 
 /**
  * @var $block ProductView
  */
-$event = $block->getProductEvent(Config::EVENT_TYPE_PRODUCT_VIEWED);
 ?>
 
-<?php if (!empty($event)) { ?>
-    <div class="display:none;" data-mage-init='{"product_view":  {
-          "email": "<?= $event[TD::EMAIL] ?>",
-          "phone": "<?= $event[TD::PHONE] ?>",
-          "payload": <?= $event[TD::PAYLOAD] ?>
-      }
-    }'>
+<?php if ($event = $block->getEventJSON(Config::EVENT_TYPE_PRODUCT_VIEWED)) { ?>
+    <div class="display:none;" id="ortto-product-view">
     </div>
+    <script type="text/x-magento-init">
+    {
+        "#ortto-product-view": {
+            "Ortto_Connector/js/product_view": <?= $event; ?>
+        }
+    }
 
+    </script>
 <?php } ?>
+
+

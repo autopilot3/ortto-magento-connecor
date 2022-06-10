@@ -1,21 +1,23 @@
 <?php
 
-use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
-use Ortto\Connector\Block\Checkout;
 use Ortto\Connector\Block\CheckoutSuccess;
 use Ortto\Connector\Helper\Config;
 
 /**
  * @var $block CheckoutSuccess
  */
-$event = $block->getOrderEvent();
 ?>
-<?php if (!empty($event)) { ?>
-    <div class="display:none;" data-mage-init='{"checkout_success":  {
-          "email": "<?= $event[TD::EMAIL] ?>",
-          "phone": "<?= $event[TD::PHONE] ?>",
-          "payload": <?= $event[TD::PAYLOAD] ?>
-      }
-    }'>
+
+<?php if ($event = $block->getOrderEventJSON(Config::EVENT_TYPE_ORDER_CREATED)) { ?>
+    <div class="display:none;" id="ortto-checkout-success">
     </div>
+    <script type="text/x-magento-init">
+        {
+            "#ortto-checkout-success": {
+                "Ortto_Connector/js/checkout_success": <?= $event; ?>
+            }
+        }
+
+
+    </script>
 <?php } ?>

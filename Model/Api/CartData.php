@@ -66,12 +66,16 @@ class CartData
 
     /**
      * @param CartInterface|Quote $cart
-     * @return void
+     * @return bool
      */
     public function load($cart)
     {
+        if ($cart == null) {
+            return false;
+        }
         $this->cart = $cart;
         $this->loadItems();
+        return true;
     }
 
     /**

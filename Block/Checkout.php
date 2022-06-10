@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Block;
 
-use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
 use Ortto\Connector\Api\TrackDataProviderInterface;
 use Ortto\Connector\Logger\OrttoLogger;
 use Ortto\Connector\Model\Api\CartDataFactory;
@@ -40,32 +39,30 @@ class Checkout extends Template
 
     /**
      * @param string $event
-     * @return array|bool
+     * @return string|bool
      */
-    public function getCardEvent(string $event)
+    public function getCardEventJSON(string $event)
     {
         try {
-            $factory = $this->cartDataFactory->create();
-            $factory->load($this->session->getQuote());
-            $cart = $factory->toArray();
-            if (empty($cart)) {
+            $cart = $this->cartDataFactory->create();
+            if (!$cart->load($this->session->getQuote())) {
                 return false;
             }
 
             $trackingData = $this->trackDataProvider->getData();
 
             $payload = [
-                'event' => $event,
-                'scope' => $trackingData->getScope()->toArray(),
-                'data' => [
-                    'cart' => $cart,
+                'email' => $trackingData->getEmail(),
+                'phone' => $trackingData->getPhone(),
+                'payload' => [
+                    'event' => $event,
+                    'scope' => $trackingData->getScope()->toArray(),
+                    'data' => [
+                        'cart' => $cart->toArray(),
+                    ],
                 ],
             ];
-            return [
-                TD::EMAIL => $trackingData->getEmail(),
-                TD::PHONE => $trackingData->getPhone(),
-                TD::PAYLOAD => $this->serializer->serializeJson($payload),
-            ];
+            return $this->serializer->serializeJson($payload);
         } catch (Exception $e) {
             $this->logger->error($e, "Failed to get cart data");
             return false;

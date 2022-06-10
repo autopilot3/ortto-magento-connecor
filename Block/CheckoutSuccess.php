@@ -40,32 +40,30 @@ class CheckoutSuccess extends Template
     }
 
     /**
-     * @return array|bool
+     * @return string|bool
      */
-    public function getOrderEvent()
+    public function getOrderEventJSON(string $event)
     {
         try {
             $order = $this->orderDataFactory->create();
-            $order->load($this->session->getLastRealOrder());
-            $orderData = $order->toArray();
-            if (empty($orderData)) {
+            if (!$order->load($this->session->getLastRealOrder())) {
                 return false;
             }
 
             $trackingData = $this->trackDataProvider->getData();
 
             $payload = [
-                'event' => Config::EVENT_TYPE_ORDER_CREATED,
-                'scope' => $trackingData->getScope()->toArray(),
-                'data' => [
-                    'order' => $orderData,
+                'email' => $trackingData->getEmail(),
+                'phone' => $trackingData->getPhone(),
+                'payload' => [
+                    'event' => $event,
+                    'scope' => $trackingData->getScope()->toArray(),
+                    'data' => [
+                        'order' => $order->toArray(),
+                    ],
                 ],
             ];
-            return [
-                TD::EMAIL => $trackingData->getEmail(),
-                TD::PHONE => $trackingData->getPhone(),
-                TD::PAYLOAD => $this->serializer->serializeJson($payload),
-            ];
+            return $this->serializer->serializeJson($payload);
         } catch (Exception $e) {
             $this->logger->error($e, "Failed to get order data");
             return false;

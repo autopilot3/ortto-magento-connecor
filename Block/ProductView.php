@@ -66,35 +66,30 @@ class ProductView extends View
 
     /**
      * @param string $event
-     * @return array|bool
+     * @return string|bool
      */
-    public function getProductEvent(string $event)
+    public function getEventJSON(string $event)
     {
         try {
-            $factory = $this->productDataFactory->create();
+            $product = $this->productDataFactory->create();
             $trackingData = $this->trackDataProvider->getData();
             $scope = $trackingData->getScope();
-            if (!$factory->load($this->getProduct(), $scope->getId())) {
+            if (!$product->load($this->getProduct(), $scope->getId())) {
                 return false;
             }
-            $product = $factory->toArray();
-            if (empty($product)) {
-                return false;
-            }
-
             $payload = [
-                'event' => $event,
-                'scope' => $scope->toArray(),
-                'data' => [
-                    'product' => $product,
+                'email' => $trackingData->getEmail(),
+                'phone' => $trackingData->getPhone(),
+                'payload' => [
+                    'event' => $event,
+                    'scope' => $scope->toArray(),
+                    'data' => [
+                        'product' => $product->toArray(),
+                    ],
                 ],
             ];
 
-            return [
-                TD::EMAIL => $trackingData->getEmail(),
-                TD::PHONE => $trackingData->getPhone(),
-                TD::PAYLOAD => $this->serializer->serializeJson($payload),
-            ];
+            return $this->serializer->serializeJson($payload);
         } catch (Exception $e) {
             $this->logger->error($e, "Failed to get product data");
             return false;

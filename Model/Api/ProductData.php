@@ -137,6 +137,9 @@ class ProductData
      */
     public function load($product, int $storeID)
     {
+        if ($product == null) {
+            return false;
+        }
         $this->product = $product;
         $this->product->setStoreId($storeID);
         switch ($product->getTypeId()) {
