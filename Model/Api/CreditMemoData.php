@@ -32,18 +32,20 @@ class CreditMemoData
 
     /**
      * @param int $orderId
+     * @return bool
      */
-    public function loadByOrderId(int $orderId)
+    public function loadByOrderId(int $orderId): bool
     {
         $searchCriteria = $this->searchCriteria->addFilter('order_id', $orderId)->create();
         $this->memos = $this->repository->getList($searchCriteria)->getItems();
+        if (empty($this->memos)) {
+            return false;
+        }
+        return true;
     }
 
     public function toArray(): array
     {
-        if (empty($this->memos)) {
-            return [];
-        }
         $result = [];
         foreach ($this->memos as $memo) {
             $result[] = [

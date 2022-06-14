@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Api;
 
-use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\ProductAlert\Model\Stock;
 use Ortto\Connector\Model\OrttoException;

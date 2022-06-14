@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Observer;
 
+use Magento\Store\Model\ScopeInterface;
 use Ortto\Connector\Helper\Data;
+use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Ortto\Connector\Api\OrttoClientInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
@@ -54,6 +56,7 @@ class OrderSavedAfter implements ObserverInterface
                         $attr = $order->getExtensionAttributes();
                         $attr->setOrttoCompletedAt($this->helper->toUTC($now));
                         $order->setExtensionAttributes($attr);
+                        $this->syncOrder($order);
                     } catch (Exception $e) {
                         $msg = sprintf(
                             'Failed to update order completion date (ID: %d)',
@@ -62,8 +65,22 @@ class OrderSavedAfter implements ObserverInterface
                         $this->logger->error($e, $msg);
                     }
             }
+            $this->syncOrder($order);
         } catch (Exception $e) {
             $this->logger->error($e, "Failed to export the order");
+        }
+    }
+
+    private function syncOrder(OrderInterface $order)
+    {
+        try {
+            $scope = $this->scopeManager->initialiseScope(
+                ScopeInterface::SCOPE_STORE,
+                To::int($order->getStoreId())
+            );
+            $this->orttoClient->importOrders($scope, [$order]);
+        } catch (\Exception $e) {
+            $this->logger->error($e, "Failed to export the closed order");
         }
     }
 }

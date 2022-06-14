@@ -139,7 +139,9 @@ class OrderData
 
         if ($loadRefunds) {
             $refunds = $this->creditMemoDataFactory->create();
-            $fields['refunds'] = $refunds->toArray();
+            if ($refunds->loadByOrderId($orderId)) {
+                $fields['refunds'] = $refunds->toArray();
+            }
         }
 
         $dates = $this->getCustomDates($this->order);
