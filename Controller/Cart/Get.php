@@ -41,6 +41,10 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
     public function execute()
     {
         try {
+            $this->logger->info(
+                "SESSION",
+                ['exists' => $this->session->isSessionExists(), 'id' => $this->session->getSessionId()]
+            );
             $params = $this->getRequest()->getParams();
             $this->logger->debug("Request received: " . $this->getUrl(RoutesInterface::MG_CART_GET), $params);
             $sku = (string)$params['sku'];
