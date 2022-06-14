@@ -8,7 +8,6 @@ use Ortto\Connector\Controller\AbstractJsonController;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
-use Ortto\Connector\Model\Api\CartItemDataFactory;
 use Ortto\Connector\Model\Api\CartDataFactory;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\HttpGetActionInterface;
@@ -52,35 +51,28 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
             if (empty($productIds)) {
                 return $this->error("No product was added to the cart");
             }
-            $trackingData = $this->trackDataProvider->getData();
-            $quote = $this->session->getQuote();
+
             $newProductIds = [];
-            foreach ($quote->getAllVisibleItems() as $item) {
-                $product = $item->getProduct();
-                $productId = $product->getEntityId();
-                if (empty($product) || !in_array($productId, $productIds)) {
-                    continue;
-                }
+            foreach ($productIds as $productId) {
                 $newProductIds[] = To::int($productId);
             }
 
-            if (empty($newProductIds)) {
-                return $this->error("At least one product must be added to the cart");
-            }
-
             $cartData = $this->cartDataFactory->create();
-            $cartData->load($quote);
-
-            $payload = [
-                'event' => Config::EVENT_TYPE_PRODUCT_ADDED_TO_CART,
-                'scope' => $trackingData->getScope()->toArray(),
-                'data' => [
-                    'cart' => $cartData->toArray(),
-                    'new_product_ids' => $newProductIds,
-                    'sku' => $sku,
-                ],
-            ];
-            return $this->success($payload);
+            $quote = $this->session->getQuote();
+            if ($cartData->load($quote)) {
+                $trackingData = $this->trackDataProvider->getData();
+                $payload = [
+                    'event' => Config::EVENT_TYPE_PRODUCT_ADDED_TO_CART,
+                    'scope' => $trackingData->getScope()->toArray(),
+                    'data' => [
+                        'cart' => $cartData->toArray(),
+                        'new_product_ids' => $newProductIds,
+                        'sku' => $sku,
+                    ],
+                ];
+                return $this->success($payload);
+            }
+            return $this->error("The cart is empty");
         } catch (\Exception $e) {
             return $this->error("Failed to load shopping cart data", $e);
         }
