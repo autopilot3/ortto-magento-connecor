@@ -135,18 +135,6 @@ class CartData
 
     private function loadItems(): bool
     {
-        $i1 = $this->cart->getAllItems();
-        $this->logger->info("ALL", ['count' => empty($i1) ? 0 : count($i1)]);
-        foreach ($i1 as $i) {
-            $this->logger->info("PRODUCT (ALL)", ["sku" => $i->getProduct()->getSku()]);
-        }
-
-        $i1 = $this->cart->getAllVisibleItems();
-        $this->logger->info("VISIBLE", ['count' => empty($i1) ? 0 : count($i1)]);
-        foreach ($i1 as $i) {
-            $this->logger->info("VISIBLE", ["sku" => $i->getProduct()->getSku()]);
-        }
-
         $items = $this->cart->getAllVisibleItems();
         foreach ($items as $item) {
             $itemData = $this->cartItemDataFactory->create();
