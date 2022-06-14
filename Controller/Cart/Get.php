@@ -59,6 +59,8 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
 
             $cartData = $this->cartDataFactory->create();
             $quote = $this->session->getQuote();
+            $this->logger->info("QUOTE", ['id' => $quote->getEntityId()]);
+            $this->logger->info("QUOTE ID", ['id' => $this->session->getQuoteId()]);
             if ($cartData->load($quote)) {
                 $trackingData = $this->trackDataProvider->getData();
                 $payload = [
