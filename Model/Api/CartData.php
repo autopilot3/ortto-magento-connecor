@@ -56,8 +56,7 @@ class CartData
         try {
             /** @var CartInterface|Quote $cart $cart */
             $cart = $this->cartRepository->get($id);
-            $this->load($cart);
-            return true;
+            return $this->load($cart);
         } catch (NoSuchEntityException $e) {
             $this->logger->error($e, sprintf("Cart ID %d could not be found.", $id));
             return false;
@@ -70,12 +69,11 @@ class CartData
      */
     public function load($cart)
     {
-        if ($cart == null) {
+        if (empty($cart)) {
             return false;
         }
         $this->cart = $cart;
-        $this->loadItems();
-        return true;
+        return $this->loadItems();
     }
 
     /**
@@ -83,9 +81,6 @@ class CartData
      */
     public function toArray(): array
     {
-        if (empty($this->cart)) {
-            return [];
-        }
         $fields = [
             'id' => To::int($this->cart->getEntityId()),
             'created_at' => $this->helper->toUTC($this->cart->getCreatedAt()),
@@ -138,16 +133,29 @@ class CartData
         return $this->serializer->serializeJson($this->toArray());
     }
 
-    private function loadItems()
+    private function loadItems(): bool
     {
-        $items = $this->cart->getAllVisibleItems();
-        if (empty($items)) {
-            return;
+        $i1 = $this->cart->getAllItems();
+        $this->logger->info("ALL", ['count' => empty($i1) ? 0 : count($i1)]);
+        foreach ($i1 as $i) {
+            $this->logger->info("PRODUCT (ALL)", ["sku" => $i->getProduct()->getSku()]);
         }
+
+        $i1 = $this->cart->getAllVisibleItems();
+        $this->logger->info("VISIBLE", ['count' => empty($i1) ? 0 : count($i1)]);
+        foreach ($i1 as $i) {
+            $this->logger->info("VISIBLE", ["sku" => $i->getProduct()->getSku()]);
+        }
+
+        $items = $this->cart->getAllVisibleItems();
         foreach ($items as $item) {
             $itemData = $this->cartItemDataFactory->create();
             $itemData->load($item);
-            $this->items[] = $itemData->toArray();
+            $itemArray = $itemData->toArray();
+            if (!empty($itemArray)) {
+                $this->items[] = $itemArray;
+            }
         }
+        return !empty($this->items);
     }
 }
