@@ -46,6 +46,7 @@ class Checkout extends Template
         try {
             $cart = $this->cartDataFactory->create();
             if (!$cart->load($this->session->getQuote())) {
+                $this->logger->warn("Checkout Started: Quote not loaded");
                 return false;
             }
 
@@ -64,7 +65,7 @@ class Checkout extends Template
             ];
             return $this->serializer->serializeJson($payload);
         } catch (Exception $e) {
-            $this->logger->error($e, "Failed to get cart data");
+            $this->logger->error($e, "Checkout Started: Failed to get cart data");
             return false;
         }
     }

@@ -75,6 +75,7 @@ class ProductView extends View
             $trackingData = $this->trackDataProvider->getData();
             $scope = $trackingData->getScope();
             if (!$product->load($this->getProduct(), $scope->getId())) {
+                $this->logger->warn("Product View: Product not loaded");
                 return false;
             }
             $payload = [
@@ -91,7 +92,7 @@ class ProductView extends View
 
             return $this->serializer->serializeJson($payload);
         } catch (Exception $e) {
-            $this->logger->error($e, "Failed to get product data");
+            $this->logger->error($e, "Product View: Failed to get product data");
             return false;
         }
     }

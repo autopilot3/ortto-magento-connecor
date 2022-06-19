@@ -129,7 +129,9 @@ class OrderData
             'base_discount_description' => (string)$this->order->getDiscountDescription(),
             'shipping_discount' => To::float($this->order->getShippingDiscountAmount()),
             'base_shipping_discount' => To::float($this->order->getBaseShippingDiscountAmount()),
-            'coupon_code' => (string)$this->order->getCouponCode(),
+            // In case they support multiple codes in the future
+            // https://support.magento.com/hc/en-us/articles/115004348454-How-many-coupons-can-a-customer-use-in-Adobe-Commerce-
+            'discount_codes' => [(string)$this->order->getCouponCode()],
             'protect_code' => (string)$this->order->getProtectCode(),
             'items' => $this->orderItemDataFactory->create()->toArray($this->order->getAllVisibleItems()),
             'refunds' => [],

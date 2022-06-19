@@ -47,6 +47,7 @@ class CheckoutSuccess extends Template
         try {
             $order = $this->orderDataFactory->create();
             if (!$order->load($this->session->getLastRealOrder())) {
+                $this->logger->warn("Checkout Succeeded: Order not loaded");
                 return false;
             }
 
@@ -65,7 +66,7 @@ class CheckoutSuccess extends Template
             ];
             return $this->serializer->serializeJson($payload);
         } catch (Exception $e) {
-            $this->logger->error($e, "Failed to get order data");
+            $this->logger->error($e, "Checkout Succeeded: Failed to get order data");
             return false;
         }
     }

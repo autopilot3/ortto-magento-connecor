@@ -88,19 +88,25 @@ class CreditMemoData
 
         foreach ($items as $item) {
             $result[] = [
+                'id' => To::int($item->getEntityId()),
+                'order_item_id' => To::int($item->getOrderItemId()),
+                'product_id' => To::int($item->getProductId()),
                 'name' => (string)$item->getName(),
                 'sku' => (string)$item->getSku(),
-                'product_id' => To::int($item->getProductId()),
-                'price' => To::float($item->getPrice()),
-                'base_price' => To::float($item->getBasePrice()),
-                'price_incl_tax' => To::float($item->getPriceInclTax()),
-                'base_price_incl_tax' => To::float($item->getBasePriceInclTax()),
                 'quantity' => To::float($item->getQty()),
-                'tax' => To::float($item->getTaxAmount()),
-                'base_tax' => To::float($item->getBaseTaxAmount()),
+                'price' => To::float($item->getPrice()),
+                'price_incl_tax' => To::float($item->getPriceInclTax()),
+                'base_price' => To::float($item->getBasePrice()),
+                'base_price_incl_tax' => To::float($item->getBasePriceInclTax()),
                 'total' => To::float($item->getRowTotal()),
+                'total_incl_tax' => To::float($item->getRowTotalInclTax()),
                 'base_total' => To::float($item->getBaseRowTotal()),
                 'base_total_incl_tax' => To::float($item->getBaseRowTotalInclTax()),
+                'tax' => To::float($item->getTaxAmount()),
+                'base_tax' => To::float($item->getBaseTaxAmount()),
+                'discount' => To::float($item->getDiscountAmount()),
+                'base_discount' => To::float($item->getBaseDiscountAmount()),
+                'description' => (string)$item->getDescription(),
             ];
         }
         return $result;

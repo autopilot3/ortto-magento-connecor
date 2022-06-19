@@ -81,6 +81,11 @@ class CartData
      */
     public function toArray(): array
     {
+        $subtotal = To::float($this->cart->getSubtotal());
+        $subtotalWithDiscount = To::float($this->cart->getSubtotalWithDiscount());
+        $baseSubtotal = To::float($this->cart->getBaseSubtotal());
+        $baseSubtotalWithDiscount = To::float($this->cart->getBaseSubtotalWithDiscount());
+
         $fields = [
             'id' => To::int($this->cart->getEntityId()),
             'created_at' => $this->helper->toUTC($this->cart->getCreatedAt()),
@@ -92,11 +97,15 @@ class CartData
             'store_currency_code' => (string)$this->cart->getData('store_currency_code'),
             'grand_total' => To::float($this->cart->getGrandTotal()),
             'base_grand_total' => To::float($this->cart->getBaseGrandTotal()),
-            'coupon_code' => (string)$this->cart->getCouponCode(),
-            'subtotal' => To::float($this->cart->getSubtotal()),
-            'base_subtotal' => To::float($this->cart->getBaseSubtotal()),
-            'subtotal_with_discount' => To::float($this->cart->getSubtotalWithDiscount()),
-            'base_subtotal_with_discount' => To::float($this->cart->getBaseSubtotalWithDiscount()),
+            // In case they support multiple codes in the future
+            // https://support.magento.com/hc/en-us/articles/115004348454-How-many-coupons-can-a-customer-use-in-Adobe-Commerce-
+            'discount_codes' => [(string)$this->cart->getCouponCode()],
+            'subtotal' => $subtotal,
+            'base_subtotal' => $baseSubtotal,
+            'subtotal_with_discount' => $subtotalWithDiscount,
+            'base_subtotal_with_discount' => $baseSubtotalWithDiscount,
+            'discount' => $subtotal - $subtotalWithDiscount,
+            'base_discount' => $baseSubtotal - $baseSubtotalWithDiscount,
             'items' => $this->items,
             'cart_url' => $this->url->getUrl('checkout/cart', ['_secure' => true]),
             'checkout_url' => $this->url->getUrl('checkout', ['_secure' => true]),
