@@ -66,6 +66,12 @@ class OrderData
         $orderId = To::int($this->order->getEntityId());
         $state = (string)$this->order->getState();
 
+        $items = $this->order->getAllVisibleItems();
+        $productIds = [];
+        foreach ($items as $item) {
+            $productIds[] = To::int($item->getProductId());
+        }
+
         $fields = [
             'id' => $orderId,
             'is_virtual' => To::bool($this->order->getIsVirtual()),
@@ -133,7 +139,7 @@ class OrderData
             // https://support.magento.com/hc/en-us/articles/115004348454-How-many-coupons-can-a-customer-use-in-Adobe-Commerce-
             'discount_codes' => [(string)$this->order->getCouponCode()],
             'protect_code' => (string)$this->order->getProtectCode(),
-            'items' => $this->orderItemDataFactory->create()->toArray($this->order->getAllVisibleItems()),
+            'items' => $this->orderItemDataFactory->create()->toArray($items),
             'refunds' => [],
             'carriers' => $this->getShippingCarriers($orderId, $state),
             'cart_id' => To::int($this->order->getQuoteId()),
@@ -141,7 +147,7 @@ class OrderData
 
         if ($loadRefunds) {
             $refunds = $this->creditMemoDataFactory->create();
-            if ($refunds->loadByOrderId($orderId)) {
+            if ($refunds->loadByOrderId($orderId, $productIds)) {
                 $fields['refunds'] = $refunds->toArray();
             }
         }

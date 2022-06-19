@@ -16,6 +16,8 @@ class CreditMemoData
     private CreditmemoRepositoryInterface $repository;
     private SearchCriteriaBuilder $searchCriteria;
     private Data $helper;
+    /** @var int[] $orderProductIds */
+    private array $orderProductIds;
 
     /** @var CreditmemoInterface[] $memos */
     private array $memos;
@@ -32,15 +34,18 @@ class CreditMemoData
 
     /**
      * @param int $orderId
+     * @param int[] $orderProductIds
      * @return bool
      */
-    public function loadByOrderId(int $orderId): bool
+    public function loadByOrderId(int $orderId, array $orderProductIds): bool
     {
-        $searchCriteria = $this->searchCriteria->addFilter('order_id', $orderId)->create();
+        $searchCriteria = $this->searchCriteria
+            ->addFilter('order_id', $orderId)->create();
         $this->memos = $this->repository->getList($searchCriteria)->getItems();
         if (empty($this->memos)) {
             return false;
         }
+        $this->orderProductIds = $orderProductIds;
         return true;
     }
 
@@ -87,10 +92,17 @@ class CreditMemoData
         $result = [];
 
         foreach ($items as $item) {
+            $productId = To::int($item->getProductId());
+            if (!array_contains($this->orderProductIds, $productId)) {
+                // Exclude variants of a configurable product
+                // We don't want both parent and the child product in the refunded items list
+                // Note: `orderProductIds` only includes visible items
+                continue;
+            }
             $result[] = [
                 'id' => To::int($item->getEntityId()),
                 'order_item_id' => To::int($item->getOrderItemId()),
-                'product_id' => To::int($item->getProductId()),
+                'product_id' => $productId,
                 'name' => (string)$item->getName(),
                 'sku' => (string)$item->getSku(),
                 'quantity' => To::float($item->getQty()),
