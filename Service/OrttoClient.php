@@ -3,10 +3,13 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Service;
 
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Model\Order;
 use Ortto\Connector\Api\OrttoClientInterface;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\RoutesInterface;
+use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
@@ -87,8 +90,35 @@ class OrttoClient implements OrttoClientInterface
      */
     public function importOrders(ConfigScopeInterface $scope, array $orders)
     {
+        return $this->importCustomerOrders($scope, $orders, false);
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function importOrder(ConfigScopeInterface $scope, OrderInterface $order)
+    {
+        $isModified = false;
+        $state = $order->getState();
+        if ($state != Order::STATE_CANCELED && $state != Order::STATE_COMPLETE && $state != Order::STATE_CLOSED) {
+            if ($created = strtotime((string)$order->getCreatedAt())) {
+                if ($updated = strtotime((string)$order->getUpdatedAt())) {
+                    $isModified = abs($updated - $created) > 5; // Seconds
+                } else {
+                    $this->logger->warn("Invalid order update date", ['date' => (string)$order->getUpdatedAt()]);
+                }
+            } else {
+                $this->logger->warn("Invalid order creation date", ['date' => (string)$order->getCreatedAt()]);
+            }
+        }
+
+        return $this->importCustomerOrders($scope, [$order], $isModified);
+    }
+
+    private function importCustomerOrders(ConfigScopeInterface $scope, array $orders, bool $isModified)
+    {
         $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_ORDERS);
-        $payload = $this->helper->getCustomerWithOrderFields($orders, $scope);
+        $payload = $this->helper->getCustomerWithOrderFields($orders, $scope, $isModified);
         if (empty($payload)) {
             $this->logger->debug("No order to export");
             return new ImportResponse();

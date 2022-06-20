@@ -59,9 +59,10 @@ class OrderData
 
     /**
      * @param bool $loadRefunds
+     * @param bool $isModified Used in singe export mode only
      * @return array
      */
-    public function toArray(bool $loadRefunds = false): array
+    public function toArray(bool $loadRefunds = false, bool $isModified = false): array
     {
         $orderId = To::int($this->order->getEntityId());
         $state = (string)$this->order->getState();
@@ -82,6 +83,7 @@ class OrderData
             'base_quantity' => To::float($this->order->getBaseTotalQtyOrdered()),
             'created_at' => $this->helper->toUTC($this->order->getCreatedAt()),
             'updated_at' => $this->helper->toUTC($this->order->getUpdatedAt()),
+            'is_modified' => $isModified,
             'ip_address' => $this->order->getRemoteIp(),
             'total_due' => To::float($this->order->getTotalDue()),
             'base_total_due' => To::float($this->order->getBaseTotalDue()),

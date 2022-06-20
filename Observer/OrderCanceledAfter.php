@@ -59,7 +59,7 @@ class OrderCanceledAfter implements ObserverInterface
 
         try {
             $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, $storeId);
-            $this->orttoClient->importOrders($scope, [$order]);
+            $this->orttoClient->importOrder($scope, $order);
         } catch (\Exception $e) {
             $msg = sprintf('Failed to export the cancelled order ID %d for store ID %d', $orderId, $storeId);
             $this->logger->error($e, $msg);

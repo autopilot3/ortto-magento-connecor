@@ -32,6 +32,16 @@ interface OrttoClientInterface
 
     /**
      * @param ConfigScopeInterface $scope
+     * @param OrderInterface $order
+     * @return ImportResponseInterface|null
+     * @throws JsonException
+     * @throws OrttoException
+     * @throws LocalizedException
+     */
+    public function importOrder(ConfigScopeInterface $scope, OrderInterface $order);
+
+    /**
+     * @param ConfigScopeInterface $scope
      * @param ProductInterface[]|Product[] $products
      * @return ImportResponseInterface|null
      * @throws JsonException|OrttoException|LocalizedException

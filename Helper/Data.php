@@ -103,10 +103,14 @@ class Data extends AbstractHelper
     /**
      * @param OrderInterface[] $orders
      * @param ConfigScopeInterface $scope
+     * @param bool $isModified Used in single export mode only (After save plugin)
      * @return array
      */
-    public function getCustomerWithOrderFields(array $orders, ConfigScopeInterface $scope): array
-    {
+    public function getCustomerWithOrderFields(
+        array $orders,
+        ConfigScopeInterface $scope,
+        bool $isModified = false
+    ): array {
         $isAnonymousOrderEnabled = $this->config->isAnonymousOrderSyncEnabled($scope->getType(), $scope->getId());
         $orderGroups = [];
         foreach ($orders as $order) {
@@ -118,7 +122,7 @@ class Data extends AbstractHelper
             $key = sprintf("%d:%s", $customerId, $customerEmail);
             $orderData = $this->orderDataFactory->create();
             $orderData->load($order);
-            $orderFields = $orderData->toArray(true);
+            $orderFields = $orderData->toArray(true, $isModified);
             if (array_has($orderGroups, $key)) {
                 $orderGroups[$key][self::ORDERS][] = $orderFields;
             } else {
