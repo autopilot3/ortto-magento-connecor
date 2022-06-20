@@ -261,11 +261,6 @@ class ProductData
                     'is_manage' => To::bool($salable['manage_stock']),
                 ];
             }
-        } else {
-            $this->logger->info(
-                "Product does not support source item",
-                ['sku' => $sku, 'type' => $typeId]
-            );
         }
         $this->stockData = [
             'is_in_stock' => To::bool($this->product->isInStock()),

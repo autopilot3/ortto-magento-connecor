@@ -40,6 +40,9 @@ class OrderSavedAfter implements ObserverInterface
 
     public function execute(Observer $observer)
     {
+        /*
+         * NOTE: Admin observer. Order creation is handled by capture.
+         */
         try {
             $event = $observer->getEvent();
             /** @var OrderInterface $order */

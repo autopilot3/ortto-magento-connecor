@@ -38,9 +38,10 @@ class OrderItemData
         }
         $result = [];
         foreach ($items as $item) {
-            // An item with parent ID = variant
+            // This should never happen since we always fetch visible items. Just in case.
+            // An item with parent ID value = variant
             // We don't want to send the variant product instead of the ordered parent product
-            if ($item->getParentItemId()) {
+            if (!empty($item->getParentItemId())) {
                 continue;
             }
             $itemID = To::int($item->getItemId());

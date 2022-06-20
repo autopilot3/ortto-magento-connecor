@@ -9,4 +9,12 @@
         <observer name="adminhtml_catalog_product_save_after"
                   instance="\Ortto\Connector\Observer\ProductSavedAfter"/>
     </event>
+    <event name="sales_order_save_after">
+        <observer name="adminhtml_sales_order_save_after"
+                  instance="\Ortto\Connector\Observer\OrderSavedAfter"/>
+    </event>
+    <event name="order_cancel_after">
+        <observer name="adminhtml_order_cancel_after"
+                  instance="\Ortto\Connector\Observer\OrderCanceledAfter"/>
+    </event>
 </config>

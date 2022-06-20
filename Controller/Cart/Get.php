@@ -32,7 +32,6 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
         $this->trackDataProvider = $trackDataProvider;
         $this->logger = $logger;
         $this->session = $session;
-        $logger->info("CONST", ['has' => $session->hasQuote(), 'is_ajax' => $this->getRequest()->isAjax()]);
     }
 
     /**
@@ -51,16 +50,7 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
             if (empty($productIds)) {
                 return $this->error("No product was added to the cart");
             }
-            $this->logger->info(
-                "EXEC",
-                [
-                    'has' => $this->session->hasQuote(),
-                    'is_ajax' => $this->getRequest()->isAjax(),
-                    'quote_id' => $this->session->getQuoteId(),
-                    'name' => $this->session->getName(),
-                    'last_real_q_id' => $this->session->getLastRealOrder()->getQuoteId(),
-                ]
-            );
+          
             $trackingData = $this->trackDataProvider->getData();
             $cartData = $this->cartDataFactory->create();
 
