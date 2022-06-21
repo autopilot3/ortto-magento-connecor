@@ -18,7 +18,6 @@ define([
                             return;
                         }
                         addToCart({
-                            product_ids: data.productIds,
                             sku: data.sku
                         });
                     });

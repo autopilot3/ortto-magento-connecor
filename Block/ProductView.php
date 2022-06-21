@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Block;
 
-use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
 use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Api\TrackDataProviderInterface;
 use Ortto\Connector\Logger\OrttoLogger;
