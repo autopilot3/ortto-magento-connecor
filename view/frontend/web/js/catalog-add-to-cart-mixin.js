@@ -18,12 +18,7 @@ define([
                             return;
                         }
                         addToCart({
-<<<<<<< HEAD
-                            sku: data.sku,
-=======
-                            product_ids: data.productIds,
                             sku: data.sku
->>>>>>> parent of 9cfd2de (Update product-added-to-cart handler)
                         });
                     });
                     this.interceptors.afterAjaxSubmit = true;
