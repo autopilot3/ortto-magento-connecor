@@ -2,6 +2,7 @@
 
 namespace Ortto\Connector\Controller\Cart;
 
+use Magento\Checkout\Model\Session;
 use Ortto\Connector\Api\RoutesInterface;
 use Ortto\Connector\Api\TrackDataProviderInterface;
 use Ortto\Connector\Controller\AbstractJsonController;
@@ -18,18 +19,21 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
     private TrackDataProviderInterface $trackDataProvider;
     private OrttoLoggerInterface $logger;
     private ProductDataFactory $productDataFactory;
+    private Session $session;
 
     public function __construct(
         Context $context,
         OrttoLoggerInterface $logger,
         CartDataFactory $cartDataFactory,
         TrackDataProviderInterface $trackDataProvider,
-        ProductDataFactory $productDataFactory
+        ProductDataFactory $productDataFactory,
+        Session $session
     ) {
         parent::__construct($context, $logger);
         $this->trackDataProvider = $trackDataProvider;
         $this->logger = $logger;
         $this->productDataFactory = $productDataFactory;
+        $this->session = $session;
     }
 
     /**
@@ -44,6 +48,11 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
             if (empty($sku)) {
                 return $this->error("Product SKU was not specified");
             }
+
+            $this->logger->info(
+                "SESSION",
+                ['quote_id' => $this->session->getQuoteId(), 'has_quote' => $this->session->hasQuote()]
+            );
 
             $trackingData = $this->trackDataProvider->getData();
             $product = $this->productDataFactory->create();
