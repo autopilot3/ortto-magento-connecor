@@ -170,7 +170,9 @@ class OrttoClient implements OrttoClientInterface
         $payload = [];
         foreach ($alerts as $alert) {
             $product = $this->productDataFactory->create();
-            $product->loadById(To::int($alert->getProductId()), $scope->getId());
+            if (!$product->loadById(To::int($alert->getProductId()), $scope->getId())) {
+                continue;
+            }
             $customer = $this->customerDataFactory->create();
             $customer->loadById(To::int($alert->getCustomerId()));
             $payload[] = [

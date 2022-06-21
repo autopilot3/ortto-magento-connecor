@@ -9,7 +9,6 @@ use Ortto\Connector\Controller\AbstractJsonController;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Ortto\Connector\Model\Api\CartDataFactory;
-use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\App\Action\Context;
@@ -47,19 +46,9 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
             if (empty($sku)) {
                 return $this->error("Product SKU was not specified");
             }
-            $productIds = $params['product_ids'];
-            if (empty($productIds)) {
-                return $this->error("No product was added to the cart");
-            }
-
-            $this->logger->info(
-                "SESSION",
-                ['quote_id' => $this->session->getQuoteId(), 'has_quote' => $this->session->hasQuote()]
-            );
 
             $trackingData = $this->trackDataProvider->getData();
             $cartData = $this->cartDataFactory->create();
-
             if ($cartData->load($this->session->getQuote())) {
                 $payload = [
                     'event' => Config::EVENT_TYPE_PRODUCT_ADDED_TO_CART,
@@ -69,7 +58,6 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
                         'sku' => $sku,
                     ],
                 ];
-                $this->logger->info('Cart Loaded', $payload);
                 return $this->success($payload);
             }
             return $this->error("Get: The shopping cart was empty");

@@ -12,7 +12,6 @@ define(['jquery'], function ($) {
          * @param {String} config.url
          */
         if (ap3c && ap3c.trackMagento && ortto && ortto.base_url) {
-            console.log(ortto.base_url.concat('/ortto/cart/get'));
             $.ajax({
                 url: ortto.base_url.concat('/ortto/cart/get'),
                 type: "GET",

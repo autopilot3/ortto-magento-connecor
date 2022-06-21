@@ -125,7 +125,7 @@ class ProductData
             $product = $this->productRepository->get($sku);
             return $this->load($product, $storeID);
         } catch (NoSuchEntityException $e) {
-            $this->logger->error($e, sprintf("Product SKU %s could not be found.", $sku));
+            $this->logger->error($e, sprintf('Product SKU "%s" could not be found.', $sku));
             return false;
         }
     }
