@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Ortto\Connector\Controller;
 
 use Ortto\Connector\Logger\OrttoLoggerInterface;
-use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;

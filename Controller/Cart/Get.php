@@ -11,7 +11,7 @@ use Ortto\Connector\Model\Api\CartDataFactory;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\Controller\Result\Json;
-use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Action\Context;
 
 class Get extends AbstractJsonController implements HttpGetActionInterface
 {
@@ -50,7 +50,7 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
             if (empty($productIds)) {
                 return $this->error("No product was added to the cart");
             }
-          
+
             $trackingData = $this->trackDataProvider->getData();
             $cartData = $this->cartDataFactory->create();
 
@@ -63,6 +63,7 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
                         'sku' => $sku,
                     ],
                 ];
+                $this->logger->info('Cart Loaded', $payload);
                 return $this->success($payload);
             }
             return $this->error("The shopping cart was empty");
