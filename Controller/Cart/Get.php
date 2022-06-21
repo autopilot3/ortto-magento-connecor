@@ -66,7 +66,7 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
                 $this->logger->info('Cart Loaded', $payload);
                 return $this->success($payload);
             }
-            return $this->error("The shopping cart was empty");
+            return $this->error("Get: The shopping cart was empty");
         } catch (\Exception $e) {
             return $this->error("Failed to load shopping cart data", $e);
         }
