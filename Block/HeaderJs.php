@@ -18,6 +18,7 @@ class HeaderJs extends Template
     public const MAGENTO_JS = 'mgj';
     public const CAPTURE_JS = 'cj';
     public const CAPTURE_API = 'ca';
+    public const BASE_URL = 'bu';
 
     private ConfigurationReaderInterface $configReader;
     private OrttoLogger $logger;
@@ -78,6 +79,7 @@ class HeaderJs extends Template
             self::CAPTURE_API => $captureURL,
             self::CAPTURE_JS => $captureJS,
             self::MAGENTO_JS => $magentoJS,
+            self::BASE_URL => $scope->getBaseURL(),
         ];
     }
 }

@@ -2,16 +2,19 @@ define(['jquery'], function ($) {
     "use strict";
     return function (config) {
         const ap3c = window.ap3c;
+        const ortto = window.ortto;
         /**
          * Initializer
          * @param {Function} ap3c.trackMagento
          * @param {Object} config.payload
          * @param {String} config.email
          * @param {String} config.phone
+         * @param {String} config.url
          */
-        if (ap3c && ap3c.trackMagento) {
+        if (ap3c && ap3c.trackMagento && ortto && ortto.base_url) {
+            console.log(ortto.base_url.concat('/ortto/cart/get'));
             $.ajax({
-                url: '/ortto/cart/get',
+                url: ortto.base_url.concat('/ortto/cart/get'),
                 type: "GET",
                 data: config,
                 success: function (resp) {

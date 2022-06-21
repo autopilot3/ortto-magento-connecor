@@ -13,8 +13,12 @@ $config = $block->getConfiguration();
         /**
          * Initializer
          * @param {Function} ap3c.initMagento
-         * @param {Object} window.ap3c
+         * @param {Object} window
          */
+        window.ortto = {
+            'base_url': '<?= $config[HeaderJs::BASE_URL] ?>'
+        };
+
         window.ap3c = window.ap3c || {};
         var ap3c = window.ap3c;
         ap3c.cmd = ap3c.cmd || [];

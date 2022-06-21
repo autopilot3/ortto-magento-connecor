@@ -18,7 +18,7 @@ define([
                             return;
                         }
                         addToCart({
-                            sku: data.sku
+                            sku: data.sku,
                         });
                     });
                     this.interceptors.afterAjaxSubmit = true;
