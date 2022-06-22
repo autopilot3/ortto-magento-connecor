@@ -59,12 +59,6 @@
             <group id="customer" translate="label" sortOrder="2" showInDefault="0" showInWebsite="0"
                    showInStore="1">
                 <label>Customers</label>
-                <field id="non_subscribed_enabled" translate="label" sortOrder="1" type="select" showInDefault="0"
-                       showInWebsite="0"
-                       showInStore="1">
-                    <label>Sync Non-subscribed Contacts</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
                 <field id="auto_sync_enabled" translate="label" sortOrder="2" type="select" showInDefault="0"
                        showInWebsite="0" showInStore="1">
                     <label>Automatic Sync</label>
