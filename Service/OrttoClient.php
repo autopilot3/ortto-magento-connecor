@@ -74,6 +74,7 @@ class OrttoClient implements OrttoClientInterface
                 continue;
             }
             $payload[] = $customerData->toArray();
+            $this->logger->info("EXPORTING", $payload);
         }
         if (empty($payload)) {
             $this->logger->debug("No customer to export");
