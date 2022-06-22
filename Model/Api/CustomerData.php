@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
+use Magento\Customer\Api\Data\CustomerInterface;
+use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\AddressInterface;
-use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Api\GroupRepositoryInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -26,6 +27,7 @@ class CustomerData
     private AddressInterface $shippingAddress;
     private string $phone;
     private array $customAttributes;
+    private string $ipAddress;
 
     private CustomerRepositoryInterface $customerRepository;
     private OrttoLogger $logger;
@@ -33,6 +35,7 @@ class CustomerData
     private GroupRepositoryInterface $groupRepository;
     private Data $helper;
     private AddressDataFactory $addressDataFactory;
+    private RemoteAddress $remoteAddress;
 
     public function __construct(
         CustomerRepositoryInterface $customerRepository,
@@ -40,6 +43,7 @@ class CustomerData
         GroupRepositoryInterface $groupRepository,
         OrttoLogger $logger,
         AddressDataFactory $addressDataFactory,
+        RemoteAddress $remoteAddress,
         Data $helper
     ) {
         $this->customerRepository = $customerRepository;
@@ -50,19 +54,21 @@ class CustomerData
         $this->addressDataFactory = $addressDataFactory;
         $this->group = '';
         $this->phone = '';
+        $this->ipAddress = '';
         $this->customAttributes = [];
+        $this->remoteAddress = $remoteAddress;
     }
 
     /**
      * @param int $id
+     * @param bool $storeFront
      * @return bool
      */
-    public function loadById(int $id)
+    public function loadById(int $id, bool $storeFront = false)
     {
         try {
             $customer = $this->customerRepository->getById($id);
-            $this->load($customer);
-            return true;
+            return $this->load($customer, $storeFront);
         } catch (\Exception $e) {
             $this->logger->error($e, sprintf("Failed to load customer by ID %d", $id));
             return false;
@@ -71,12 +77,17 @@ class CustomerData
 
     /**
      * @param CustomerInterface $customer
-     * @return void
+     * @return bool
      */
-    public function load($customer)
+    public function load($customer, bool $storeFront = false)
     {
+        if ($customer == null) {
+            return false;
+        }
         $this->customer = $customer;
-
+        if ($storeFront && $ipAddress = $this->remoteAddress->getRemoteAddress()) {
+            $this->ipAddress = $ipAddress;
+        }
         $groupId = $customer->getGroupId();
         if (!empty($groupId)) {
             try {
@@ -89,34 +100,30 @@ class CustomerData
             }
         }
 
-        $addresses = $customer->getAddresses();
-
-        if (!empty($addresses)) {
+        if ($addresses = $customer->getAddresses()) {
             $phoneSetToBilling = false;
             foreach ($addresses as $address) {
-                switch (true) {
-                    case $address->isDefaultBilling():
-                        $this->billingAddress = $address;
+                // Same address can be set as default billing and shipping addresses
+                if ($address->isDefaultBilling()) {
+                    $this->billingAddress = $address;
+                    $phone = $address->getTelephone();
+                    if (!empty($phone)) {
+                        $this->phone = $phone;
+                        $phoneSetToBilling = true;
+                    }
+                }
+                if ($address->isDefaultShipping()) {
+                    $this->shippingAddress = $address;
+                    // Billing phone number takes precedence
+                    if (!$phoneSetToBilling) {
                         $phone = $address->getTelephone();
                         if (!empty($phone)) {
                             $this->phone = $phone;
-                            $phoneSetToBilling = true;
                         }
-                        break;
-                    case $address->isDefaultShipping():
-                        $this->shippingAddress = $address;
-                        // Billing phone number takes precedence
-                        if (!$phoneSetToBilling) {
-                            $phone = $address->getTelephone();
-                            if (!empty($phone)) {
-                                $this->phone = $phone;
-                            }
-                        }
-                        break;
-                    default:
-                        if (empty($this->phone)) {
-                            $this->phone = $address->getTelephone();
-                        }
+                    }
+                }
+                if (empty($this->phone)) {
+                    $this->phone = $address->getTelephone();
                 }
             }
         }
@@ -127,6 +134,7 @@ class CustomerData
                 $this->customAttributes[$attr->getAttributeCode()] = $attr->getValue();
             }
         }
+        return true;
     }
 
     public function toArray(): array
@@ -150,6 +158,7 @@ class CustomerData
             'is_subscribed' => $sub->isSubscribed(),
             'phone' => $this->phone,
             'custom_attributes' => $this->customAttributes,
+            'ip_address' => $this->ipAddress,
         ];
 
         if (!empty($this->billingAddress)) {

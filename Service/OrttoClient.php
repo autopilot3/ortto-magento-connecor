@@ -63,19 +63,17 @@ class OrttoClient implements OrttoClientInterface
     /**
      * @inheirtDoc
      */
-    public function importContacts(ConfigScopeInterface $scope, array $customers)
+    public function importContacts(ConfigScopeInterface $scope, array $customers, bool $storeFront = false)
     {
         $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_CONTACTS);
 
         $payload = [];
         foreach ($customers as $customer) {
             $customerData = $this->customerDataFactory->create();
-            $customerData->load($customer);
-            $data = $customerData->toArray();
-            if (empty($data)) {
+            if (!$customerData->load($customer, $storeFront)) {
                 continue;
             }
-            $payload[] = $data;
+            $payload[] = $customerData->toArray();
         }
         if (empty($payload)) {
             $this->logger->debug("No customer to export");

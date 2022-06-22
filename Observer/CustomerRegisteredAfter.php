@@ -44,7 +44,7 @@ class CustomerRegisteredAfter implements ObserverInterface
             if (!$this->helper->shouldExportCustomer($scope, $customer)) {
                 return;
             }
-            $this->orttoClient->importContacts($scope, [$customer]);
+            $this->orttoClient->importContacts($scope, [$customer], true);
         } catch (Exception $e) {
             $this->logger->error($e, 'CustomerRegisteredAfter: Failed to export the customer');
         }

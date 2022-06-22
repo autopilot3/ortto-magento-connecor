@@ -17,10 +17,13 @@ interface OrttoClientInterface
     /**
      * @param ConfigScopeInterface $scope
      * @param CustomerInterface[] $customers
+     * @param bool $storeFront
      * @return ImportResponseInterface|null
-     * @throws JsonException|OrttoException|LocalizedException
+     * @throws JsonException
+     * @throws OrttoException
+     * @throws LocalizedException
      */
-    public function importContacts(ConfigScopeInterface $scope, array $customers);
+    public function importContacts(ConfigScopeInterface $scope, array $customers, bool $storeFront = false);
 
     /**
      * @param ConfigScopeInterface $scope
