@@ -29,7 +29,6 @@ class AddressData
     public function toArray($address): array
     {
         $data = [
-            'type' => $this->getType($address),
             'city' => (string)$address->getCity(),
             'street_lines' => $address->getStreet(),
             'post_code' => (string)$address->getPostcode(),
@@ -63,27 +62,9 @@ class AddressData
                 ];
             }
         } catch (NoSuchEntityException $e) {
-            $this->logger->error($e, 'Failed to fetch country details');
+            $this->logger->debug('Failed to fetch country details: ' . $e->getMessage());
         }
 
         return $data;
-    }
-
-    /**
-     * @param AddressInterface|OrderAddressInterface|\Magento\Quote\Api\Data\AddressInterface $address
-     * @return string
-     */
-    private function getType($address): string
-    {
-        if ($address instanceof AddressInterface) {
-            if ($address->isDefaultShipping()) {
-                return "shipping";
-            }
-            if ($address->isDefaultBilling()) {
-                return "billing";
-            }
-            return "other";
-        }
-        return (string)$address->getAddressType();
     }
 }

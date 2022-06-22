@@ -9,7 +9,6 @@ use Ortto\Connector\Api\OrttoClientInterface;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\RoutesInterface;
-use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
@@ -74,7 +73,6 @@ class OrttoClient implements OrttoClientInterface
                 continue;
             }
             $payload[] = $customerData->toArray();
-            $this->logger->info("EXPORTING", $payload);
         }
         if (empty($payload)) {
             $this->logger->debug("No customer to export");
@@ -199,7 +197,8 @@ class OrttoClient implements OrttoClientInterface
     private function postJSON(string $url, ConfigScopeInterface $scope, array $request)
     {
         $scopeData = $scope->toArray();
-        $this->logger->debug('POST: ' . $url, ['scope' => $scopeData]);
+        $logData = [];
+        $this->logger->debug('POST: ' . $url, $logData);
         $apiKey = $this->config->getAPIKey($scope->getType(), $scope->getId());
         $this->curl->setCredentials($this->helper->getClientId(), $apiKey);
         $this->curl->addHeader("Content-Type", "application/json");
@@ -211,9 +210,18 @@ class OrttoClient implements OrttoClientInterface
         if (empty($response)) {
             $response = "{}";
         }
-        $this->logger->debug('POST: ' . $url, ['response' => $response]);
-        if ($status !== 200) {
-            throw new OrttoException($url, "POST", $status, $payload, $response);
+
+        if ($status == 200) {
+            if ($this->config->verboseLogging($scope->getType(), $scope->getId())) {
+                $this->logger->info(
+                    'POST: ' . $url,
+                    ['status' => $status, 'request' => $request, 'response' => $response, 'scope' => $scopeData]
+                );
+            } else {
+                $this->logger->debug('POST: ' . $url, ['status' => $status, 'scope' => $scopeData]);
+            }
+        } else {
+            throw new OrttoException($url, "POST", $status, $request, $response);
         }
         return json_decode($response, true, 512, JSON_THROW_ON_ERROR);
     }

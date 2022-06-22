@@ -17,6 +17,7 @@ class Config
     const XML_PATH_CAPTURE_API_URL = "ortto_general/tracking/capture_url";
     const XML_PATH_INSTANCE_ID = "ortto_general/general/instance_id";
     const XML_PATH_DATA_SOURCE_ID = "ortto_general/general/data_source_id";
+    const XML_PATH_LOGGING_VERBOSE = "ortto_general/logging/verbose";
 
     const XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED = "ortto_sync/customer/auto_sync_enabled";
     const XML_PATH_SYNC_ORDER_AUTO_ENABLED = "ortto_sync/order/auto_sync_enabled";
@@ -27,6 +28,7 @@ class Config
     const XML_PATH_SMALL_IMAGE_PLACE_HOLDER = 'catalog/placeholder/small_image_placeholder';
     const XML_PATH_SWATCH_IMAGE_PLACE_HOLDER = 'catalog/placeholder/swatch_image_placeholder';
     const XML_PATH_THUMBNAIL_IMAGE_PLACE_HOLDER = 'catalog/placeholder/thumbnail_placeholder';
+
 
     // "2006-01-02T15:04:05Z07:00"
     const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';

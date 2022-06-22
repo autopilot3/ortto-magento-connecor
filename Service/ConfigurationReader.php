@@ -136,6 +136,15 @@ class ConfigurationReader implements ConfigurationReaderInterface
         );
     }
 
+    public function verboseLogging(string $scopeType, int $scopeId): bool
+    {
+        return To::bool($this->scopeConfig->getValue(
+            Config::XML_PATH_LOGGING_VERBOSE,
+            $scopeType,
+            $scopeId
+        ));
+    }
+
     public function getCaptureJsURL(string $scopeType, int $scopeId): string
     {
         return (string)$this->scopeConfig->getValue(

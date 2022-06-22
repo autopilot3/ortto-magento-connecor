@@ -49,6 +49,15 @@
                     <frontend_model>Ortto\Connector\Block\Adminhtml\System\Config\DisabledText</frontend_model>
                 </field>
             </group>
+            <group id="logging" translate="label" sortOrder="3" showInDefault="0" showInWebsite="0"
+                   showInStore="1">
+                <label>Logging</label>
+                <field id="verbose" translate="label" type="select" showInDefault="0" showInWebsite="0"
+                       showInStore="1">
+                    <label>Verbose</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
         </section>
         <section id="ortto_sync" translate="label" type="text" sortOrder="101" showInDefault="0"
                  showInWebsite="0"
