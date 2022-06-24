@@ -39,6 +39,7 @@ interface OrttoRefundItemInterface
     * @return int
     */
     public function getId();
+
     /**
     * Set order item id
     *
@@ -53,6 +54,7 @@ interface OrttoRefundItemInterface
     * @return int
     */
     public function getOrderItemId();
+
     /**
     * Set product id
     *
@@ -67,6 +69,7 @@ interface OrttoRefundItemInterface
     * @return int
     */
     public function getProductId();
+
     /**
     * Set sku
     *
@@ -81,6 +84,7 @@ interface OrttoRefundItemInterface
     * @return string
     */
     public function getSku();
+
     /**
     * Set name
     *
@@ -95,6 +99,7 @@ interface OrttoRefundItemInterface
     * @return string
     */
     public function getName();
+
     /**
     * Set price
     *
@@ -109,6 +114,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getPrice();
+
     /**
     * Set price incl tax
     *
@@ -123,6 +129,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getPriceInclTax();
+
     /**
     * Set base price
     *
@@ -137,6 +144,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getBasePrice();
+
     /**
     * Set base price incl tax
     *
@@ -151,6 +159,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getBasePriceInclTax();
+
     /**
     * Set quantity
     *
@@ -165,6 +174,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getQuantity();
+
     /**
     * Set tax
     *
@@ -179,6 +189,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getTax();
+
     /**
     * Set base tax
     *
@@ -193,6 +204,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getBaseTax();
+
     /**
     * Set total
     *
@@ -207,6 +219,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getTotal();
+
     /**
     * Set base total
     *
@@ -221,6 +234,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getBaseTotal();
+
     /**
     * Set total incl tax
     *
@@ -235,6 +249,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getTotalInclTax();
+
     /**
     * Set base total incl tax
     *
@@ -249,6 +264,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getBaseTotalInclTax();
+
     /**
     * Set description
     *
@@ -263,6 +279,7 @@ interface OrttoRefundItemInterface
     * @return string
     */
     public function getDescription();
+
     /**
     * Set discount
     *
@@ -277,6 +294,7 @@ interface OrttoRefundItemInterface
     * @return float
     */
     public function getDiscount();
+
     /**
     * Set base discount
     *

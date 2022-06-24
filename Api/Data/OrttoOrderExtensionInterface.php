@@ -22,6 +22,7 @@ interface OrttoOrderExtensionInterface
     * @return int
     */
     public function getAmazonReferenceId();
+
     /**
     * Set gift
     *

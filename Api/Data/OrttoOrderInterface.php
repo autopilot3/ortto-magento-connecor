@@ -95,6 +95,7 @@ interface OrttoOrderInterface
     * @return int
     */
     public function getId();
+
     /**
     * Set number
     *
@@ -109,6 +110,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getNumber();
+
     /**
     * Set cart id
     *
@@ -123,6 +125,7 @@ interface OrttoOrderInterface
     * @return int
     */
     public function getCartId();
+
     /**
     * Set created at
     *
@@ -137,6 +140,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getCreatedAt();
+
     /**
     * Set updated at
     *
@@ -151,6 +155,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getUpdatedAt();
+
     /**
     * Set is modified
     *
@@ -165,6 +170,7 @@ interface OrttoOrderInterface
     * @return bool
     */
     public function getIsModified();
+
     /**
     * Set canceled at
     *
@@ -179,6 +185,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getCanceledAt();
+
     /**
     * Set completed at
     *
@@ -193,6 +200,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getCompletedAt();
+
     /**
     * Set status
     *
@@ -207,6 +215,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getStatus();
+
     /**
     * Set state
     *
@@ -221,6 +230,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getState();
+
     /**
     * Set base currency code
     *
@@ -235,6 +245,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getBaseCurrencyCode();
+
     /**
     * Set global currency code
     *
@@ -249,6 +260,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getGlobalCurrencyCode();
+
     /**
     * Set order currency code
     *
@@ -263,6 +275,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getOrderCurrencyCode();
+
     /**
     * Set quantity
     *
@@ -277,6 +290,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getQuantity();
+
     /**
     * Set base quantity
     *
@@ -291,6 +305,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseQuantity();
+
     /**
     * Set grand total
     *
@@ -305,6 +320,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getGrandTotal();
+
     /**
     * Set base grand total
     *
@@ -319,6 +335,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseGrandTotal();
+
     /**
     * Set total due
     *
@@ -333,6 +350,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getTotalDue();
+
     /**
     * Set base total due
     *
@@ -347,6 +365,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseTotalDue();
+
     /**
     * Set total cancelled
     *
@@ -361,6 +380,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getTotalCancelled();
+
     /**
     * Set base total cancelled
     *
@@ -375,6 +395,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseTotalCancelled();
+
     /**
     * Set total invoiced
     *
@@ -389,6 +410,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getTotalInvoiced();
+
     /**
     * Set base total invoiced
     *
@@ -403,6 +425,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseTotalInvoiced();
+
     /**
     * Set subtotal
     *
@@ -417,6 +440,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getSubtotal();
+
     /**
     * Set base subtotal
     *
@@ -431,6 +455,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseSubtotal();
+
     /**
     * Set subtotal incl tax
     *
@@ -445,6 +470,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getSubtotalInclTax();
+
     /**
     * Set base subtotal incl tax
     *
@@ -459,6 +485,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseSubtotalInclTax();
+
     /**
     * Set base total offline refunded
     *
@@ -473,6 +500,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseTotalOfflineRefunded();
+
     /**
     * Set base total online refunded
     *
@@ -487,6 +515,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseTotalOnlineRefunded();
+
     /**
     * Set total offline refunded
     *
@@ -501,6 +530,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getTotalOfflineRefunded();
+
     /**
     * Set total online refunded
     *
@@ -515,6 +545,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getTotalOnlineRefunded();
+
     /**
     * Set total paid
     *
@@ -529,6 +560,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getTotalPaid();
+
     /**
     * Set base total paid
     *
@@ -543,6 +575,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseTotalPaid();
+
     /**
     * Set ip address
     *
@@ -557,6 +590,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getIpAddress();
+
     /**
     * Set tax
     *
@@ -571,6 +605,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getTax();
+
     /**
     * Set base tax
     *
@@ -585,6 +620,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseTax();
+
     /**
     * Set tax cancelled
     *
@@ -599,6 +635,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getTaxCancelled();
+
     /**
     * Set base tax cancelled
     *
@@ -613,6 +650,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseTaxCancelled();
+
     /**
     * Set tax invoiced
     *
@@ -627,6 +665,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getTaxInvoiced();
+
     /**
     * Set base tax invoiced
     *
@@ -641,6 +680,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseTaxInvoiced();
+
     /**
     * Set tax refunded
     *
@@ -655,6 +695,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getTaxRefunded();
+
     /**
     * Set base tax refunded
     *
@@ -669,6 +710,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseTaxRefunded();
+
     /**
     * Set shipping
     *
@@ -683,6 +725,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getShipping();
+
     /**
     * Set base shipping
     *
@@ -697,6 +740,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseShipping();
+
     /**
     * Set shipping incl tax
     *
@@ -711,6 +755,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getShippingInclTax();
+
     /**
     * Set base shipping incl tax
     *
@@ -725,6 +770,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseShippingInclTax();
+
     /**
     * Set shipping tax
     *
@@ -739,6 +785,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getShippingTax();
+
     /**
     * Set base shipping tax
     *
@@ -753,6 +800,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseShippingTax();
+
     /**
     * Set shipping cancelled
     *
@@ -767,6 +815,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getShippingCancelled();
+
     /**
     * Set base shipping cancelled
     *
@@ -781,6 +830,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseShippingCancelled();
+
     /**
     * Set shipping invoiced
     *
@@ -795,6 +845,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getShippingInvoiced();
+
     /**
     * Set base shipping invoiced
     *
@@ -809,6 +860,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseShippingInvoiced();
+
     /**
     * Set shipping refunded
     *
@@ -823,6 +875,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getShippingRefunded();
+
     /**
     * Set base shipping refunded
     *
@@ -837,6 +890,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseShippingRefunded();
+
     /**
     * Set discount
     *
@@ -851,6 +905,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getDiscount();
+
     /**
     * Set base discount
     *
@@ -865,6 +920,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseDiscount();
+
     /**
     * Set discount description
     *
@@ -879,6 +935,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getDiscountDescription();
+
     /**
     * Set discount refunded
     *
@@ -893,6 +950,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getDiscountRefunded();
+
     /**
     * Set base discount refunded
     *
@@ -907,6 +965,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseDiscountRefunded();
+
     /**
     * Set discount invoiced
     *
@@ -921,6 +980,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getDiscountInvoiced();
+
     /**
     * Set base discount invoiced
     *
@@ -935,6 +995,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseDiscountInvoiced();
+
     /**
     * Set discount cancelled
     *
@@ -949,6 +1010,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getDiscountCancelled();
+
     /**
     * Set base discount cancelled
     *
@@ -963,6 +1025,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseDiscountCancelled();
+
     /**
     * Set shipping discount
     *
@@ -977,6 +1040,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getShippingDiscount();
+
     /**
     * Set base shipping discount
     *
@@ -991,6 +1055,7 @@ interface OrttoOrderInterface
     * @return float
     */
     public function getBaseShippingDiscount();
+
     /**
     * Set last transaction id
     *
@@ -1005,6 +1070,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getLastTransactionId();
+
     /**
     * Set payment method
     *
@@ -1019,6 +1085,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getPaymentMethod();
+
     /**
     * Set discount codes
     *
@@ -1033,6 +1100,7 @@ interface OrttoOrderInterface
     * @return string[]
     */
     public function getDiscountCodes(): array;
+
     /**
     * Set protect code
     *
@@ -1047,6 +1115,7 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getProtectCode();
+
     /**
     * Set shipping address
     *
@@ -1061,6 +1130,7 @@ interface OrttoOrderInterface
     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
     */
     public function getShippingAddress();
+
     /**
     * Set billing address
     *
@@ -1075,6 +1145,7 @@ interface OrttoOrderInterface
     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
     */
     public function getBillingAddress();
+
     /**
     * Set items
     *
@@ -1089,6 +1160,7 @@ interface OrttoOrderInterface
     * @return \Ortto\Connector\Api\Data\OrttoOrderItemInterface[]
     */
     public function getItems(): array;
+
     /**
     * Set extension
     *
@@ -1103,6 +1175,7 @@ interface OrttoOrderInterface
     * @return \Ortto\Connector\Api\Data\OrttoOrderExtensionInterface
     */
     public function getExtension();
+
     /**
     * Set refunds
     *
@@ -1117,6 +1190,7 @@ interface OrttoOrderInterface
     * @return \Ortto\Connector\Api\Data\OrttoRefundInterface[]
     */
     public function getRefunds(): array;
+
     /**
     * Set carriers
     *

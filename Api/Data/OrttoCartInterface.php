@@ -51,6 +51,7 @@ interface OrttoCartInterface
     * @return int
     */
     public function getId();
+
     /**
     * Set ip address
     *
@@ -65,6 +66,7 @@ interface OrttoCartInterface
     * @return string
     */
     public function getIpAddress();
+
     /**
     * Set created at
     *
@@ -79,6 +81,7 @@ interface OrttoCartInterface
     * @return string
     */
     public function getCreatedAt();
+
     /**
     * Set updated at
     *
@@ -93,6 +96,7 @@ interface OrttoCartInterface
     * @return string
     */
     public function getUpdatedAt();
+
     /**
     * Set items count
     *
@@ -107,6 +111,7 @@ interface OrttoCartInterface
     * @return int
     */
     public function getItemsCount();
+
     /**
     * Set items quantity
     *
@@ -121,6 +126,7 @@ interface OrttoCartInterface
     * @return int
     */
     public function getItemsQuantity();
+
     /**
     * Set currency code
     *
@@ -135,6 +141,7 @@ interface OrttoCartInterface
     * @return string
     */
     public function getCurrencyCode();
+
     /**
     * Set base currency code
     *
@@ -149,6 +156,7 @@ interface OrttoCartInterface
     * @return string
     */
     public function getBaseCurrencyCode();
+
     /**
     * Set store currency code
     *
@@ -163,6 +171,7 @@ interface OrttoCartInterface
     * @return string
     */
     public function getStoreCurrencyCode();
+
     /**
     * Set discount codes
     *
@@ -177,6 +186,7 @@ interface OrttoCartInterface
     * @return string[]
     */
     public function getDiscountCodes(): array;
+
     /**
     * Set items
     *
@@ -191,6 +201,7 @@ interface OrttoCartInterface
     * @return \Ortto\Connector\Api\Data\OrttoCartItemInterface[]
     */
     public function getItems(): array;
+
     /**
     * Set grand total
     *
@@ -205,6 +216,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getGrandTotal();
+
     /**
     * Set base grand total
     *
@@ -219,6 +231,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getBaseGrandTotal();
+
     /**
     * Set subtotal
     *
@@ -233,6 +246,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getSubtotal();
+
     /**
     * Set base subtotal
     *
@@ -247,6 +261,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getBaseSubtotal();
+
     /**
     * Set subtotal with discount
     *
@@ -261,6 +276,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getSubtotalWithDiscount();
+
     /**
     * Set base subtotal with discount
     *
@@ -275,6 +291,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getBaseSubtotalWithDiscount();
+
     /**
     * Set tax
     *
@@ -289,6 +306,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getTax();
+
     /**
     * Set base tax
     *
@@ -303,6 +321,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getBaseTax();
+
     /**
     * Set shipping
     *
@@ -317,6 +336,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getShipping();
+
     /**
     * Set base shipping
     *
@@ -331,6 +351,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getBaseShipping();
+
     /**
     * Set shipping incl tax
     *
@@ -345,6 +366,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getShippingInclTax();
+
     /**
     * Set base shipping incl tax
     *
@@ -359,6 +381,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getBaseShippingInclTax();
+
     /**
     * Set shipping tax
     *
@@ -373,6 +396,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getShippingTax();
+
     /**
     * Set base shipping tax
     *
@@ -387,6 +411,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getBaseShippingTax();
+
     /**
     * Set shipping address
     *
@@ -401,6 +426,7 @@ interface OrttoCartInterface
     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface|null
     */
     public function getShippingAddress();
+
     /**
     * Set billing address
     *
@@ -415,6 +441,7 @@ interface OrttoCartInterface
     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface|null
     */
     public function getBillingAddress();
+
     /**
     * Set cart url
     *
@@ -429,6 +456,7 @@ interface OrttoCartInterface
     * @return string
     */
     public function getCartUrl();
+
     /**
     * Set checkout url
     *
@@ -443,6 +471,7 @@ interface OrttoCartInterface
     * @return string
     */
     public function getCheckoutUrl();
+
     /**
     * Set discount
     *
@@ -457,6 +486,7 @@ interface OrttoCartInterface
     * @return float
     */
     public function getDiscount();
+
     /**
     * Set base discount
     *

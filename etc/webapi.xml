@@ -44,5 +44,11 @@
             <resource ref="Ortto_Connector::get_product"/>
         </resources>
     </route>
+    <route url="/V1/ortto/customer/list" method="GET">
+        <service class="Ortto\Connector\Api\CustomerApiInterface" method="list"/>
+        <resources>
+            <resource ref="Ortto_Connector::get_customer"/>
+        </resources>
+    </route>
     <!-- END SYNC ENDPOINTS -->
 </routes>

@@ -1,0 +1,56 @@
+<?php
+
+namespace Ortto\Connector\Api\Data;
+
+interface ListCustomerResponseInterface
+{
+    /**
+     * String constants for property names
+     */
+    const TOTAL = "total";
+    const CUSTOMERS = "customers";
+    const HAS_MORE = "has_more";
+
+    /**
+     * Getter for Total.
+     *
+     * @return int
+     */
+    public function getTotal(): int;
+
+    /**
+     * Setter for Total.
+     *
+     * @param int $total
+     *
+     * @return void
+     */
+    public function setTotal(int $total): void;
+
+    /**
+     * Getter for has more.
+     *
+     * @return bool
+     */
+    public function getHasMore(): bool;
+
+    /**
+     * Setter for has more.
+     *
+     * @param bool $hasMore
+     *
+     * @return void
+     */
+    public function setHasMore(bool $hasMore);
+
+    /**
+     * @param \Ortto\Connector\Api\Data\OrttoCustomerInterface[] $customers
+     * @return void
+     */
+    public function setCustomers(array $customers);
+
+    /**
+     * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface[]
+     */
+    public function getCustomers();
+}

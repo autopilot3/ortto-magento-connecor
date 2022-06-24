@@ -23,6 +23,7 @@ interface OrttoGiftInterface
     * @return string
     */
     public function getMessage();
+
     /**
     * Set sender
     *
@@ -37,6 +38,7 @@ interface OrttoGiftInterface
     * @return string
     */
     public function getSender();
+
     /**
     * Set recipient
     *

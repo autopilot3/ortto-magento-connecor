@@ -125,7 +125,7 @@ class OrttoAddress extends DataObject implements OrttoAddressInterface
     /** @inheirtDoc */
     public function getRegion()
     {
-        return $this->getData(self::REGION);
+        return (string)$this->getData(self::REGION);
     }
 
     /** @inheirtDoc */

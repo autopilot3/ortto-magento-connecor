@@ -60,6 +60,7 @@ interface OrttoOrderItemInterface
     * @return int
     */
     public function getId();
+
     /**
     * Set is virtual
     *
@@ -74,6 +75,7 @@ interface OrttoOrderItemInterface
     * @return bool
     */
     public function getIsVirtual();
+
     /**
     * Set sku
     *
@@ -88,6 +90,7 @@ interface OrttoOrderItemInterface
     * @return string
     */
     public function getSku();
+
     /**
     * Set description
     *
@@ -102,6 +105,7 @@ interface OrttoOrderItemInterface
     * @return string
     */
     public function getDescription();
+
     /**
     * Set name
     *
@@ -116,6 +120,7 @@ interface OrttoOrderItemInterface
     * @return string
     */
     public function getName();
+
     /**
     * Set product
     *
@@ -130,6 +135,7 @@ interface OrttoOrderItemInterface
     * @return \Ortto\Connector\Api\Data\OrttoProductInterface
     */
     public function getProduct();
+
     /**
     * Set variant
     *
@@ -144,6 +150,7 @@ interface OrttoOrderItemInterface
     * @return \Ortto\Connector\Api\Data\OrttoProductInterface|null
     */
     public function getVariant();
+
     /**
     * Set created at
     *
@@ -158,6 +165,7 @@ interface OrttoOrderItemInterface
     * @return string
     */
     public function getCreatedAt();
+
     /**
     * Set updated at
     *
@@ -172,6 +180,7 @@ interface OrttoOrderItemInterface
     * @return string
     */
     public function getUpdatedAt();
+
     /**
     * Set refunded
     *
@@ -186,6 +195,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getRefunded();
+
     /**
     * Set base refunded
     *
@@ -200,6 +210,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getBaseRefunded();
+
     /**
     * Set base cost
     *
@@ -214,6 +225,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getBaseCost();
+
     /**
     * Set discount
     *
@@ -228,6 +240,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getDiscount();
+
     /**
     * Set discount percent
     *
@@ -242,6 +255,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getDiscountPercent();
+
     /**
     * Set discount invoiced
     *
@@ -256,6 +270,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getDiscountInvoiced();
+
     /**
     * Set base discount invoiced
     *
@@ -270,6 +285,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getBaseDiscountInvoiced();
+
     /**
     * Set base discount
     *
@@ -284,6 +300,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getBaseDiscount();
+
     /**
     * Set discount refunded
     *
@@ -298,6 +315,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getDiscountRefunded();
+
     /**
     * Set base discount refunded
     *
@@ -312,6 +330,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getBaseDiscountRefunded();
+
     /**
     * Set price
     *
@@ -326,6 +345,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getPrice();
+
     /**
     * Set base price
     *
@@ -340,6 +360,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getBasePrice();
+
     /**
     * Set original price
     *
@@ -354,6 +375,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getOriginalPrice();
+
     /**
     * Set base original price
     *
@@ -368,6 +390,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getBaseOriginalPrice();
+
     /**
     * Set total
     *
@@ -382,6 +405,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getTotal();
+
     /**
     * Set base total
     *
@@ -396,6 +420,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getBaseTotal();
+
     /**
     * Set total incl tax
     *
@@ -410,6 +435,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getTotalInclTax();
+
     /**
     * Set base total incl tax
     *
@@ -424,6 +450,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getBaseTotalInclTax();
+
     /**
     * Set qty invoiced
     *
@@ -438,6 +465,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getQtyInvoiced();
+
     /**
     * Set qty back ordered
     *
@@ -452,6 +480,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getQtyBackOrdered();
+
     /**
     * Set qty cancelled
     *
@@ -466,6 +495,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getQtyCancelled();
+
     /**
     * Set qty ordered
     *
@@ -480,6 +510,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getQtyOrdered();
+
     /**
     * Set qty refunded
     *
@@ -494,6 +525,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getQtyRefunded();
+
     /**
     * Set qty returned
     *
@@ -508,6 +540,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getQtyReturned();
+
     /**
     * Set qty shipped
     *
@@ -522,6 +555,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getQtyShipped();
+
     /**
     * Set tax
     *
@@ -536,6 +570,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getTax();
+
     /**
     * Set base tax
     *
@@ -550,6 +585,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getBaseTax();
+
     /**
     * Set is free shipping
     *
@@ -564,6 +600,7 @@ interface OrttoOrderItemInterface
     * @return bool
     */
     public function getIsFreeShipping();
+
     /**
     * Set tax percent
     *
@@ -578,6 +615,7 @@ interface OrttoOrderItemInterface
     * @return float
     */
     public function getTaxPercent();
+
     /**
     * Set additional data
     *
@@ -592,6 +630,7 @@ interface OrttoOrderItemInterface
     * @return string
     */
     public function getAdditionalData();
+
     /**
     * Set store id
     *

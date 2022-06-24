@@ -23,7 +23,6 @@ interface OrttoCustomerInterface
     const UPDATED_AT = 'updated_at';
     const IS_SUBSCRIBED = 'is_subscribed';
     const PHONE = 'phone';
-    const ORDERS = 'orders';
 
     /**
     * Set id
@@ -39,6 +38,7 @@ interface OrttoCustomerInterface
     * @return int
     */
     public function getId();
+
     /**
     * Set ip address
     *
@@ -53,6 +53,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getIpAddress();
+
     /**
     * Set first name
     *
@@ -67,6 +68,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getFirstName();
+
     /**
     * Set middle name
     *
@@ -81,6 +83,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getMiddleName();
+
     /**
     * Set last name
     *
@@ -95,6 +98,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getLastName();
+
     /**
     * Set suffix
     *
@@ -109,6 +113,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getSuffix();
+
     /**
     * Set prefix
     *
@@ -123,6 +128,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getPrefix();
+
     /**
     * Set gender
     *
@@ -137,6 +143,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getGender();
+
     /**
     * Set email
     *
@@ -151,6 +158,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getEmail();
+
     /**
     * Set dob
     *
@@ -165,6 +173,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getDateOfBirth();
+
     /**
     * Set created at
     *
@@ -179,6 +188,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getCreatedAt();
+
     /**
     * Set created in
     *
@@ -193,6 +203,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getCreatedIn();
+
     /**
     * Set group
     *
@@ -207,6 +218,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getGroup();
+
     /**
     * Set billing address
     *
@@ -221,6 +233,7 @@ interface OrttoCustomerInterface
     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
     */
     public function getBillingAddress();
+
     /**
     * Set shipping address
     *
@@ -235,6 +248,7 @@ interface OrttoCustomerInterface
     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
     */
     public function getShippingAddress();
+
     /**
     * Set updated at
     *
@@ -249,6 +263,7 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getUpdatedAt();
+
     /**
     * Set is subscribed
     *
@@ -263,6 +278,7 @@ interface OrttoCustomerInterface
     * @return bool
     */
     public function getIsSubscribed();
+
     /**
     * Set phone
     *
@@ -277,18 +293,4 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getPhone();
-    /**
-    * Set orders
-    *
-    * @param \Ortto\Connector\Api\Data\OrttoOrderInterface[] $orders
-    * @return $this
-    */
-    public function setOrders(array $orders);
-
-    /**
-    * Get orders
-    *
-    * @return \Ortto\Connector\Api\Data\OrttoOrderInterface[]
-    */
-    public function getOrders(): array;
 }

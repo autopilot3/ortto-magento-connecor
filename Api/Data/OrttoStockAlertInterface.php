@@ -23,6 +23,7 @@ interface OrttoStockAlertInterface
     * @return \Ortto\Connector\Api\Data\OrttoProductInterface
     */
     public function getProduct();
+
     /**
     * Set customer
     *
@@ -37,6 +38,7 @@ interface OrttoStockAlertInterface
     * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
     */
     public function getCustomer();
+
     /**
     * Set date added
     *

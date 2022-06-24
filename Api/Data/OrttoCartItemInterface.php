@@ -44,6 +44,7 @@ interface OrttoCartItemInterface
     * @return \Ortto\Connector\Api\Data\OrttoProductInterface
     */
     public function getProduct();
+
     /**
     * Set created at
     *
@@ -58,6 +59,7 @@ interface OrttoCartItemInterface
     * @return string
     */
     public function getCreatedAt();
+
     /**
     * Set updated at
     *
@@ -72,6 +74,7 @@ interface OrttoCartItemInterface
     * @return string
     */
     public function getUpdatedAt();
+
     /**
     * Set discount
     *
@@ -86,6 +89,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getDiscount();
+
     /**
     * Set discount tax compensation
     *
@@ -100,6 +104,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getDiscountTaxCompensation();
+
     /**
     * Set discount calculated
     *
@@ -114,6 +119,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getDiscountCalculated();
+
     /**
     * Set base discount
     *
@@ -128,6 +134,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getBaseDiscount();
+
     /**
     * Set base discount tax compensation
     *
@@ -142,6 +149,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getBaseDiscountTaxCompensation();
+
     /**
     * Set base discount calculated
     *
@@ -156,6 +164,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getBaseDiscountCalculated();
+
     /**
     * Set base price
     *
@@ -170,6 +179,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getBasePrice();
+
     /**
     * Set base price incl tax
     *
@@ -184,6 +194,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getBasePriceInclTax();
+
     /**
     * Set price
     *
@@ -198,6 +209,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getPrice();
+
     /**
     * Set price incl tax
     *
@@ -212,6 +224,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getPriceInclTax();
+
     /**
     * Set base row total
     *
@@ -226,6 +239,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getBaseRowTotal();
+
     /**
     * Set base row total incl tax
     *
@@ -240,6 +254,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getBaseRowTotalInclTax();
+
     /**
     * Set row total
     *
@@ -254,6 +269,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getRowTotal();
+
     /**
     * Set row total incl tax
     *
@@ -268,6 +284,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getRowTotalInclTax();
+
     /**
     * Set row total after discount
     *
@@ -282,6 +299,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getRowTotalAfterDiscount();
+
     /**
     * Set base tax
     *
@@ -296,6 +314,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getBaseTax();
+
     /**
     * Set base tax before discount
     *
@@ -310,6 +329,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getBaseTaxBeforeDiscount();
+
     /**
     * Set tax
     *
@@ -324,6 +344,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getTax();
+
     /**
     * Set tax before discount
     *
@@ -338,6 +359,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getTaxBeforeDiscount();
+
     /**
     * Set tax percent
     *
@@ -352,6 +374,7 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getTaxPercent();
+
     /**
     * Set quantity
     *

@@ -25,6 +25,7 @@ interface OrttoCarrierInterface
     * @return int
     */
     public function getId();
+
     /**
     * Set code
     *
@@ -39,6 +40,7 @@ interface OrttoCarrierInterface
     * @return string
     */
     public function getCode();
+
     /**
     * Set title
     *
@@ -53,6 +55,7 @@ interface OrttoCarrierInterface
     * @return string
     */
     public function getTitle();
+
     /**
     * Set tracking number
     *
@@ -67,6 +70,7 @@ interface OrttoCarrierInterface
     * @return string
     */
     public function getTrackingNumber();
+
     /**
     * Set created at
     *

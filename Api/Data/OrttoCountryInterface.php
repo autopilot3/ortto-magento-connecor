@@ -24,6 +24,7 @@ interface OrttoCountryInterface
     * @return string
     */
     public function getAbbr2();
+
     /**
     * Set abbr3
     *
@@ -38,6 +39,7 @@ interface OrttoCountryInterface
     * @return string
     */
     public function getAbbr3();
+
     /**
     * Set name en
     *
@@ -52,6 +54,7 @@ interface OrttoCountryInterface
     * @return string
     */
     public function getNameEn();
+
     /**
     * Set name local
     *

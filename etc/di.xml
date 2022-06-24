@@ -54,8 +54,6 @@
                 type="Ortto\Connector\Model\Data\AppConfig"/>
     <preference for="Ortto\Connector\Api\AppConfigRepositoryInterface"
                 type="Ortto\Connector\REST\AppConfigRepository"/>
-    <preference for="Ortto\Connector\Api\ProductApiInterface"
-                type="Ortto\Connector\REST\ProductApi"/>
     <preference for="Ortto\Connector\Api\TrackDataProviderInterface"
                 type="Ortto\Connector\Service\TrackDataProvider"/>
     <preference for="Ortto\Connector\Api\Data\TrackingDataInterface"
@@ -68,8 +66,8 @@
                 type="Ortto\Connector\Model\Data\Discount"/>
     <preference for="Ortto\Connector\Api\SyncJobRepositoryInterface"
                 type="Ortto\Connector\Model\ResourceModel\SyncJobRepository"/>
-    <preference for="Ortto\Connector\Api\OrttoProductRepositoryInterface"
-                type="Ortto\Connector\Model\Api\OrttoProductRepository"/>
+
+    <!-- WEB API MODELS -->
     <preference for="Ortto\Connector\Api\Data\OrttoStockItemInterface"
                 type="Ortto\Connector\Model\Data\OrttoStockItem"/>
     <preference for="Ortto\Connector\Api\Data\OrttoStockInterface"
@@ -82,9 +80,56 @@
                 type="Ortto\Connector\Model\Data\OrttoProduct"/>
     <preference for="Ortto\Connector\Api\Data\OrttoProductCategoryInterface"
                 type="Ortto\Connector\Model\Data\OrttoProductCategory"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoCarrierInterface"
+                type="Ortto\Connector\Model\Data\OrttoCarrier"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoRefundItemInterface"
+                type="Ortto\Connector\Model\Data\OrttoRefundItem"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoRefundInterface"
+                type="Ortto\Connector\Model\Data\OrttoRefund"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoOrderExtensionInterface"
+                type="Ortto\Connector\Model\Data\OrttoOrderExtension"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoOrderItemInterface"
+                type="Ortto\Connector\Model\Data\OrttoOrderItem"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoOrderInterface"
+                type="Ortto\Connector\Model\Data\OrttoOrder"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoRegionInterface"
+                type="Ortto\Connector\Model\Data\OrttoRegion"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoCountryInterface"
+                type="Ortto\Connector\Model\Data\OrttoCountry"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoAddressInterface"
+                type="Ortto\Connector\Model\Data\OrttoAddress"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoCustomerInterface"
+                type="Ortto\Connector\Model\Data\OrttoCustomer"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoCartInterface"
+                type="Ortto\Connector\Model\Data\OrttoCart"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoCartItemInterface"
+                type="Ortto\Connector\Model\Data\OrttoCartItem"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoStockAlertInterface"
+                type="Ortto\Connector\Model\Data\OrttoStockAlert"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoGiftInterface"
+                type="Ortto\Connector\Model\Data\OrttoGift"/>
+
+    <!-- WEB API RESPONSE MODELS   -->
+    <preference for="Ortto\Connector\Api\Data\SyncConfigResponseInterface"
+                type="Ortto\Connector\Model\Data\SyncConfigResponse"/>
+    <preference for="Ortto\Connector\Api\Data\ListProductResponseInterface"
+                type="Ortto\Connector\Model\Data\ListProductResponse"/>
+    <preference for="Ortto\Connector\Api\Data\ListCustomerResponseInterface"
+                type="Ortto\Connector\Model\Data\ListProductResponse"/>
+
+    <!-- WEB API REPOSITORIES   -->
+    <preference for="Ortto\Connector\Api\OrttoProductRepositoryInterface"
+                type="Ortto\Connector\Model\Api\OrttoProductRepository"/>
     <preference for="Ortto\Connector\Api\OrttoProductCategoryRepositoryInterface"
                 type="Ortto\Connector\Model\Api\OrttoProductCategoryRepository"/>
+    <preference for="Ortto\Connector\Api\OrttoCustomerRepositoryInterface"
+                type="Ortto\Connector\Model\Api\OrttoCustomerRepository"/>
 
+    <!-- WEB API HANDLERS -->
+    <preference for="Ortto\Connector\Api\ProductApiInterface"
+                type="Ortto\Connector\REST\ProductApi"/>
+    <preference for="Ortto\Connector\Api\CustomerApiInterface"
+                type="Ortto\Connector\REST\CustomerApi"/>
 
     <!-- JOBS ADMIN GRID -->
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
@@ -102,8 +147,4 @@
         </arguments>
     </virtualType>
     <!-- END JOBS ADMIN GRID -->
-    <preference for="Ortto\Connector\Api\Data\SyncConfigResponseInterface"
-                type="Ortto\Connector\Model\Data\SyncConfigResponse"/>
-    <preference for="Ortto\Connector\Api\Data\ListProductResponseInterface"
-                type="Ortto\Connector\Model\Data\ListProductResponse"/>
 </config>

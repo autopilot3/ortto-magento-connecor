@@ -34,6 +34,7 @@ interface OrttoAddressInterface
     * @return string
     */
     public function getCity();
+
     /**
     * Set company
     *
@@ -48,6 +49,7 @@ interface OrttoAddressInterface
     * @return string
     */
     public function getCompany();
+
     /**
     * Set country
     *
@@ -62,6 +64,7 @@ interface OrttoAddressInterface
     * @return \Ortto\Connector\Api\Data\OrttoCountryInterface
     */
     public function getCountry();
+
     /**
     * Set first name
     *
@@ -76,6 +79,7 @@ interface OrttoAddressInterface
     * @return string
     */
     public function getFirstName();
+
     /**
     * Set last name
     *
@@ -90,6 +94,7 @@ interface OrttoAddressInterface
     * @return string
     */
     public function getLastName();
+
     /**
     * Set middle name
     *
@@ -104,6 +109,7 @@ interface OrttoAddressInterface
     * @return string
     */
     public function getMiddleName();
+
     /**
     * Set post code
     *
@@ -118,6 +124,7 @@ interface OrttoAddressInterface
     * @return string
     */
     public function getPostCode();
+
     /**
     * Set prefix
     *
@@ -132,6 +139,7 @@ interface OrttoAddressInterface
     * @return string
     */
     public function getPrefix();
+
     /**
     * Set suffix
     *
@@ -146,10 +154,11 @@ interface OrttoAddressInterface
     * @return string
     */
     public function getSuffix();
+
     /**
     * Set region
     *
-    * @param \Ortto\Connector\Api\Data\OrttoRegionInterface $region
+    * @param string $region
     * @return $this
     */
     public function setRegion($region);
@@ -157,9 +166,10 @@ interface OrttoAddressInterface
     /**
     * Get region
     *
-    * @return \Ortto\Connector\Api\Data\OrttoRegionInterface
+    * @return string
     */
     public function getRegion();
+
     /**
     * Set street lines
     *
@@ -174,6 +184,7 @@ interface OrttoAddressInterface
     * @return string[]
     */
     public function getStreetLines(): array;
+
     /**
     * Set vat
     *
@@ -188,6 +199,7 @@ interface OrttoAddressInterface
     * @return string
     */
     public function getVat();
+
     /**
     * Set phone
     *
@@ -202,6 +214,7 @@ interface OrttoAddressInterface
     * @return string
     */
     public function getPhone();
+
     /**
     * Set fax
     *
