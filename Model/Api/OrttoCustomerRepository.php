@@ -8,39 +8,70 @@ use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Api\GroupRepositoryInterface;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Magento\Framework\DataObject;
-use Magento\Framework\DB\Select;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Newsletter\Model\Subscriber;
+use Magento\Quote\Model\ResourceModel\Quote\Address\CollectionFactory as QuoteAddressCollectionFactory;
+use Magento\Quote\Model\ResourceModel\Quote\CollectionFactory as QuoteCollectionFactory;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
-use Magento\Customer\Model\ResourceModel\Customer\CollectionFactory;
+use Magento\Customer\Model\ResourceModel\Customer\CollectionFactory as CustomerCollectionFactory;
+use \Magento\Customer\Model\ResourceModel\Address\CollectionFactory as AddressCollectionFactory;
 use Ortto\Connector\Model\Data\OrttoCustomerFactory;
 use Ortto\Connector\Model\Data\ListCustomerResponseFactory;
 use Ortto\Connector\Model\Data\OrttoAddressFactory;
 use Ortto\Connector\Model\Data\OrttoCountryFactory;
-use Zend_Db_Select;
+use Magento\Quote\Api\Data\AddressInterface as QuoteAddressInterface;
 
 class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
 {
+    const ENTITY_ID = 'entity_id';
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'created_at';
+    const STORE_ID = 'store_id';
+    const QUOTE_ID = 'quote_id';
+    const BILLING_ADDRESS = 'billing';
+    const SHIPPING_ADDRESS = 'shipping';
+    const ADDRESS_TYPE = 'address_type';
+    const IS_ACTIVE = 'is_active';
+    const IP_ADDRESS = 'remote_ip';
+
+    const ANONYMOUS_CUSTOMER_ID = -1;
+    const CUSTOMER_PREFIX = 'customer_prefix';
+    const CUSTOMER_FIRST_NAME = 'customer_firstname';
+    const CUSTOMER_MIDDLE_NAME = 'customer_middlename';
+    const CUSTOMER_LAST_NAME = 'customer_lastname';
+    const CUSTOMER_SUFFIX = 'customer_suffix';
+    const CUSTOMER_EMAIL = 'customer_email';
+    const CUSTOMER_DOB = 'customer_dob';
+    const CUSTOMER_GENDER = 'customer_gender';
+    const CUSTOMER_GROUP_ID = 'customer_group_id';
+    const CUSTOMER_IS_GUEST = 'customer_is_guest';
+
     private Data $helper;
     private OrttoLogger $logger;
     private ListCustomerResponseFactory $listResponseFactory;
-    private CollectionFactory $customerCollection;
+    private CustomerCollectionFactory $customerCollection;
     private OrttoCustomerFactory $customerFactory;
     private GroupRepositoryInterface $groupRepository;
     private Subscriber $subscriber;
     private OrttoAddressFactory $addressFactory;
     private OrttoCountryFactory $countryFactory;
     private CountryInformationAcquirerInterface $countryRepository;
+    private AddressCollectionFactory $addressCollection;
+    private QuoteCollectionFactory $quoteCollection;
+    private QuoteAddressCollectionFactory $quoteAddressCollection;
 
     public function __construct(
         Data $helper,
         OrttoLogger $logger,
-        CollectionFactory $customerCollection,
+        CustomerCollectionFactory $customerCollection,
+        AddressCollectionFactory $addressCollection,
+        QuoteCollectionFactory $quoteCollection,
+        QuoteAddressCollectionFactory $quoteAddressCollection,
         ListCustomerResponseFactory $listResponseFactory,
         OrttoCustomerFactory $customerFactory,
         \Magento\Customer\Api\GroupRepositoryInterface $groupRepository,
@@ -59,9 +90,14 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $this->addressFactory = $addressFactory;
         $this->countryFactory = $countryFactory;
         $this->countryRepository = $countryRepository;
+        $this->addressCollection = $addressCollection;
+        $this->quoteCollection = $quoteCollection;
+        $this->quoteAddressCollection = $quoteAddressCollection;
     }
 
-    /** @inheirtDoc */
+    /** @inheirtDoc
+     * @throws LocalizedException
+     */
     public function getList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize, array $data = [])
     {
         if ($page < 1) {
@@ -71,28 +107,90 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             $pageSize = 100;
         }
 
-        $addressColumns = [
-            'address_entity_id' => 'a.entity_id',
-            'address_city' => 'a.' . AddressInterface::CITY,
-            'address_country_id' => 'a.' . AddressInterface::COUNTRY_ID,
-            'address_fax' => 'a.' . AddressInterface::FAX,
-            'address_first_name' => 'a.' . AddressInterface::FIRSTNAME,
-            'address_last_name' => 'a.' . AddressInterface::LASTNAME,
-            'address_middle_name' => 'a.' . AddressInterface::MIDDLENAME,
-            'address_postcode' => 'a.' . AddressInterface::POSTCODE,
-            'address_prefix' => 'a.' . AddressInterface::PREFIX,
-            'address_suffix' => 'a.' . AddressInterface::SUFFIX,
-            'address_region' => 'a.' . AddressInterface::REGION,
-            'address_street' => 'a.' . AddressInterface::STREET,
-            'address_telephone' => 'a.' . AddressInterface::TELEPHONE,
-            'address_company' => 'a.' . AddressInterface::COMPANY,
-            'address_vat_id' => 'a.' . AddressInterface::VAT_ID,
+        if (array_key_exists(self::ANONYMOUS, $data) && To::bool($data[self::ANONYMOUS])) {
+            return $this->getAnonymousCustomerList($scope, $page, $checkpoint, $pageSize);
+        }
+        return $this->getCustomersList($scope, $page, $checkpoint, $pageSize);
+    }
+
+    /**
+     * @param ConfigScopeInterface $scope
+     * @param int $page
+     * @param string $checkpoint
+     * @param int $pageSize
+     * @return \Ortto\Connector\Api\Data\ListCustomerResponseInterface
+     */
+    public function getAnonymousCustomerList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize)
+    {
+        $columnsToSelect = [
+            self::ENTITY_ID,
+            self::IP_ADDRESS,
+            self::CUSTOMER_PREFIX,
+            self::CUSTOMER_FIRST_NAME,
+            self::CUSTOMER_MIDDLE_NAME,
+            self::CUSTOMER_LAST_NAME,
+            self::CUSTOMER_SUFFIX,
+            self::CUSTOMER_EMAIL,
+            self::CREATED_AT,
+            self::UPDATED_AT,
+            self::CUSTOMER_DOB,
+            self::CUSTOMER_GENDER,
+            self::CUSTOMER_GROUP_ID,
         ];
 
-        $customerColumns = [
-            // Since we are doing left join, there will be duplicate in the result set
-            // $collection->getItems() will fail because it is using entity_id as array index
-            'customer_entity_id' => 'entity_id',
+        $collection = $this->quoteCollection->create();
+        $collection->setPageSize($pageSize)
+            ->setCurPage($page)
+            ->addFieldToSelect($columnsToSelect)
+            ->addFieldToFilter(self::CUSTOMER_IS_GUEST, ['eq' => 1])
+            // is_active = 1 means shopping cart (no useful information has been stored yet)
+            ->addFieldToFilter(self::IS_ACTIVE, ['eq' => 0])
+            ->addFieldToFilter(self::STORE_ID, ['eq' => $scope->getId()])
+            ->setOrder(self::ENTITY_ID, 'DESC');// New customers first
+
+        if (!empty($checkpoint)) {
+            $collection->addFieldToFilter(self::UPDATED_AT, ['gteq' => $checkpoint]);
+        }
+
+        $result = $this->listResponseFactory->create();
+        $total = To::int($collection->getSize());
+        $result->setTotal($total);
+        if ($total == 0) {
+            return $result;
+        }
+
+        $quoteIds = [];
+        /** @var DataObject[] $customersData */
+        $customersData = [];
+        foreach ($collection->getItems() as $customer) {
+            $customersData[] = $customer;
+            $quoteIds[] = To::int($customer->getData(self::ENTITY_ID));
+        }
+
+        $this->logger->info("QTY", $collection->getData());
+
+        $addresses = $this->getQuoteAddressesById($quoteIds);
+        $customers = [];
+        foreach ($customersData as $customer) {
+            $customers[] = $this->convertAnonymousCustomer($customer, $addresses, $scope->getWebsiteId());
+        }
+        $result->setCustomers($customers);
+        $result->setHasMore($page < $total / $pageSize);
+        return $result;
+    }
+
+    /**
+     * @param ConfigScopeInterface $scope
+     * @param int $page
+     * @param string $checkpoint
+     * @param int $pageSize
+     * @return \Ortto\Connector\Api\Data\ListCustomerResponseInterface
+     * @throws LocalizedException
+     */
+    public function getCustomersList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize)
+    {
+        $columnsToSelect = [
+            self::ENTITY_ID,
             CustomerInterface::PREFIX,
             CustomerInterface::FIRSTNAME,
             CustomerInterface::MIDDLENAME,
@@ -109,126 +207,183 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             CustomerInterface::DEFAULT_SHIPPING,
         ];
 
-        $collection = $this->customerCollection->create();
-        $connection = $collection->getConnection();
-        $addressTable = $connection->getTableName('customer_address_entity');
-        $query = $collection->setPage($page, $pageSize)
-            ->getSelect()
-            // To avoid `getItems` call to fail because of duplicates
-            ->reset(Zend_Db_Select::COLUMNS)
-            ->columns($customerColumns)
-            ->order('e.entity_id DESC')
-            ->joinLeft(
-                ['a' => $addressTable],
-                'e.entity_id = a.parent_id',
-                $addressColumns
-            );
+        $customerCollection = $this->customerCollection->create();
+        $customerCollection->setPage($page, $pageSize)
+            ->addAttributeToSelect($columnsToSelect)
+            ->addFieldToFilter(CustomerInterface::WEBSITE_ID, ['eq' => $scope->getWebsiteId()])
+            ->addFieldToFilter(CustomerInterface::STORE_ID, ['eq' => $scope->getId()])
+            ->setOrder(self::ENTITY_ID, 'DESC');// New customers first
 
         if (!empty($checkpoint)) {
-            $query->where('e.updated_at > ?', $checkpoint)
-                ->orWhere('a.updated_at > ?', $checkpoint);
+            $customerCollection->addFieldToFilter(CustomerInterface::UPDATED_AT, ['gteq' => $checkpoint]);
         }
 
         $result = $this->listResponseFactory->create();
-        $total = To::int($collection->getSize());
+        $total = To::int($customerCollection->getSize());
         $result->setTotal($total);
         if ($total == 0) {
             return $result;
         }
-        $customers = [];
-        $lastCustomerID = -1;
-        $customerGroup = [];
-        foreach ($collection->getItems() as $customer) {
-            $customerId = To::int($customer->getData('customer_entity_id'));
-            if ($lastCustomerID != -1 && $lastCustomerID != $customerId) {
-                $customers[] = $this->merge($lastCustomerID, $customerGroup);
-                $customerGroup = [];
+
+        $addressIds = [];
+        /** @var DataObject[] $customersData */
+        $customersData = [];
+        foreach ($customerCollection->getItems() as $customer) {
+            $customersData[] = $customer;
+            if ($addressId = $customer->getData(CustomerInterface::DEFAULT_SHIPPING)) {
+                $addressIds[] = To::int($addressId);
             }
-            $customerGroup[] = $customer;
-            $lastCustomerID = $customerId;
+            if ($addressId = $customer->getData(CustomerInterface::DEFAULT_BILLING)) {
+                $addressIds[] = To::int($addressId);
+            }
         }
-        if (!empty($customerGroup)) {
-            $customers[] = $this->merge($lastCustomerID, $customerGroup);
+
+        $addresses = $this->getAddressesById($addressIds);
+        $customers = [];
+        foreach ($customersData as $customer) {
+            $customers[] = $this->convertCustomer($customer, $addresses);
         }
         $result->setCustomers($customers);
         $result->setHasMore($page < $total / $pageSize);
-
         return $result;
     }
 
     /**
-     * @param int $customerId
-     * @param DataObject[] $customers
+     * @param int[] $addressIds
+     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface[]
+     * @throws LocalizedException
+     */
+    private function getAddressesById(array $addressIds)
+    {
+        if (empty($addressIds)) {
+            return [];
+        }
+        $columnsToSelect = [
+            self::ENTITY_ID,
+            'parent_id',
+            AddressInterface::CITY,
+            AddressInterface::COUNTRY_ID,
+            AddressInterface::FAX,
+            AddressInterface::FIRSTNAME,
+            AddressInterface::LASTNAME,
+            AddressInterface::MIDDLENAME,
+            AddressInterface::POSTCODE,
+            AddressInterface::PREFIX,
+            AddressInterface::SUFFIX,
+            AddressInterface::REGION,
+            AddressInterface::STREET,
+            AddressInterface::TELEPHONE,
+            AddressInterface::COMPANY,
+            AddressInterface::VAT_ID,
+        ];
+        $addressIds = array_unique($addressIds);
+        $collection = $this->addressCollection->create();
+        $collection->addAttributeToSelect($columnsToSelect)
+            ->addFieldToFilter(self::ENTITY_ID, ['in' => $addressIds]);
+
+        $addresses = [];
+        foreach ($collection->getItems() as $address) {
+            $addressId = To::int($address->getData(self::ENTITY_ID));
+            $addresses[$addressId] = $this->convertAddress($address);
+        }
+        return $addresses;
+    }
+
+    /**
+     * @param int[] $quoteIds
+     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface[][]
+     */
+    private function getQuoteAddressesById(array $quoteIds)
+    {
+        if (empty($quoteIds)) {
+            return [];
+        }
+        $columnsToSelect = [
+            self::QUOTE_ID,
+            self::ADDRESS_TYPE,
+            QuoteAddressInterface::KEY_CITY,
+            QuoteAddressInterface::KEY_COUNTRY_ID,
+            QuoteAddressInterface::KEY_FAX,
+            QuoteAddressInterface::KEY_FIRSTNAME,
+            QuoteAddressInterface::KEY_LASTNAME,
+            QuoteAddressInterface::KEY_MIDDLENAME,
+            QuoteAddressInterface::KEY_POSTCODE,
+            QuoteAddressInterface::KEY_PREFIX,
+            QuoteAddressInterface::KEY_SUFFIX,
+            QuoteAddressInterface::KEY_REGION,
+            QuoteAddressInterface::KEY_STREET,
+            QuoteAddressInterface::KEY_TELEPHONE,
+            QuoteAddressInterface::KEY_COMPANY,
+            QuoteAddressInterface::KEY_VAT_ID,
+        ];
+        $quoteIds = array_unique($quoteIds);
+        $collection = $this->quoteAddressCollection->create();
+        $collection->addFieldToSelect($columnsToSelect)
+            ->addFieldToFilter(self::QUOTE_ID, ['in' => $quoteIds])
+            ->addFieldToFilter(self::ADDRESS_TYPE, ['in' => [self::BILLING_ADDRESS, self::SHIPPING_ADDRESS]]);
+
+        $addresses = [];
+        foreach ($collection->getItems() as $address) {
+            $quoteId = To::int($address->getData(self::QUOTE_ID));
+            $addresses[$quoteId][] = $this->convertQuoteAddress($address);
+        }
+        return $addresses;
+    }
+
+    /**
+     * @param DataObject $customer
+     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[] $addresses
      * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
      */
-    private function merge(int $customerId, array $customers)
+    private function convertCustomer($customer, $addresses)
     {
         $data = $this->customerFactory->create();
-        $phoneNumber = '';
-        $phoneSetToBilling = false;
-        foreach ($customers as $index => $customer) {
-            if ($index == 0) {
-                $data->setId($customerId);
-                $data->setFirstName((string)$customer->getData(CustomerInterface::FIRSTNAME));
-                $data->setMiddleName((string)$customer->getData(CustomerInterface::MIDDLENAME));
-                $data->setLastName((string)$customer->getData(CustomerInterface::LASTNAME));
-                $data->setSuffix((string)$customer->getData(CustomerInterface::SUFFIX));
-                $data->setPrefix((string)$customer->getData(CustomerInterface::PREFIX));
-                $data->setGender($this->helper->getGenderLabel($customer->getData(CustomerInterface::GENDER)));
-                $data->setEmail((string)$customer->getData(CustomerInterface::EMAIL));
-                $data->setDateOfBirth($this->helper->toUTC($customer->getData(CustomerInterface::DOB)));
-                $data->setCreatedAt($this->helper->toUTC($customer->getData(CustomerInterface::CREATED_AT)));
-                $data->setUpdatedAt($this->helper->toUTC($customer->getData(CustomerInterface::UPDATED_AT)));
-                $data->setCreatedIn((string)$customer->getData(CustomerInterface::CREATED_IN));
-                if ($groupId = $customer->getData(CustomerInterface::GROUP_ID)) {
-                    try {
-                        if ($group = $this->groupRepository->getById($groupId)) {
-                            $data->setGroup(($group->getCode()));
-                        }
-                    } catch (NoSuchEntityException|LocalizedException $e) {
-                        $this->logger->error($e, 'Failed to fetch customer group details');
-                    }
+        $customerId = To::int($customer->getData(self::ENTITY_ID));
+        $data->setId($customerId);
+        $data->setFirstName((string)$customer->getData(CustomerInterface::FIRSTNAME));
+        $data->setMiddleName((string)$customer->getData(CustomerInterface::MIDDLENAME));
+        $data->setLastName((string)$customer->getData(CustomerInterface::LASTNAME));
+        $data->setSuffix((string)$customer->getData(CustomerInterface::SUFFIX));
+        $data->setPrefix((string)$customer->getData(CustomerInterface::PREFIX));
+        $data->setGender($this->helper->getGenderLabel($customer->getData(CustomerInterface::GENDER)));
+        $data->setEmail((string)$customer->getData(CustomerInterface::EMAIL));
+        $data->setDateOfBirth($this->helper->toUTC($customer->getData(CustomerInterface::DOB)));
+        $data->setCreatedAt($this->helper->toUTC($customer->getData(CustomerInterface::CREATED_AT)));
+        $data->setUpdatedAt($this->helper->toUTC($customer->getData(CustomerInterface::UPDATED_AT)));
+        $data->setCreatedIn((string)$customer->getData(CustomerInterface::CREATED_IN));
+        if ($groupId = $customer->getData(CustomerInterface::GROUP_ID)) {
+            try {
+                if ($group = $this->groupRepository->getById($groupId)) {
+                    $data->setGroup(($group->getCode()));
                 }
-                $sub = $this->subscriber->loadByCustomer(
-                    $customerId,
-                    To::int($customer->getData(CustomerInterface::WEBSITE_ID))
-                );
-                $data->setIsSubscribed($sub->isSubscribed());
+            } catch (NoSuchEntityException|LocalizedException $e) {
+                $this->logger->error($e, 'Failed to fetch customer group details');
             }
-            $addressId = $customer->getData('address_entity_id');
-            if (empty($addressId)) {
-                continue;
+        }
+        $sub = $this->subscriber->loadByCustomer(
+            $customerId,
+            To::int($customer->getData(CustomerInterface::WEBSITE_ID))
+        );
+        $data->setIsSubscribed($sub->isSubscribed());
+        if (empty($addresses)) {
+            return $data;
+        }
+        $phoneNumber = '';
+        if ($addressId = $customer->getData(CustomerInterface::DEFAULT_BILLING)) {
+            if ($address = $addresses[To::int($addressId)]) {
+                $address->setType(self::BILLING_ADDRESS);
+                $data->setBillingAddress($address);
+                $phoneNumber = $address->getPhone();
             }
-            $this->logger->info("EMP", [
-                To::int($addressId),
-                To::int($customer->getData(CustomerInterface::DEFAULT_BILLING)),
-                To::int($customer->getData(CustomerInterface::DEFAULT_SHIPPING)),
-            ]);
-
-            switch (To::int($addressId)) {
-                case To::int($customer->getData(CustomerInterface::DEFAULT_BILLING)):
-                    $address = $this->extractAddress($customer);
-                    if ($phone = $address->getPhone()) {
-                        $phoneNumber = $phone;
-                        $phoneSetToBilling = true;
-                    }
-                    $data->setBillingAddress($address);
-                    break;
-                case To::int($customer->getData(CustomerInterface::DEFAULT_SHIPPING)):
-                    $address = $this->extractAddress($customer);
-                    // Billing phone number takes precedence
-                    if (!$phoneSetToBilling) {
-                        if ($phone = $address->getPhone()) {
-                            $phoneNumber = $phone;
-                        }
-                    }
-                    $data->setShippingAddress($address);
-                    break;
-                default:
-                    if (empty($phoneNumber)) {
-                        $phoneNumber = (string)$customer->getData('address_telephone');
-                    }
-                    break;
+        }
+        if ($addressId = $customer->getData(CustomerInterface::DEFAULT_SHIPPING)) {
+            if ($address = $addresses[To::int($addressId)]) {
+                $address->setType(self::SHIPPING_ADDRESS);
+                $data->setShippingAddress($address);
+                // Billing phone number takes precedence
+                if (empty($phoneNumber)) {
+                    $phoneNumber = $address->getPhone();
+                }
             }
         }
 
@@ -238,38 +393,127 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
 
     /**
      * @param DataObject $customer
-     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
+     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[][] $addresses
+     * @param int $websiteId
+     * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
      */
-    private function extractAddress($customer)
+    private function convertAnonymousCustomer($customer, $addresses, $websiteId)
     {
-        $data = $this->addressFactory->create();
-        $data->setCity((string)$customer->getData('address_city'));
-        $data->setCompany((string)$customer->getData('address_company'));
-        $data->setFirstName((string)$customer->getData('address_first_name'));
-        $data->setLastName((string)$customer->getData('address_last_name'));
-        $data->setMiddleName((string)$customer->getData('address_middle_name'));
-        $data->setPostCode((string)$customer->getData('address_postcode'));
-        $data->setPrefix((string)$customer->getData('address_prefix'));
-        $data->setSuffix((string)$customer->getData('address_suffix'));
-        $data->setRegion((string)$customer->getData('address_region'));
-        $data->setVat((string)$customer->getData('address_vat_id'));
-        $data->setPhone((string)$customer->getData('address_telephone'));
-        $data->setFax((string)$customer->getData('address_fax'));
-        if ($street = $customer->getData('address_street')) {
-            $data->setStreetLines(explode("\n", $street));
+        $data = $this->customerFactory->create();
+        $email = (string)$customer->getData(self::CUSTOMER_EMAIL);
+        $data->setId(self::ANONYMOUS_CUSTOMER_ID);
+        $data->setPrefix((string)$customer->getData(self::CUSTOMER_PREFIX));
+        $data->setFirstName((string)$customer->getData(self::CUSTOMER_FIRST_NAME));
+        $data->setMiddleName((string)$customer->getData(self::CUSTOMER_MIDDLE_NAME));
+        $data->setLastName((string)$customer->getData(self::CUSTOMER_LAST_NAME));
+        $data->setSuffix((string)$customer->getData(self::CUSTOMER_SUFFIX));
+        $data->setIpAddress((string)$customer->getData(self::IP_ADDRESS));
+        $data->setGender($this->helper->getGenderLabel($customer->getData(self::CUSTOMER_GENDER)));
+        $data->setEmail($email);
+        $data->setDateOfBirth($this->helper->toUTC($customer->getData(self::CUSTOMER_DOB)));
+        $data->setCreatedAt($this->helper->toUTC($customer->getData(self::CREATED_AT)));
+        $data->setUpdatedAt($this->helper->toUTC($customer->getData(self::UPDATED_AT)));
+
+        if ($groupId = $customer->getData(self::CUSTOMER_GROUP_ID)) {
+            try {
+                if ($group = $this->groupRepository->getById($groupId)) {
+                    $data->setGroup(($group->getCode()));
+                }
+            } catch (NoSuchEntityException|LocalizedException $e) {
+                $this->logger->error($e, 'Failed to fetch anonymous customer group details');
+            }
         }
-        $data->setCountry($this->extractCountry($customer));
+        if (!empty($email)) {
+            $sub = $this->subscriber->loadBySubscriberEmail($email, $websiteId);
+            $data->setIsSubscribed($sub->isSubscribed());
+        }
+
+        $quoteId = To::int($customer->getData(self::ENTITY_ID));
+        if (empty($addresses) || !array_key_exists($quoteId, $addresses)) {
+            return $data;
+        }
+
+        $phoneNumber = '';
+        $quoteAddresses = $addresses[$quoteId];
+        foreach ($quoteAddresses as $address) {
+            if ($address->getType() == self::BILLING_ADDRESS) {
+                $data->setBillingAddress($address);
+                $phoneNumber = $address->getPhone();
+            } else {
+                $data->setShippingAddress($address);
+                // Billing phone number takes precedence
+                if (empty($phoneNumber)) {
+                    $phoneNumber = $address->getPhone();
+                }
+            }
+        }
+
+        $data->setPhone($phoneNumber);
         return $data;
     }
 
     /**
-     * @param DataObject $customer
+     * @param DataObject $address
+     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
+     */
+    private function convertAddress($address)
+    {
+        $data = $this->addressFactory->create();
+        $data->setCity((string)$address->getData(AddressInterface::CITY));
+        $data->setCompany((string)$address->getData(AddressInterface::COMPANY));
+        $data->setFirstName((string)$address->getData(AddressInterface::FIRSTNAME));
+        $data->setLastName((string)$address->getData(AddressInterface::LASTNAME));
+        $data->setMiddleName((string)$address->getData(AddressInterface::MIDDLENAME));
+        $data->setPostCode((string)$address->getData(AddressInterface::POSTCODE));
+        $data->setPrefix((string)$address->getData(AddressInterface::PREFIX));
+        $data->setSuffix((string)$address->getData(AddressInterface::SUFFIX));
+        $data->setRegion((string)$address->getData(AddressInterface::REGION));
+        $data->setVat((string)$address->getData(AddressInterface::VAT_ID));
+        $data->setPhone((string)$address->getData(AddressInterface::TELEPHONE));
+        $data->setFax((string)$address->getData(AddressInterface::FAX));
+        if ($street = $address->getData(AddressInterface::STREET)) {
+            $data->setStreetLines(explode("\n", $street));
+        }
+        $data->setCountry($this->extractCountry($address, AddressInterface::COUNTRY_ID));
+        return $data;
+    }
+
+    /**
+     * @param DataObject $address
+     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
+     */
+    private function convertQuoteAddress($address)
+    {
+        $data = $this->addressFactory->create();
+        $data->setCity((string)$address->getData(QuoteAddressInterface::KEY_CITY));
+        $data->setCompany((string)$address->getData(QuoteAddressInterface::KEY_COMPANY));
+        $data->setFirstName((string)$address->getData(QuoteAddressInterface::KEY_FIRSTNAME));
+        $data->setLastName((string)$address->getData(QuoteAddressInterface::KEY_LASTNAME));
+        $data->setMiddleName((string)$address->getData(QuoteAddressInterface::KEY_MIDDLENAME));
+        $data->setPostCode((string)$address->getData(QuoteAddressInterface::KEY_POSTCODE));
+        $data->setPrefix((string)$address->getData(QuoteAddressInterface::KEY_PREFIX));
+        $data->setSuffix((string)$address->getData(QuoteAddressInterface::KEY_SUFFIX));
+        $data->setRegion((string)$address->getData(QuoteAddressInterface::KEY_REGION));
+        $data->setVat((string)$address->getData(QuoteAddressInterface::KEY_VAT_ID));
+        $data->setPhone((string)$address->getData(QuoteAddressInterface::KEY_TELEPHONE));
+        $data->setType((string)$address->getData(self::ADDRESS_TYPE));
+        $data->setFax((string)$address->getData(QuoteAddressInterface::KEY_FAX));
+        if ($street = $address->getData(QuoteAddressInterface::KEY_STREET)) {
+            $data->setStreetLines(explode("\n", $street));
+        }
+        $data->setCountry($this->extractCountry($address, QuoteAddressInterface::KEY_COUNTRY_ID));
+        return $data;
+    }
+
+    /**
+     * @param DataObject $address
+     * @param string $idFieldName
      * @return \Ortto\Connector\Api\Data\OrttoCountryInterface
      */
-    private function extractCountry($customer)
+    private function extractCountry($address, $idFieldName)
     {
         $data = $this->countryFactory->create();
-        $countryId = (string)$customer->getData('address_country_id');
+        $countryId = (string)$address->getData($idFieldName);
         try {
             if ($country = $this->countryRepository->getCountryInfo($countryId)) {
                 $data->setAbbr2((string)$country->getTwoLetterAbbreviation());

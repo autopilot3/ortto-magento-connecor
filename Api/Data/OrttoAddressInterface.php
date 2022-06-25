@@ -5,6 +5,7 @@ namespace Ortto\Connector\Api\Data;
 
 interface OrttoAddressInterface
 {
+    const TYPE = 'type';
     const CITY = 'city';
     const COMPANY = 'company';
     const COUNTRY = 'country';
@@ -19,6 +20,21 @@ interface OrttoAddressInterface
     const VAT = 'vat';
     const PHONE = 'phone';
     const FAX = 'fax';
+
+    /**
+    * Set type
+    *
+    * @param string $type
+    * @return $this
+    */
+    public function setType($type);
+
+    /**
+    * Get type
+    *
+    * @return string
+    */
+    public function getType();
 
     /**
     * Set city

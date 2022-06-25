@@ -9,6 +9,18 @@ use Ortto\Connector\Api\Data\OrttoAddressInterface;
 class OrttoAddress extends DataObject implements OrttoAddressInterface
 {
     /** @inheirtDoc */
+    public function setType($type)
+    {
+        return $this->setData(self::TYPE, $type);
+    }
+
+    /** @inheirtDoc */
+    public function getType()
+    {
+        return (string)$this->getData(self::TYPE);
+    }
+
+    /** @inheirtDoc */
     public function setCity($city)
     {
         return $this->setData(self::CITY, $city);

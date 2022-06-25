@@ -11,6 +11,7 @@ interface CustomerApiInterface
      * @param int $page
      * @param string $checkpoint
      * @param int $pageSize
+     * @param bool $anonymous
      * @return \Ortto\Connector\Api\Data\ListCustomerResponseInterface
      */
     public function list(
@@ -18,6 +19,7 @@ interface CustomerApiInterface
         int $scopeId,
         int $page = 1,
         string $checkpoint = '',
-        int $pageSize = 100
+        int $pageSize = 100,
+        bool $anonymous = false
     );
 }

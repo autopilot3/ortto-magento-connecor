@@ -34,14 +34,16 @@ class CustomerApi extends RestApiBase implements CustomerApiInterface
         int $scopeId,
         int $page = 1,
         string $checkpoint = '',
-        int $pageSize = 100
+        int $pageSize = 100,
+        bool $anonymous = false
     ) {
         $scope = $this->validateScope($scopeType, $scopeId);
         return $this->customerRepository->getList(
             $scope,
             $page,
             $checkpoint,
-            $pageSize
+            $pageSize,
+            [OrttoCustomerRepositoryInterface::ANONYMOUS => $anonymous]
         );
     }
 }
