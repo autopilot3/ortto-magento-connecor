@@ -167,8 +167,6 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             $quoteIds[] = To::int($customer->getData(self::ENTITY_ID));
         }
 
-        $this->logger->info("QTY", $collection->getData());
-
         $addresses = $this->getQuoteAddressesById($quoteIds);
         $customers = [];
         foreach ($customersData as $customer) {
