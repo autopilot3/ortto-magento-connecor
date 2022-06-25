@@ -92,8 +92,6 @@
                 type="Ortto\Connector\Model\Data\OrttoOrderItem"/>
     <preference for="Ortto\Connector\Api\Data\OrttoOrderInterface"
                 type="Ortto\Connector\Model\Data\OrttoOrder"/>
-    <preference for="Ortto\Connector\Api\Data\OrttoRegionInterface"
-                type="Ortto\Connector\Model\Data\OrttoRegion"/>
     <preference for="Ortto\Connector\Api\Data\OrttoCountryInterface"
                 type="Ortto\Connector\Model\Data\OrttoCountry"/>
     <preference for="Ortto\Connector\Api\Data\OrttoAddressInterface"
@@ -115,7 +113,9 @@
     <preference for="Ortto\Connector\Api\Data\ListProductResponseInterface"
                 type="Ortto\Connector\Model\Data\ListProductResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListCustomerResponseInterface"
-                type="Ortto\Connector\Model\Data\ListProductResponse"/>
+                type="Ortto\Connector\Model\Data\ListCustomerResponse"/>
+    <preference for="Ortto\Connector\Api\Data\ListOrderResponseInterface"
+                type="Ortto\Connector\Model\Data\ListOrderResponse"/>
 
     <!-- WEB API REPOSITORIES   -->
     <preference for="Ortto\Connector\Api\OrttoProductRepositoryInterface"
@@ -124,12 +124,16 @@
                 type="Ortto\Connector\Model\Api\OrttoProductCategoryRepository"/>
     <preference for="Ortto\Connector\Api\OrttoCustomerRepositoryInterface"
                 type="Ortto\Connector\Model\Api\OrttoCustomerRepository"/>
+    <preference for="Ortto\Connector\Api\OrttoOrderRepositoryInterface"
+                type="Ortto\Connector\Model\Api\OrttoOrderRepository"/>
 
     <!-- WEB API HANDLERS -->
     <preference for="Ortto\Connector\Api\ProductApiInterface"
                 type="Ortto\Connector\REST\ProductApi"/>
     <preference for="Ortto\Connector\Api\CustomerApiInterface"
                 type="Ortto\Connector\REST\CustomerApi"/>
+    <preference for="Ortto\Connector\Api\OrderApiInterface"
+                type="Ortto\Connector\REST\OrderApi"/>
 
     <!-- JOBS ADMIN GRID -->
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">

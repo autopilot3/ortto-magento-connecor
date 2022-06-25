@@ -70,18 +70,6 @@ class OrttoOrder extends DataObject implements OrttoOrderInterface
     }
 
     /** @inheirtDoc */
-    public function setIsModified($isModified)
-    {
-        return $this->setData(self::IS_MODIFIED, $isModified);
-    }
-
-    /** @inheirtDoc */
-    public function getIsModified()
-    {
-        return To::bool($this->getData(self::IS_MODIFIED));
-    }
-
-    /** @inheirtDoc */
     public function setCanceledAt($canceledAt)
     {
         return $this->setData(self::CANCELED_AT, $canceledAt);
@@ -907,5 +895,17 @@ class OrttoOrder extends DataObject implements OrttoOrderInterface
     public function getCarriers(): array
     {
         return $this->getData(self::CARRIERS) ?? [];
+    }
+
+    /** @inheirtDoc */
+    public function setCustomer($customer)
+    {
+        return $this->setData(self::CUSTOMER, $customer);
+    }
+
+    /** @inheirtDoc */
+    public function getCustomer()
+    {
+        return $this->getData(self::CUSTOMER);
     }
 }

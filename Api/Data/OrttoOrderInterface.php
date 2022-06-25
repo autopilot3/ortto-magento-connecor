@@ -10,7 +10,6 @@ interface OrttoOrderInterface
     const CART_ID = 'cart_id';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
-    const IS_MODIFIED = 'is_modified';
     const CANCELED_AT = 'canceled_at';
     const COMPLETED_AT = 'completed_at';
     const STATUS = 'status';
@@ -80,6 +79,7 @@ interface OrttoOrderInterface
     const EXTENSION = 'extension';
     const REFUNDS = 'refunds';
     const CARRIERS = 'carriers';
+    const CUSTOMER = 'customer';
 
     /**
     * Set id
@@ -155,21 +155,6 @@ interface OrttoOrderInterface
     * @return string
     */
     public function getUpdatedAt();
-
-    /**
-    * Set is modified
-    *
-    * @param bool $isModified
-    * @return $this
-    */
-    public function setIsModified($isModified);
-
-    /**
-    * Get is modified
-    *
-    * @return bool
-    */
-    public function getIsModified();
 
     /**
     * Set canceled at
@@ -1119,7 +1104,7 @@ interface OrttoOrderInterface
     /**
     * Set shipping address
     *
-    * @param \Ortto\Connector\Api\Data\OrttoAddressInterface $shippingAddress
+    * @param \Ortto\Connector\Api\Data\OrttoAddressInterface|null $shippingAddress
     * @return $this
     */
     public function setShippingAddress($shippingAddress);
@@ -1127,14 +1112,14 @@ interface OrttoOrderInterface
     /**
     * Get shipping address
     *
-    * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
+    * @return \Ortto\Connector\Api\Data\OrttoAddressInterface|null
     */
     public function getShippingAddress();
 
     /**
     * Set billing address
     *
-    * @param \Ortto\Connector\Api\Data\OrttoAddressInterface $billingAddress
+    * @param \Ortto\Connector\Api\Data\OrttoAddressInterface|null $billingAddress
     * @return $this
     */
     public function setBillingAddress($billingAddress);
@@ -1142,7 +1127,7 @@ interface OrttoOrderInterface
     /**
     * Get billing address
     *
-    * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
+    * @return \Ortto\Connector\Api\Data\OrttoAddressInterface|null
     */
     public function getBillingAddress();
 
@@ -1205,4 +1190,19 @@ interface OrttoOrderInterface
     * @return \Ortto\Connector\Api\Data\OrttoCarrierInterface[]
     */
     public function getCarriers(): array;
+
+    /**
+    * Set customer
+    *
+    * @param \Ortto\Connector\Api\Data\OrttoCustomerInterface $customer
+    * @return $this
+    */
+    public function setCustomer($customer);
+
+    /**
+    * Get customer
+    *
+    * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
+    */
+    public function getCustomer();
 }

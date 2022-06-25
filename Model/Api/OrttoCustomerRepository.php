@@ -28,6 +28,23 @@ use Magento\Quote\Api\Data\AddressInterface as QuoteAddressInterface;
 
 class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
 {
+    private array $customerColumnsToSelect = [
+        self::ENTITY_ID,
+        CustomerInterface::PREFIX,
+        CustomerInterface::FIRSTNAME,
+        CustomerInterface::MIDDLENAME,
+        CustomerInterface::LASTNAME,
+        CustomerInterface::SUFFIX,
+        CustomerInterface::EMAIL,
+        CustomerInterface::CREATED_AT,
+        CustomerInterface::UPDATED_AT,
+        CustomerInterface::CREATED_IN,
+        CustomerInterface::DOB,
+        CustomerInterface::GENDER,
+        CustomerInterface::GROUP_ID,
+        CustomerInterface::DEFAULT_BILLING,
+        CustomerInterface::DEFAULT_SHIPPING,
+    ];
     const ENTITY_ID = 'entity_id';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'created_at';
@@ -38,8 +55,6 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     const ADDRESS_TYPE = 'address_type';
     const IS_ACTIVE = 'is_active';
     const IP_ADDRESS = 'remote_ip';
-
-    const ANONYMOUS_CUSTOMER_ID = -1;
     const CUSTOMER_PREFIX = 'customer_prefix';
     const CUSTOMER_FIRST_NAME = 'customer_firstname';
     const CUSTOMER_MIDDLE_NAME = 'customer_middlename';
@@ -113,6 +128,48 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         return $this->getCustomersList($scope, $page, $checkpoint, $pageSize);
     }
 
+    /** @inheirtDoc
+     * @throws LocalizedException
+     */
+    public function getByIds(ConfigScopeInterface $scope, array $customerIds, array $data = [])
+    {
+        $result = $this->listResponseFactory->create();
+        if (empty($customerIds)) {
+            return $result;
+        }
+        $customerCollection = $this->customerCollection->create();
+        $customerCollection->addAttributeToSelect($this->customerColumnsToSelect)
+            ->addFieldToFilter(self::ENTITY_ID, ['in' => $customerIds]);
+
+        $total = To::int($customerCollection->getSize());
+        $result->setTotal($total);
+        if ($total == 0) {
+            return $result;
+        }
+
+        $addressIds = [];
+        /** @var DataObject[] $customersData */
+        $customersData = [];
+        foreach ($customerCollection->getItems() as $customer) {
+            $customersData[] = $customer;
+            if ($addressId = $customer->getData(CustomerInterface::DEFAULT_SHIPPING)) {
+                $addressIds[] = To::int($addressId);
+            }
+            if ($addressId = $customer->getData(CustomerInterface::DEFAULT_BILLING)) {
+                $addressIds[] = To::int($addressId);
+            }
+        }
+
+        $addresses = $this->getAddressesById($addressIds);
+        $customers = [];
+        foreach ($customersData as $customer) {
+            $c = $this->convertCustomer($customer, $addresses);
+            $customers[$c->getId()] = $c;
+        }
+        $result->setCustomers($customers);
+        return $result;
+    }
+
     /**
      * @param ConfigScopeInterface $scope
      * @param int $page
@@ -120,7 +177,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
      * @param int $pageSize
      * @return \Ortto\Connector\Api\Data\ListCustomerResponseInterface
      */
-    public function getAnonymousCustomerList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize)
+    private function getAnonymousCustomerList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize)
     {
         $columnsToSelect = [
             self::ENTITY_ID,
@@ -185,29 +242,11 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
      * @return \Ortto\Connector\Api\Data\ListCustomerResponseInterface
      * @throws LocalizedException
      */
-    public function getCustomersList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize)
+    private function getCustomersList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize)
     {
-        $columnsToSelect = [
-            self::ENTITY_ID,
-            CustomerInterface::PREFIX,
-            CustomerInterface::FIRSTNAME,
-            CustomerInterface::MIDDLENAME,
-            CustomerInterface::LASTNAME,
-            CustomerInterface::SUFFIX,
-            CustomerInterface::EMAIL,
-            CustomerInterface::CREATED_AT,
-            CustomerInterface::UPDATED_AT,
-            CustomerInterface::CREATED_IN,
-            CustomerInterface::DOB,
-            CustomerInterface::GENDER,
-            CustomerInterface::GROUP_ID,
-            CustomerInterface::DEFAULT_BILLING,
-            CustomerInterface::DEFAULT_SHIPPING,
-        ];
-
         $customerCollection = $this->customerCollection->create();
         $customerCollection->setPage($page, $pageSize)
-            ->addAttributeToSelect($columnsToSelect)
+            ->addAttributeToSelect($this->customerColumnsToSelect)
             ->addFieldToFilter(CustomerInterface::WEBSITE_ID, ['eq' => $scope->getWebsiteId()])
             ->addFieldToFilter(CustomerInterface::STORE_ID, ['eq' => $scope->getId()])
             ->setOrder(self::ENTITY_ID, 'DESC');// New customers first

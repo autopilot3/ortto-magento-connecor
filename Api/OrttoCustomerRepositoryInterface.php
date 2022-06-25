@@ -6,6 +6,7 @@ namespace Ortto\Connector\Api;
 interface OrttoCustomerRepositoryInterface
 {
     const ANONYMOUS = 'anonymous';
+    const ANONYMOUS_CUSTOMER_ID = -1;
 
     /**
      * @param ConfigScopeInterface $scope
@@ -22,4 +23,12 @@ interface OrttoCustomerRepositoryInterface
         int $pageSize,
         array $data = []
     );
+
+    /**
+     * @param ConfigScopeInterface $scope
+     * @param int[] $customerIds
+     * @param array $data
+     * @return \Ortto\Connector\Api\Data\ListCustomerResponseInterface
+     */
+    public function getByIds(ConfigScopeInterface $scope, array $customerIds, array $data = []);
 }
