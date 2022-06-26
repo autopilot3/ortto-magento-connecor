@@ -134,6 +134,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     public function getByIds(ConfigScopeInterface $scope, array $customerIds, array $data = [])
     {
         $result = $this->listResponseFactory->create();
+        $customerIds = array_unique($customerIds);
         if (empty($customerIds)) {
             return $result;
         }
@@ -162,6 +163,11 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
 
         $addresses = $this->getAddressesById($addressIds);
         $customers = [];
+        foreach ($customerIds as $customerId) {
+            // The make sure all the keys always exist in the result array, even if the requested
+            // customer was not found!
+            $customers[$customerId] = null;
+        }
         foreach ($customersData as $customer) {
             $c = $this->convertCustomer($customer, $addresses);
             $customers[$c->getId()] = $c;

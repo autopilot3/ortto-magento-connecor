@@ -25,6 +25,8 @@ interface OrttoCustomerRepositoryInterface
     );
 
     /**
+     * Returns the list of customers by IDs. The returned array is keyed by customer ID.
+     * In case any customer was not found, the value for the key will be null.
      * @param ConfigScopeInterface $scope
      * @param int[] $customerIds
      * @param array $data

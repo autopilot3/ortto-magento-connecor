@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
+use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Customer\Api\GroupRepositoryInterface;
 use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
@@ -11,6 +12,8 @@ use Magento\Framework\Api\SortOrderBuilder;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Sales\Api\CreditmemoRepositoryInterface;
+use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Api\Data\OrderExtensionInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\Data\ShipmentTrackInterface;
@@ -18,13 +21,14 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\Data\OrttoProductInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
 use Ortto\Connector\Api\OrttoOrderRepositoryInterface;
+use Ortto\Connector\Api\OrttoProductRepositoryInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
-use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
 use Magento\Sales\Model\ResourceModel\Order\Address\CollectionFactory as AddressCollectionFactory;
 use Ortto\Connector\Model\Data\OrttoCustomerFactory;
 use Ortto\Connector\Model\Data\OrttoOrderExtensionFactory;
@@ -44,12 +48,11 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
 {
     private const CANCELLED_AT = 'canceled_at';
     private const COMPLETED_AT = 'completed_at';
-    private const BILLING_ADDRESS = 'billing';
+    private const SHIPPING_ADDRESS = 'shipping';
 
     private Data $helper;
     private OrttoLogger $logger;
     private ListOrderResponseFactory $listResponseFactory;
-    private OrderCollectionFactory $orderCollection;
     private AddressCollectionFactory $addressCollection;
     private OrttoOrderFactory $orderFactory;
     private OrttoAddressFactory $addressFactory;
@@ -61,7 +64,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private SearchCriteriaBuilder $searchCriteriaBuilder;
     private OrderRepositoryInterface $orderRepository;
     private SortOrderBuilder $sortOrderBuilder;
-    private CreditMemoDataFactory $creditMemoDataFactory;
     private ShipmentTrackRepositoryInterface $shipmentTrackRepository;
     private OrttoOrderExtensionFactory $extensionFactory;
     private OrttoRefundFactory $refundFactory;
@@ -69,11 +71,13 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private OrttoCarrierFactory $carrierFactory;
     private OrttoOrderItemFactory $orderItemFactory;
     private OrttoGiftFactory $giftFactory;
+    private \Magento\Newsletter\Model\Subscriber $subscriber;
+    private OrttoProductRepositoryInterface $productRepository;
+    private CreditmemoRepositoryInterface $creditMemoRepository;
 
     public function __construct(
         Data $helper,
         OrttoLogger $logger,
-        OrderCollectionFactory $orderCollection,
         AddressCollectionFactory $addressCollection,
         OrttoCustomerRepositoryInterface $customerRepository,
         ListOrderResponseFactory $listResponseFactory,
@@ -83,7 +87,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         \Magento\Directory\Api\CountryInformationAcquirerInterface $countryRepository,
         \Ortto\Connector\Model\Data\OrttoCustomerFactory $customerFactory,
         \Magento\Customer\Api\GroupRepositoryInterface $groupRepository,
-        \Magento\Newsletter\Model\Subscriber $subscriber,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Framework\Api\SortOrderBuilder $sortOrderBuilder,
@@ -94,12 +97,14 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         \Ortto\Connector\Model\Data\OrttoCarrierFactory $carrierFactory,
         \Ortto\Connector\Model\Data\OrttoOrderItemFactory $orderItemFactory,
         \Magento\Sales\Api\ShipmentTrackRepositoryInterface $shipmentTrackRepository,
-        \Ortto\Connector\Model\Data\OrttoGiftFactory $giftFactory
+        \Ortto\Connector\Model\Data\OrttoGiftFactory $giftFactory,
+        \Magento\Newsletter\Model\Subscriber $subscriber,
+        OrttoProductRepositoryInterface $productRepository,
+        \Magento\Sales\Api\CreditmemoRepositoryInterface $creditMemoRepository
     ) {
         $this->helper = $helper;
         $this->logger = $logger;
         $this->listResponseFactory = $listResponseFactory;
-        $this->orderCollection = $orderCollection;
         $this->orderFactory = $orderFactory;
         $this->addressFactory = $addressFactory;
         $this->countryFactory = $countryFactory;
@@ -108,11 +113,9 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $this->addressCollection = $addressCollection;
         $this->customerFactory = $customerFactory;
         $this->groupRepository = $groupRepository;
-        $this->subscriber = $subscriber;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->orderRepository = $orderRepository;
         $this->sortOrderBuilder = $sortOrderBuilder;
-        $this->creditMemoDataFactory = $creditMemoDataFactory;
         $this->extensionFactory = $extensionFactory;
         $this->refundFactory = $refundFactory;
         $this->refundItemFactory = $refundItemFactory;
@@ -120,6 +123,9 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $this->orderItemFactory = $orderItemFactory;
         $this->shipmentTrackRepository = $shipmentTrackRepository;
         $this->giftFactory = $giftFactory;
+        $this->subscriber = $subscriber;
+        $this->productRepository = $productRepository;
+        $this->creditMemoRepository = $creditMemoRepository;
     }
 
     /** @inheirtDoc
@@ -165,16 +171,16 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         // The returned array is keyed by customer ID
         $customers = $this->customerRepository->getByIds($scope, $customerIds)->getCustomers();
 
-        // Addresses array is indexed by order ID (addresses[orderId] = [address1, address2,...]
-        $addresses = $this->getOrderAddresses($orderIds);
+        // NOTE: Order's billing address which is set by `convertOrder`
+        $shippingAddresses = $this->getShippingAddressesByOrderIds($orderIds);
         $orttoOrders = [];
         foreach ($orders as $order) {
             $orderId = To::int($order->getEntityId());
-            $orderAddresses = $addresses[$orderId];
-            $orttoOrder = $this->convertOrder($order, $orderAddresses, $scope->getWebsiteId());
+            $orttoOrder = $this->convertOrder($scope, $order, $shippingAddresses[$orderId]);
             if ($customerId = $order->getCustomerId()) {
-                if (array_key_exists($customerId, $customers)) {
-                    $orttoOrder->setCustomer($customers[To::int($customerId)]);
+                if ($customer = $customers[To::int($customerId)]) {
+                    // Anonymous customers are set by `convertOrder`.
+                    $orttoOrder->setCustomer($customer);
                 }
             }
             $orttoOrders[] = $orttoOrder;
@@ -187,11 +193,11 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
 
     /**
      * @param int[] $orderIds
-     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface[][]
+     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface[]
      */
-    private function getOrderAddresses(array $orderIds)
+    private function getShippingAddressesByOrderIds(array $orderIds)
     {
-        if (empty($addressIds)) {
+        if (empty($orderIds)) {
             return [];
         }
         $columnsToSelect = [
@@ -215,34 +221,44 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $orderIds = array_unique($orderIds);
         $collection = $this->addressCollection->create();
         $collection->addFieldToSelect($columnsToSelect)
+            ->addFieldToFilter(AddressInterface::ADDRESS_TYPE, ['eq' => self::SHIPPING_ADDRESS])
             ->addFieldToFilter(AddressInterface::PARENT_ID, ['in' => $orderIds]);
 
         $addresses = [];
         foreach ($orderIds as $orderId) {
-            $addresses[$orderId] = [];
+            $addresses[$orderId] = null;
         }
         foreach ($collection->getItems() as $address) {
             $orderId = To::int($address->getData(AddressInterface::PARENT_ID));
-            $addresses[$orderId][] = $this->convertAddress($address);
+            $addresses[$orderId] = $this->convertAddress($address);
         }
         return $addresses;
     }
 
 
     /**
+     * @param ConfigScopeInterface $scope
      * @param OrderInterface $order
-     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[] $addresses
-     * @param int $websiteId
+     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface|null $shippingAddress
      * @return \Ortto\Connector\Api\Data\OrttoOrderInterface
      */
-    private function convertOrder($order, $addresses, $websiteId)
+    private function convertOrder(ConfigScopeInterface $scope, $order, $shippingAddress)
     {
         $data = $this->orderFactory->create();
         $orderId = To::int($order->getData(OrderInterface::ENTITY_ID));
         $data->setId($orderId);
         $customerId = $order->getData(OrderInterface::CUSTOMER_ID);
+        $data->setShippingAddress($shippingAddress);
+        if ($billingAddress = $order->getBillingAddress()) {
+            $data->setBillingAddress($this->convertAddress($billingAddress));
+        }
         if (empty($customerId)) {
-            $data->setCustomer($this->getAnonymousCustomer($order, $addresses, $websiteId));
+            $data->setCustomer($this->getAnonymousCustomer(
+                $order,
+                $data->getBillingAddress(),
+                $data->getShippingAddress(),
+                $scope->getWebsiteId()
+            ));
         }
         $data->setNumber((string)$order->getData(OrderInterface::INCREMENT_ID));
         $data->setCartId(To::int($order->getData(OrderInterface::QUOTE_ID)));
@@ -316,24 +332,22 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         // https://support.magento.com/hc/en-us/articles/115004348454-How-many-coupons-can-a-customer-use-in-Adobe-Commerce-
         $data->setDiscountCodes([(string)$order->getCouponCode()]);
         $data->setProtectCode((string)$order->getProtectCode());
-        foreach ($addresses as $address) {
-            if ($address->getType() == self::BILLING_ADDRESS) {
-                $data->setBillingAddress($address);
-            } else {
-                $data->setShippingAddress($address);
+        $items = $order->getAllVisibleItems();
+        $productIds = [];
+        $variantSKUs = [];
+        foreach ($items as $item) {
+            $productIds[] = To::int($item->getProductId());
+            if ($item->getProductType() == Configurable::TYPE_CODE) {
+                $variantSKUs[] = $item->getSku();
             }
         }
 
-        $items = $order->getAllVisibleItems();
-        $productIds = [];
-        $orderItems = [];
-        foreach ($items as $item) {
-            $productIds[] = To::int($item->getProductId());
-            $orderItems[] = $this->getOrderItem($item);
-        }
-        $data->setItems($orderItems);
+        $variants = $this->productRepository->getBySKUs($scope, $variantSKUs)->getProducts();
+        $products = $this->productRepository->getByIds($scope, $productIds)->getProducts();
 
-        switch ($order->getState()) {
+        $data->setItems($this->getOrderItems($items, $products, $variants));
+
+        switch ($order->getStatus()) {
             case Order::STATE_CLOSED:
                 $data->setRefunds($this->getRefunds($orderId, $productIds));
                 break;
@@ -347,14 +361,63 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     }
 
     /**
-     * @param OrderItemInterface $orderItem
-     * @return \Ortto\Connector\Api\Data\OrttoOrderItemInterface
+     * @param OrderItemInterface[] $items
+     * @param OrttoProductInterface[] $products
+     * @param OrttoProductInterface[] $variants
+     * @return \Ortto\Connector\Api\Data\OrttoOrderItemInterface[]
      */
-    private function getOrderItem($orderItem)
+    private function getOrderItems($items, $products, $variants)
     {
-        //TODO
-        $item = $this->orderItemFactory->create();
-        return $item;
+        $orderItems = [];
+        foreach ($items as $item) {
+            $data = $this->orderItemFactory->create();
+            $data->setId(To::int($item->getItemId()));
+            $data->setIsVirtual(To::bool($item->getIsVirtual()));
+            $data->setSku((string)$item->getSku());
+            $data->setDescription((string)$item->getDescription());
+            $data->setName((string)$item->getName());
+            $data->setCreatedAt($this->helper->toUTC($item->getCreatedAt()));
+            $data->setUpdatedAt($this->helper->toUTC($item->getUpdatedAt()));
+            $data->setRefunded(To::float($item->getAmountRefunded()));
+            $data->setBaseRefunded(To::float($item->getBaseAmountRefunded()));
+            $data->setBaseCost(To::float($item->getBaseCost()));
+            $data->setDiscount(To::float($item->getDiscountAmount()));
+            $data->setDiscountPercent(To::float($item->getDiscountPercent()));
+            $data->setDiscountInvoiced(To::float($item->getDiscountInvoiced()));
+            $data->setBaseDiscountInvoiced(To::float($item->getBaseDiscountInvoiced()));
+            $data->setBaseDiscount(To::float($item->getBaseDiscountAmount()));
+            $data->setDiscountRefunded(To::float($item->getDiscountRefunded()));
+            $data->setBaseDiscountRefunded(To::float($item->getBaseDiscountRefunded()));
+            $data->setPrice(To::float($item->getPrice()));
+            $data->setBasePrice(To::float($item->getBasePrice()));
+            $data->setOriginalPrice(To::float($item->getOriginalPrice()));
+            $data->setBaseOriginalPrice(To::float($item->getBaseOriginalPrice()));
+            $data->setTotal(To::float($item->getRowTotal()));
+            $data->setBaseTotal(To::float($item->getBaseRowTotal()));
+            $data->setTotalInclTax(To::float($item->getRowTotalInclTax()));
+            $data->setBaseTotalInclTax(To::float($item->getBaseRowTotalInclTax()));
+            $data->setQtyInvoiced(To::float($item->getQtyInvoiced()));
+            $data->setQtyBackOrdered(To::float($item->getQtyBackordered()));
+            $data->setQtyCancelled(To::float($item->getQtyCanceled()));
+            $data->setQtyOrdered(To::float($item->getQtyOrdered()));
+            $data->setQtyRefunded(To::float($item->getQtyRefunded()));
+            $data->setQtyReturned(To::float($item->getQtyReturned()));
+            $data->setQtyShipped(To::float($item->getQtyShipped()));
+            $data->setTax(To::float($item->getTaxAmount()));
+            $data->setTaxPercent(To::float($item->getTaxPercent()));
+            $data->setBaseTax(To::float($item->getBaseTaxAmount()));
+            $data->setIsFreeShipping(To::bool($item->getFreeShipping()));
+            $data->setAdditionalData((string)$item->getAdditionalData());
+            $data->setStoreId(To::int($item->getStoreId()));
+            if ($product = $products[To::int($item->getProductId())]) {
+                $data->setProduct($product);
+            }
+            if ($item->getProductType() == Configurable::TYPE_CODE) {
+                $data->setVariant($variants[$item->getSku()]);
+            }
+            $orderItems[] = $data;
+        }
+        return $orderItems;
     }
 
     /**
@@ -364,14 +427,79 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
      */
     private function getRefunds($orderId, $productIds)
     {
-        //TODO
-        $refunds = $this->refundFactory->create();
-        $refunds = $this->creditMemoDataFactory->create();
-        if ($refunds->loadByOrderId($orderId, $productIds)) {
-            $fields['refunds'] = $refunds->toArray();
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter(CreditmemoInterface::ORDER_ID, $orderId)->create();
+        $memos = $this->creditMemoRepository->getList($searchCriteria)->getItems();
+        if (empty($memos)) {
+            return [];
         }
-        return [$refunds];
+        $refunds = [];
+        foreach ($memos as $memo) {
+            $refund = $this->refundFactory->create();
+            $refund->setId(To::int($memo->getEntityId()));
+            $refund->setInvoiceId(To::int($memo->getInvoiceId()));
+            $refund->setNumber((string)$memo->getIncrementId());
+            $refund->setSubtotal(To::float($memo->getSubtotal()));
+            $refund->setBaseSubtotal(To::float($memo->getBaseSubtotal()));
+            $refund->setSubtotalInclTax(To::float($memo->getSubtotalInclTax()));
+            $refund->setBaseSubtotalInclTax(To::float($memo->getBaseSubtotalInclTax()));
+            $refund->setTax(To::float($memo->getTaxAmount()));
+            $refund->setBaseTax(To::float($memo->getBaseTaxAmount()));
+            $refund->setShipping(To::float($memo->getShippingAmount()));
+            $refund->setBaseShipping(To::float($memo->getBaseShippingAmount()));
+            $refund->setShippingInclTax(To::float($memo->getShippingInclTax()));
+            $refund->setBaseShippingInclTax(To::float($memo->getBaseShippingInclTax()));
+            $refund->setGrandTotal(To::float($memo->getGrandTotal()));
+            $refund->setBaseGrandTotal(To::float($memo->getBaseGrandTotal()));
+            $refund->setAdjustment(To::float($memo->getAdjustment()));
+            $refund->setBaseAdjustment(To::float($memo->getBaseAdjustment()));
+            $refund->setRefundedAt($this->helper->toUTC($memo->getCreatedAt()));
+            $refund->setItems($this->getRefundItems($memo->getItems(), $productIds));
+            $refunds[] = $refund;
+        }
+        return $refunds;
     }
+
+    /**
+     * @param \Magento\Sales\Api\Data\CreditmemoItemInterface[] $items
+     * @param int[] $productIds
+     * @return \Ortto\Connector\Api\Data\OrttoRefundItemInterface[]
+     */
+    private function getRefundItems(array $items, array $productIds)
+    {
+        $result = [];
+        foreach ($items as $item) {
+            $productId = To::int($item->getProductId());
+            if (!array_contains($productIds, $productId)) {
+                // Exclude variants of a configurable product
+                // We don't want both parent and the child product in the refunded items list
+                // Note: `orderProductIds` only includes visible items
+                continue;
+            }
+            $data = $this->refundItemFactory->create();
+            $data->setId(To::int($item->getEntityId()));
+            $data->setOrderItemId(To::int($item->getOrderItemId()));
+            $data->setProductId($productId);
+            $data->setSku((string)$item->getSku());
+            $data->setName((string)$item->getName());
+            $data->setPrice(To::float($item->getPrice()));
+            $data->setPriceInclTax(To::float($item->getPriceInclTax()));
+            $data->setBasePrice(To::float($item->getBasePrice()));
+            $data->setBasePriceInclTax(To::float($item->getBasePriceInclTax()));
+            $data->setQuantity(To::float($item->getQty()));
+            $data->setTax(To::float($item->getTaxAmount()));
+            $data->setBaseTax(To::float($item->getBaseTaxAmount()));
+            $data->setTotal(To::float($item->getRowTotal()));
+            $data->setBaseTotal(To::float($item->getBaseRowTotal()));
+            $data->setTotalInclTax(To::float($item->getRowTotalInclTax()));
+            $data->setBaseTotalInclTax(To::float($item->getBaseRowTotalInclTax()));
+            $data->setDescription((string)$item->getDescription());
+            $data->setDiscount(To::float($item->getDiscountAmount()));
+            $data->setBaseDiscount(To::float($item->getBaseDiscountAmount()));
+            $result[] = $data;
+        }
+        return $result;
+    }
+
 
     /**
      * @param OrderInterface $order
@@ -419,11 +547,12 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
 
     /**
      * @param OrderInterface $order
-     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[] $addresses
+     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface|null $billingAddress
+     * * @param \Ortto\Connector\Api\Data\OrttoAddressInterface|null $shippingAddress
      * @param int $websiteId
      * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
      */
-    private function getAnonymousCustomer($order, $addresses, $websiteId)
+    private function getAnonymousCustomer($order, $billingAddress, $shippingAddress, $websiteId)
     {
         $data = $this->customerFactory->create();
         $email = (string)$order->getCustomerEmail();
@@ -456,16 +585,15 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         }
 
         $phoneNumber = '';
-        foreach ($addresses as $address) {
-            if ($address->getType() == self::BILLING_ADDRESS) {
-                $data->setBillingAddress($address);
-                $phoneNumber = $address->getPhone();
-            } else {
-                $data->setShippingAddress($address);
-                // Billing phone number takes precedence
-                if (empty($phoneNumber)) {
-                    $phoneNumber = $address->getPhone();
-                }
+        if ($billingAddress) {
+            $data->setBillingAddress($billingAddress);
+            $phoneNumber = $billingAddress->getPhone();
+        }
+        if ($shippingAddress) {
+            $data->setShippingAddress($shippingAddress);
+            // Billing phone number takes precedence
+            if (empty($phoneNumber)) {
+                $phoneNumber = $shippingAddress->getPhone();
             }
         }
 

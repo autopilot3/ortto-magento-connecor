@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Ortto\Connector\Model\Api;
 
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
+use Magento\Customer\Api\Data\CustomerInterface;
+use Magento\Framework\DataObject;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\OrttoProductParentGroupInterface;
 use Ortto\Connector\Api\OrttoProductCategoryRepositoryInterface;
@@ -32,6 +34,7 @@ use Ortto\Connector\Model\Data\OrttoStockItemFactory;
 class OrttoProductRepository implements OrttoProductRepositoryInterface
 {
     private const NO_SELECT = 'no_select';
+    private const ENTITY_ID = 'entity_id';
 
     private Data $helper;
     private ImageFactory $imageFactory;
@@ -142,6 +145,76 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $result->setProducts($productList);
         $result->setHasMore($page < $total / $pageSize);
 
+        return $result;
+    }
+
+    /** @inheirtDoc */
+    public function getByIds(ConfigScopeInterface $scope, $productIds, $data = [])
+    {
+        $result = $this->listResponseFactory->create();
+        if (empty($productIds)) {
+            return $result;
+        }
+        $productIds = array_unique($productIds);
+
+        $collection = $this->productCollectionFactory->create();
+        $collection->addAttributeToSelect('*')
+            ->addFieldToFilter(self::ENTITY_ID, ['in' => $productIds]);
+
+        $total = To::int($collection->getSize());
+        $result->setTotal($total);
+        if ($total == 0) {
+            return $result;
+        }
+
+        $products = [];
+        foreach ($productIds as $productId) {
+            // The make sure all the keys always exist in the result array, even if the requested
+            // product was not found!
+            $products[$productId] = null;
+        }
+        $storeId = $scope->getId();
+        /** @var  Product $product */
+        foreach ($collection->getItems() as $product) {
+            $p = $this->convert($product, $storeId);
+            $products[$p->getId()] = $p;
+        }
+        $result->setProducts($products);
+        return $result;
+    }
+
+    /** @inheirtDoc */
+    public function getBySKUs(ConfigScopeInterface $scope, array $productSKUs, $data = [])
+    {
+        $result = $this->listResponseFactory->create();
+        if (empty($productSKUs)) {
+            return $result;
+        }
+        $productSKUs = array_unique($productSKUs);
+
+        $collection = $this->productCollectionFactory->create();
+        $collection->addAttributeToSelect('*')
+            ->addFieldToFilter(ProductInterface::SKU, ['in' => $productSKUs]);
+
+        $total = To::int($collection->getSize());
+        $result->setTotal($total);
+        if ($total == 0) {
+            return $result;
+        }
+
+        $products = [];
+        foreach ($productSKUs as $sku) {
+            // The make sure all the keys always exist in the result array, even if the requested
+            // product was not found!
+            $products[$sku] = null;
+        }
+        $storeId = $scope->getId();
+        /** @var  Product $product */
+        foreach ($collection->getItems() as $product) {
+            $p = $this->convert($product, $storeId);
+            $products[$p->getSku()] = $p;
+        }
+        $result->setProducts($products);
         return $result;
     }
 
