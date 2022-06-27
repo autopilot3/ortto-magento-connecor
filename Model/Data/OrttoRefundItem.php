@@ -46,6 +46,18 @@ class OrttoRefundItem extends DataObject implements OrttoRefundItemInterface
     }
 
     /** @inheirtDoc */
+    public function setVariantProductId($variantProductId)
+    {
+        return $this->setData(self::VARIANT_PRODUCT_ID, $variantProductId);
+    }
+
+    /** @inheirtDoc */
+    public function getVariantProductId()
+    {
+        return To::int($this->getData(self::VARIANT_PRODUCT_ID));
+    }
+
+    /** @inheirtDoc */
     public function setSku($sku)
     {
         return $this->setData(self::SKU, $sku);

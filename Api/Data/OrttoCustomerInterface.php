@@ -17,11 +17,9 @@ interface OrttoCustomerInterface
     const DOB = 'dob';
     const CREATED_AT = 'created_at';
     const CREATED_IN = 'created_in';
-    const GROUP = 'group';
     const BILLING_ADDRESS = 'billing_address';
     const SHIPPING_ADDRESS = 'shipping_address';
     const UPDATED_AT = 'updated_at';
-    const IS_SUBSCRIBED = 'is_subscribed';
     const PHONE = 'phone';
 
     /**
@@ -205,21 +203,6 @@ interface OrttoCustomerInterface
     public function getCreatedIn();
 
     /**
-    * Set group
-    *
-    * @param string $group
-    * @return $this
-    */
-    public function setGroup($group);
-
-    /**
-    * Get group
-    *
-    * @return string
-    */
-    public function getGroup();
-
-    /**
     * Set billing address
     *
     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface $billingAddress
@@ -263,21 +246,6 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getUpdatedAt();
-
-    /**
-    * Set is subscribed
-    *
-    * @param bool $isSubscribed
-    * @return $this
-    */
-    public function setIsSubscribed($isSubscribed);
-
-    /**
-    * Get is subscribed
-    *
-    * @return bool
-    */
-    public function getIsSubscribed();
 
     /**
     * Set phone

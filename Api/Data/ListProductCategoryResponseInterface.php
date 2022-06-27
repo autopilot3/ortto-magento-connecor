@@ -2,14 +2,14 @@
 
 namespace Ortto\Connector\Api\Data;
 
-interface ListProductResponseInterface
+interface ListProductCategoryResponseInterface
 {
     /**
      * String constants for property names
      */
     const TOTAL = "total";
-    const PRODUCTS = "products";
     const HAS_MORE = "has_more";
+    const CATEGORIES = "categories";
 
     /**
      * Getter for Total.
@@ -44,13 +44,13 @@ interface ListProductResponseInterface
     public function setHasMore(bool $hasMore);
 
     /**
-     * @param \Ortto\Connector\Api\Data\OrttoProductInterface[] $products
+     * @param \Ortto\Connector\Api\Data\OrttoProductCategoryInterface[] $categories
      * @return void
      */
-    public function setProducts(array $products);
+    public function setCategories(array $categories);
 
     /**
-     * @return \Ortto\Connector\Api\Data\OrttoProductInterface[]
+     * @return \Ortto\Connector\Api\Data\OrttoProductCategoryInterface[]
      */
-    public function getProducts();
+    public function getCategories();
 }

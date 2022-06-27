@@ -8,7 +8,7 @@ interface OrttoAddressInterface
     const TYPE = 'type';
     const CITY = 'city';
     const COMPANY = 'company';
-    const COUNTRY = 'country';
+    const COUNTRY_NAME = 'country_name';
     const FIRST_NAME = 'first_name';
     const LAST_NAME = 'last_name';
     const MIDDLE_NAME = 'middle_name';
@@ -67,19 +67,19 @@ interface OrttoAddressInterface
     public function getCompany();
 
     /**
-    * Set country
+    * Set country name
     *
-    * @param \Ortto\Connector\Api\Data\OrttoCountryInterface $country
+    * @param string $countryName
     * @return $this
     */
-    public function setCountry($country);
+    public function setCountryName($countryName);
 
     /**
-    * Get country
+    * Get country name
     *
-    * @return \Ortto\Connector\Api\Data\OrttoCountryInterface
+    * @return string
     */
-    public function getCountry();
+    public function getCountryName();
 
     /**
     * Set first name

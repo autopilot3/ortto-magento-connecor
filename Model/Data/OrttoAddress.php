@@ -45,15 +45,15 @@ class OrttoAddress extends DataObject implements OrttoAddressInterface
     }
 
     /** @inheirtDoc */
-    public function setCountry($country)
+    public function setCountryName($countryName)
     {
-        return $this->setData(self::COUNTRY, $country);
+        return $this->setData(self::COUNTRY_NAME, $countryName);
     }
 
     /** @inheirtDoc */
-    public function getCountry()
+    public function getCountryName()
     {
-        return $this->getData(self::COUNTRY);
+        return (string)$this->getData(self::COUNTRY_NAME);
     }
 
     /** @inheirtDoc */

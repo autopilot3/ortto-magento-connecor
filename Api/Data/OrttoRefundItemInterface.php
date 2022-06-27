@@ -8,6 +8,7 @@ interface OrttoRefundItemInterface
     const ID = 'id';
     const ORDER_ITEM_ID = 'order_item_id';
     const PRODUCT_ID = 'product_id';
+    const VARIANT_PRODUCT_ID = 'variant_product_id';
     const SKU = 'sku';
     const NAME = 'name';
     const PRICE = 'price';
@@ -69,6 +70,21 @@ interface OrttoRefundItemInterface
     * @return int
     */
     public function getProductId();
+
+    /**
+    * Set variant product id
+    *
+    * @param int|null $variantProductId
+    * @return $this
+    */
+    public function setVariantProductId($variantProductId);
+
+    /**
+    * Get variant product id
+    *
+    * @return int|null
+    */
+    public function getVariantProductId();
 
     /**
     * Set sku

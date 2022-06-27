@@ -3,41 +3,61 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
-use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Api\Data\CategoryInterface;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
+use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\OrttoProductCategoryRepositoryInterface;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
 use Ortto\Connector\Model\Data\OrttoProductCategoryFactory;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
+use Ortto\Connector\Model\Data\ListProductCategoryResponseFactory;
 
 class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryInterface
 {
     private OrttoLogger $logger;
     private OrttoProductCategoryFactory $productCategoryFactory;
-    private CategoryRepositoryInterface $categoryRepository;
+    private CollectionFactory $categoryCollection;
+    private ListProductCategoryResponseFactory $listProductCategoryResponseFactory;
 
     public function __construct(
         OrttoLogger $logger,
         OrttoProductCategoryFactory $productCategoryFactory,
-        CategoryRepositoryInterface $categoryRepository
+        CollectionFactory $categoryCollection,
+        \Ortto\Connector\Model\Data\ListProductCategoryResponseFactory $listProductCategoryResponseFactory
     ) {
         $this->logger = $logger;
         $this->productCategoryFactory = $productCategoryFactory;
-        $this->categoryRepository = $categoryRepository;
+        $this->categoryCollection = $categoryCollection;
+        $this->listProductCategoryResponseFactory = $listProductCategoryResponseFactory;
     }
 
-    /** @inheirtDoc */
-    public function getById(int $categoryId)
+    public function getList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize, array $data = [])
     {
-        try {
-            $category = $this->categoryRepository->get($categoryId);
-            return $this->convert($category);
-        } catch (NoSuchEntityException $e) {
-            $this->logger->error($e, sprintf("Category ID %d could not be found.", $categoryId));
-            return false;
+        $collection = $this->categoryCollection->create();
+        $collection->setPage($page, $pageSize)
+            ->addFieldToSelect("*")
+            ->setStoreId($scope->getId());
+
+        if (!empty($checkpoint)) {
+            $collection->addFieldToFilter(CategoryInterface::KEY_UPDATED_AT, ['gteq' => $checkpoint]);
         }
+
+        $result = $this->listProductCategoryResponseFactory->create();
+        $total = To::int($collection->getSize());
+        $result->setTotal($total);
+        if ($total == 0) {
+            return $result;
+        }
+
+        $categories = [];
+        /** @var CategoryInterface $category */
+        foreach ($collection->getItems() as $category) {
+            $categories[] = $this->convert($category);
+        }
+        $result->setCategories($categories);
+        $result->setHasMore($page < $total / $pageSize);
+        return $result;
     }
 
     /**

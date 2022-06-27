@@ -92,8 +92,6 @@
                 type="Ortto\Connector\Model\Data\OrttoOrderItem"/>
     <preference for="Ortto\Connector\Api\Data\OrttoOrderInterface"
                 type="Ortto\Connector\Model\Data\OrttoOrder"/>
-    <preference for="Ortto\Connector\Api\Data\OrttoCountryInterface"
-                type="Ortto\Connector\Model\Data\OrttoCountry"/>
     <preference for="Ortto\Connector\Api\Data\OrttoAddressInterface"
                 type="Ortto\Connector\Model\Data\OrttoAddress"/>
     <preference for="Ortto\Connector\Api\Data\OrttoCustomerInterface"
@@ -112,6 +110,8 @@
                 type="Ortto\Connector\Model\Data\SyncConfigResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListProductResponseInterface"
                 type="Ortto\Connector\Model\Data\ListProductResponse"/>
+    <preference for="Ortto\Connector\Api\Data\ListProductCategoryResponseInterface"
+                type="Ortto\Connector\Model\Data\ListProductCategoryResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListCustomerResponseInterface"
                 type="Ortto\Connector\Model\Data\ListCustomerResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListOrderResponseInterface"
@@ -130,6 +130,8 @@
     <!-- WEB API HANDLERS -->
     <preference for="Ortto\Connector\Api\ProductApiInterface"
                 type="Ortto\Connector\REST\ProductApi"/>
+    <preference for="Ortto\Connector\Api\ProductCategoryApiInterface"
+                type="Ortto\Connector\REST\ProductCategoryApi"/>
     <preference for="Ortto\Connector\Api\CustomerApiInterface"
                 type="Ortto\Connector\REST\CustomerApi"/>
     <preference for="Ortto\Connector\Api\OrderApiInterface"

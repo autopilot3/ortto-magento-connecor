@@ -5,12 +5,8 @@ namespace Ortto\Connector\Model\Api;
 
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
-use Magento\Customer\Api\GroupRepositoryInterface;
-use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Newsletter\Model\Subscriber;
 use Magento\Quote\Model\ResourceModel\Quote\Address\CollectionFactory as QuoteAddressCollectionFactory;
 use Magento\Quote\Model\ResourceModel\Quote\CollectionFactory as QuoteCollectionFactory;
 use Ortto\Connector\Api\ConfigScopeInterface;
@@ -23,7 +19,6 @@ use \Magento\Customer\Model\ResourceModel\Address\CollectionFactory as AddressCo
 use Ortto\Connector\Model\Data\OrttoCustomerFactory;
 use Ortto\Connector\Model\Data\ListCustomerResponseFactory;
 use Ortto\Connector\Model\Data\OrttoAddressFactory;
-use Ortto\Connector\Model\Data\OrttoCountryFactory;
 use Magento\Quote\Api\Data\AddressInterface as QuoteAddressInterface;
 
 class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
@@ -71,11 +66,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     private ListCustomerResponseFactory $listResponseFactory;
     private CustomerCollectionFactory $customerCollection;
     private OrttoCustomerFactory $customerFactory;
-    private GroupRepositoryInterface $groupRepository;
-    private Subscriber $subscriber;
     private OrttoAddressFactory $addressFactory;
-    private OrttoCountryFactory $countryFactory;
-    private CountryInformationAcquirerInterface $countryRepository;
     private AddressCollectionFactory $addressCollection;
     private QuoteCollectionFactory $quoteCollection;
     private QuoteAddressCollectionFactory $quoteAddressCollection;
@@ -89,22 +80,14 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         QuoteAddressCollectionFactory $quoteAddressCollection,
         ListCustomerResponseFactory $listResponseFactory,
         OrttoCustomerFactory $customerFactory,
-        \Magento\Customer\Api\GroupRepositoryInterface $groupRepository,
-        \Magento\Newsletter\Model\Subscriber $subscriber,
-        \Ortto\Connector\Model\Data\OrttoAddressFactory $addressFactory,
-        \Ortto\Connector\Model\Data\OrttoCountryFactory $countryFactory,
-        \Magento\Directory\Api\CountryInformationAcquirerInterface $countryRepository
+        \Ortto\Connector\Model\Data\OrttoAddressFactory $addressFactory
     ) {
         $this->helper = $helper;
         $this->logger = $logger;
         $this->listResponseFactory = $listResponseFactory;
         $this->customerCollection = $customerCollection;
         $this->customerFactory = $customerFactory;
-        $this->groupRepository = $groupRepository;
-        $this->subscriber = $subscriber;
         $this->addressFactory = $addressFactory;
-        $this->countryFactory = $countryFactory;
-        $this->countryRepository = $countryRepository;
         $this->addressCollection = $addressCollection;
         $this->quoteCollection = $quoteCollection;
         $this->quoteAddressCollection = $quoteAddressCollection;
@@ -206,7 +189,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             ->setCurPage($page)
             ->addFieldToSelect($columnsToSelect)
             ->addFieldToFilter(self::CUSTOMER_IS_GUEST, ['eq' => 1])
-            // is_active = 1 means shopping cart (no useful information has been stored yet)
+            // A quote with is_active field set to 1 is a shopping cart (no useful information has been stored yet)
             ->addFieldToFilter(self::IS_ACTIVE, ['eq' => 0])
             ->addFieldToFilter(self::STORE_ID, ['eq' => $scope->getId()])
             ->setOrder(self::ENTITY_ID, 'DESC');// New customers first
@@ -393,24 +376,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $data->setDateOfBirth($this->helper->toUTC($customer->getData(CustomerInterface::DOB)));
         $data->setCreatedAt($this->helper->toUTC($customer->getData(CustomerInterface::CREATED_AT)));
         $data->setUpdatedAt($this->helper->toUTC($customer->getData(CustomerInterface::UPDATED_AT)));
-        $data->setCreatedIn((string)$customer->getData(CustomerInterface::CREATED_IN));
-        if ($groupId = $customer->getData(CustomerInterface::GROUP_ID)) {
-            try {
-                if ($group = $this->groupRepository->getById($groupId)) {
-                    $data->setGroup(($group->getCode()));
-                }
-            } catch (NoSuchEntityException|LocalizedException $e) {
-                $this->logger->error($e, 'Failed to fetch customer group details');
-            }
-        }
-        $sub = $this->subscriber->loadByCustomer(
-            $customerId,
-            To::int($customer->getData(CustomerInterface::WEBSITE_ID))
-        );
-        $data->setIsSubscribed($sub->isSubscribed());
-        if (empty($addresses)) {
-            return $data;
-        }
+
         $phoneNumber = '';
         if ($addressId = $customer->getData(CustomerInterface::DEFAULT_BILLING)) {
             if ($address = $addresses[To::int($addressId)]) {
@@ -457,20 +423,6 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $data->setCreatedAt($this->helper->toUTC($customer->getData(self::CREATED_AT)));
         $data->setUpdatedAt($this->helper->toUTC($customer->getData(self::UPDATED_AT)));
 
-        if ($groupId = $customer->getData(self::CUSTOMER_GROUP_ID)) {
-            try {
-                if ($group = $this->groupRepository->getById($groupId)) {
-                    $data->setGroup(($group->getCode()));
-                }
-            } catch (NoSuchEntityException|LocalizedException $e) {
-                $this->logger->error($e, 'Failed to fetch anonymous customer group details');
-            }
-        }
-        if (!empty($email)) {
-            $sub = $this->subscriber->loadBySubscriberEmail($email, $websiteId);
-            $data->setIsSubscribed($sub->isSubscribed());
-        }
-
         $quoteId = To::int($customer->getData(self::ENTITY_ID));
         if (empty($addresses) || !array_key_exists($quoteId, $addresses)) {
             return $data;
@@ -514,10 +466,10 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $data->setVat((string)$address->getData(AddressInterface::VAT_ID));
         $data->setPhone((string)$address->getData(AddressInterface::TELEPHONE));
         $data->setFax((string)$address->getData(AddressInterface::FAX));
+        $data->setCountryName((string)$address->getData(AddressInterface::COUNTRY_ID));
         if ($street = $address->getData(AddressInterface::STREET)) {
             $data->setStreetLines(explode("\n", $street));
         }
-        $data->setCountry($this->extractCountry($address, AddressInterface::COUNTRY_ID));
         return $data;
     }
 
@@ -541,32 +493,9 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $data->setPhone((string)$address->getData(QuoteAddressInterface::KEY_TELEPHONE));
         $data->setType((string)$address->getData(self::ADDRESS_TYPE));
         $data->setFax((string)$address->getData(QuoteAddressInterface::KEY_FAX));
+        $data->setCountryName((string)$address->getData(QuoteAddressInterface::KEY_COUNTRY_ID));
         if ($street = $address->getData(QuoteAddressInterface::KEY_STREET)) {
             $data->setStreetLines(explode("\n", $street));
-        }
-        $data->setCountry($this->extractCountry($address, QuoteAddressInterface::KEY_COUNTRY_ID));
-        return $data;
-    }
-
-    /**
-     * @param DataObject $address
-     * @param string $idFieldName
-     * @return \Ortto\Connector\Api\Data\OrttoCountryInterface
-     */
-    private function extractCountry($address, $idFieldName)
-    {
-        $data = $this->countryFactory->create();
-        $countryId = (string)$address->getData($idFieldName);
-        try {
-            if ($country = $this->countryRepository->getCountryInfo($countryId)) {
-                $data->setAbbr2((string)$country->getTwoLetterAbbreviation());
-                $data->setAbbr3((string)$country->getThreeLetterAbbreviation());
-                $data->setNameEn((string)$country->getFullNameEnglish());
-                $data->setNameLocal((string)$country->getFullNameLocale());
-            }
-        } catch (NoSuchEntityException $e) {
-            $data->setAbbr2($countryId);
-            $this->logger->debug('Failed to fetch country details: ' . $e->getMessage());
         }
         return $data;
     }

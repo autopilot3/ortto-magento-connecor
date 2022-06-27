@@ -10,8 +10,8 @@ interface OrttoOrderItemInterface
     const SKU = 'sku';
     const DESCRIPTION = 'description';
     const NAME = 'name';
-    const PRODUCT = 'product';
-    const VARIANT = 'variant';
+    const PRODUCT_ID = 'product_id';
+    const VARIANT_PRODUCT_ID = 'variant_product_id';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
     const REFUNDED = 'refunded';
@@ -122,34 +122,34 @@ interface OrttoOrderItemInterface
     public function getName();
 
     /**
-    * Set product
+    * Set product id
     *
-    * @param \Ortto\Connector\Api\Data\OrttoProductInterface $product
+    * @param int $productId
     * @return $this
     */
-    public function setProduct($product);
+    public function setProductId($productId);
 
     /**
-    * Get product
+    * Get product id
     *
-    * @return \Ortto\Connector\Api\Data\OrttoProductInterface
+    * @return int
     */
-    public function getProduct();
+    public function getProductId();
 
     /**
-    * Set variant
+    * Set variant product id
     *
-    * @param \Ortto\Connector\Api\Data\OrttoProductInterface|null $variant
+    * @param int|null $variantProductId
     * @return $this
     */
-    public function setVariant($variant);
+    public function setVariantProductId($variantProductId);
 
     /**
-    * Get variant
+    * Get variant product id
     *
-    * @return \Ortto\Connector\Api\Data\OrttoProductInterface|null
+    * @return int|null
     */
-    public function getVariant();
+    public function getVariantProductId();
 
     /**
     * Set created at

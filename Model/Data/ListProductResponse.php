@@ -43,16 +43,4 @@ class ListProductResponse extends DataObject implements ListProductResponseInter
     {
         $this->setData(self::HAS_MORE, $hasMore);
     }
-
-    /** @inheirtDoc */
-    public function setCategories(array $categories)
-    {
-        $this->setData(self::CATEGORIES, $categories);
-    }
-
-    /** @inheirtDoc */
-    public function getCategories()
-    {
-        return $this->getData(self::CATEGORIES) ?? [];
-    }
 }

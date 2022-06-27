@@ -70,27 +70,27 @@ class OrttoOrderItem extends DataObject implements OrttoOrderItemInterface
     }
 
     /** @inheirtDoc */
-    public function setProduct($product)
+    public function setProductId($productId)
     {
-        return $this->setData(self::PRODUCT, $product);
+        return $this->setData(self::PRODUCT_ID, $productId);
     }
 
     /** @inheirtDoc */
-    public function getProduct()
+    public function getProductId()
     {
-        return $this->getData(self::PRODUCT);
+        return To::int($this->getData(self::PRODUCT_ID));
     }
 
     /** @inheirtDoc */
-    public function setVariant($variant)
+    public function setVariantProductId($variantProductId)
     {
-        return $this->setData(self::VARIANT, $variant);
+        return $this->setData(self::VARIANT_PRODUCT_ID, $variantProductId);
     }
 
     /** @inheirtDoc */
-    public function getVariant()
+    public function getVariantProductId()
     {
-        return $this->getData(self::VARIANT);
+        return To::int($this->getData(self::VARIANT_PRODUCT_ID));
     }
 
     /** @inheirtDoc */

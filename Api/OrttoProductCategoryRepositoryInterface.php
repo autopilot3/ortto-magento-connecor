@@ -6,8 +6,18 @@ namespace Ortto\Connector\Api;
 interface OrttoProductCategoryRepositoryInterface
 {
     /**
-     * @param int $categoryId
-     * @return \Ortto\Connector\Api\Data\OrttoProductCategoryInterface|bool
+     * @param ConfigScopeInterface $scope
+     * @param int $page
+     * @param string $checkpoint
+     * @param int $pageSize
+     * @param array $data
+     * @return \Ortto\Connector\Api\Data\ListProductCategoryResponseInterface
      */
-    public function getById(int $categoryId);
+    public function getList(
+        ConfigScopeInterface $scope,
+        int $page,
+        string $checkpoint,
+        int $pageSize,
+        array $data = []
+    );
 }

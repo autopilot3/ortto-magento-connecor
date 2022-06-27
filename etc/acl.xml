@@ -14,9 +14,8 @@
                         <resource id="Ortto_Connector::get_app_config" title="Read Settings" sortOrder="3"/>
                         <resource id="Ortto_Connector::get_product" title="Read Product Data" sortOrder="4"/>
                         <resource id="Ortto_Connector::get_customer" title="Read Customer Data" sortOrder="5"/>
-                        <resource id="Ortto_Connector::get_order" title="Read Order Data" sortOrder="5"/>
-                        <resource id="Ortto_Connector::get_stock_alert_subscription"
-                                  title="Read Stock Alert Subscriptions" sortOrder="5"/>
+                        <resource id="Ortto_Connector::get_order" title="Read Order Data" sortOrder="6"/>
+                        <resource id="Ortto_Connector::get_category" title="Read Category Data" sortOrder="7"/>
                     </resource>
                 </resource>
             </resource>

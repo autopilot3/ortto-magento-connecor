@@ -6,7 +6,7 @@ namespace Ortto\Connector\Api;
 interface OrttoCustomerRepositoryInterface
 {
     const ANONYMOUS = 'anonymous';
-    const ANONYMOUS_CUSTOMER_ID = -1;
+    const ANONYMOUS_CUSTOMER_ID = 0;
 
     /**
      * @param ConfigScopeInterface $scope

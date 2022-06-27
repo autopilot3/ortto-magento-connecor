@@ -154,18 +154,6 @@ class OrttoCustomer extends DataObject implements OrttoCustomerInterface
     }
 
     /** @inheirtDoc */
-    public function setGroup($group)
-    {
-        return $this->setData(self::GROUP, $group);
-    }
-
-    /** @inheirtDoc */
-    public function getGroup()
-    {
-        return (string)$this->getData(self::GROUP);
-    }
-
-    /** @inheirtDoc */
     public function setBillingAddress($billingAddress)
     {
         return $this->setData(self::BILLING_ADDRESS, $billingAddress);
@@ -199,18 +187,6 @@ class OrttoCustomer extends DataObject implements OrttoCustomerInterface
     public function getUpdatedAt()
     {
         return (string)$this->getData(self::UPDATED_AT);
-    }
-
-    /** @inheirtDoc */
-    public function setIsSubscribed($isSubscribed)
-    {
-        return $this->setData(self::IS_SUBSCRIBED, $isSubscribed);
-    }
-
-    /** @inheirtDoc */
-    public function getIsSubscribed()
-    {
-        return To::bool($this->getData(self::IS_SUBSCRIBED));
     }
 
     /** @inheirtDoc */

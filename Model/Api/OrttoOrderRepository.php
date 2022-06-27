@@ -3,15 +3,10 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
-use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use Magento\Customer\Api\GroupRepositoryInterface;
-use Magento\Directory\Api\CountryInformationAcquirerInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Api\SortOrderBuilder;
 use Magento\Framework\DataObject;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Api\Data\OrderExtensionInterface;
@@ -21,10 +16,8 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Ortto\Connector\Api\ConfigScopeInterface;
-use Ortto\Connector\Api\Data\OrttoProductInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
 use Ortto\Connector\Api\OrttoOrderRepositoryInterface;
-use Ortto\Connector\Api\OrttoProductRepositoryInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
@@ -38,7 +31,6 @@ use Ortto\Connector\Model\Data\OrttoCarrierFactory;
 use Ortto\Connector\Model\Data\OrttoOrderFactory;
 use Ortto\Connector\Model\Data\ListOrderResponseFactory;
 use Ortto\Connector\Model\Data\OrttoAddressFactory;
-use Ortto\Connector\Model\Data\OrttoCountryFactory;
 use Ortto\Connector\Model\Data\OrttoOrderItemFactory;
 use Magento\Sales\Api\Data\OrderAddressInterface as AddressInterface;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -48,7 +40,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
 {
     private const CANCELLED_AT = 'canceled_at';
     private const COMPLETED_AT = 'completed_at';
-    private const SHIPPING_ADDRESS = 'shipping';
+    private const BILLING_ADDRESS = 'billing';
 
     private Data $helper;
     private OrttoLogger $logger;
@@ -56,11 +48,8 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private AddressCollectionFactory $addressCollection;
     private OrttoOrderFactory $orderFactory;
     private OrttoAddressFactory $addressFactory;
-    private OrttoCountryFactory $countryFactory;
-    private CountryInformationAcquirerInterface $countryRepository;
     private OrttoCustomerRepositoryInterface $customerRepository;
     private OrttoCustomerFactory $customerFactory;
-    private GroupRepositoryInterface $groupRepository;
     private SearchCriteriaBuilder $searchCriteriaBuilder;
     private OrderRepositoryInterface $orderRepository;
     private SortOrderBuilder $sortOrderBuilder;
@@ -71,8 +60,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private OrttoCarrierFactory $carrierFactory;
     private OrttoOrderItemFactory $orderItemFactory;
     private OrttoGiftFactory $giftFactory;
-    private \Magento\Newsletter\Model\Subscriber $subscriber;
-    private OrttoProductRepositoryInterface $productRepository;
     private CreditmemoRepositoryInterface $creditMemoRepository;
 
     public function __construct(
@@ -83,14 +70,10 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         ListOrderResponseFactory $listResponseFactory,
         OrttoOrderFactory $orderFactory,
         \Ortto\Connector\Model\Data\OrttoAddressFactory $addressFactory,
-        \Ortto\Connector\Model\Data\OrttoCountryFactory $countryFactory,
-        \Magento\Directory\Api\CountryInformationAcquirerInterface $countryRepository,
         \Ortto\Connector\Model\Data\OrttoCustomerFactory $customerFactory,
-        \Magento\Customer\Api\GroupRepositoryInterface $groupRepository,
         \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
         \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
         \Magento\Framework\Api\SortOrderBuilder $sortOrderBuilder,
-        CreditMemoDataFactory $creditMemoDataFactory,
         \Ortto\Connector\Model\Data\OrttoOrderExtensionFactory $extensionFactory,
         \Ortto\Connector\Model\Data\OrttoRefundFactory $refundFactory,
         \Ortto\Connector\Model\Data\OrttoRefundItemFactory $refundItemFactory,
@@ -98,8 +81,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         \Ortto\Connector\Model\Data\OrttoOrderItemFactory $orderItemFactory,
         \Magento\Sales\Api\ShipmentTrackRepositoryInterface $shipmentTrackRepository,
         \Ortto\Connector\Model\Data\OrttoGiftFactory $giftFactory,
-        \Magento\Newsletter\Model\Subscriber $subscriber,
-        OrttoProductRepositoryInterface $productRepository,
         \Magento\Sales\Api\CreditmemoRepositoryInterface $creditMemoRepository
     ) {
         $this->helper = $helper;
@@ -107,12 +88,9 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $this->listResponseFactory = $listResponseFactory;
         $this->orderFactory = $orderFactory;
         $this->addressFactory = $addressFactory;
-        $this->countryFactory = $countryFactory;
-        $this->countryRepository = $countryRepository;
         $this->customerRepository = $customerRepository;
         $this->addressCollection = $addressCollection;
         $this->customerFactory = $customerFactory;
-        $this->groupRepository = $groupRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->orderRepository = $orderRepository;
         $this->sortOrderBuilder = $sortOrderBuilder;
@@ -123,8 +101,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $this->orderItemFactory = $orderItemFactory;
         $this->shipmentTrackRepository = $shipmentTrackRepository;
         $this->giftFactory = $giftFactory;
-        $this->subscriber = $subscriber;
-        $this->productRepository = $productRepository;
         $this->creditMemoRepository = $creditMemoRepository;
     }
 
@@ -171,17 +147,18 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         // The returned array is keyed by customer ID
         $customers = $this->customerRepository->getByIds($scope, $customerIds)->getCustomers();
 
-        // NOTE: Order's billing address which is set by `convertOrder`
-        $shippingAddresses = $this->getShippingAddressesByOrderIds($orderIds);
+        // The returned array is keyed by order ID
+        $addresses = $this->getOrderAddresses($orderIds);
         $orttoOrders = [];
         foreach ($orders as $order) {
             $orderId = To::int($order->getEntityId());
-            $orttoOrder = $this->convertOrder($scope, $order, $shippingAddresses[$orderId]);
+            $orttoOrder = $this->convertOrder($order, $addresses[$orderId]);
             if ($customerId = $order->getCustomerId()) {
                 if ($customer = $customers[To::int($customerId)]) {
-                    // Anonymous customers are set by `convertOrder`.
                     $orttoOrder->setCustomer($customer);
                 }
+            } else {
+                $orttoOrder->setCustomer($this->getAnonymousCustomer($order, $addresses[$orderId]));
             }
             $orttoOrders[] = $orttoOrder;
         }
@@ -193,14 +170,15 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
 
     /**
      * @param int[] $orderIds
-     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface[]
+     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface[][]
      */
-    private function getShippingAddressesByOrderIds(array $orderIds)
+    private function getOrderAddresses(array $orderIds)
     {
         if (empty($orderIds)) {
             return [];
         }
         $columnsToSelect = [
+            AddressInterface::ADDRESS_TYPE,
             AddressInterface::ENTITY_ID,
             AddressInterface::PARENT_ID,
             AddressInterface::CITY,
@@ -221,7 +199,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $orderIds = array_unique($orderIds);
         $collection = $this->addressCollection->create();
         $collection->addFieldToSelect($columnsToSelect)
-            ->addFieldToFilter(AddressInterface::ADDRESS_TYPE, ['eq' => self::SHIPPING_ADDRESS])
             ->addFieldToFilter(AddressInterface::PARENT_ID, ['in' => $orderIds]);
 
         $addresses = [];
@@ -230,35 +207,28 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         }
         foreach ($collection->getItems() as $address) {
             $orderId = To::int($address->getData(AddressInterface::PARENT_ID));
-            $addresses[$orderId] = $this->convertAddress($address);
+            $addresses[$orderId][] = $this->convertAddress($address);
         }
         return $addresses;
     }
 
 
     /**
-     * @param ConfigScopeInterface $scope
      * @param OrderInterface $order
-     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface|null $shippingAddress
+     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[] $addresses
      * @return \Ortto\Connector\Api\Data\OrttoOrderInterface
      */
-    private function convertOrder(ConfigScopeInterface $scope, $order, $shippingAddress)
+    private function convertOrder($order, $addresses)
     {
         $data = $this->orderFactory->create();
         $orderId = To::int($order->getData(OrderInterface::ENTITY_ID));
         $data->setId($orderId);
-        $customerId = $order->getData(OrderInterface::CUSTOMER_ID);
-        $data->setShippingAddress($shippingAddress);
-        if ($billingAddress = $order->getBillingAddress()) {
-            $data->setBillingAddress($this->convertAddress($billingAddress));
-        }
-        if (empty($customerId)) {
-            $data->setCustomer($this->getAnonymousCustomer(
-                $order,
-                $data->getBillingAddress(),
-                $data->getShippingAddress(),
-                $scope->getWebsiteId()
-            ));
+        foreach ($addresses as $address) {
+            if ($address->getType() == self::BILLING_ADDRESS) {
+                $data->setBillingAddress($address);
+            } else {
+                $data->setShippingAddress($address);
+            }
         }
         $data->setNumber((string)$order->getData(OrderInterface::INCREMENT_ID));
         $data->setCartId(To::int($order->getData(OrderInterface::QUOTE_ID)));
@@ -332,24 +302,27 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         // https://support.magento.com/hc/en-us/articles/115004348454-How-many-coupons-can-a-customer-use-in-Adobe-Commerce-
         $data->setDiscountCodes([(string)$order->getCouponCode()]);
         $data->setProtectCode((string)$order->getProtectCode());
-        $items = $order->getAllVisibleItems();
-        $productIds = [];
-        $variantSKUs = [];
+
+        $items = $order->getAllItems();
+        $visibleItemIds = [];
+        $orderItems = [];
+        $productVariations = [];
         foreach ($items as $item) {
-            $productIds[] = To::int($item->getProductId());
-            if ($item->getProductType() == Configurable::TYPE_CODE) {
-                $variantSKUs[] = $item->getSku();
+            // An item wih non-empty parent ID is variation of a configurable product
+            // which should not be listed in the items
+            if ($patentId = $item->getParentItemId()) {
+                $productVariations[To::int($patentId)] = To::int($item->getProductId());
+            } else {
+                $orderItems[] = $item;
+                $visibleItemIds[] = To::int($item->getId());
             }
         }
 
-        $variants = $this->productRepository->getBySKUs($scope, $variantSKUs)->getProducts();
-        $products = $this->productRepository->getByIds($scope, $productIds)->getProducts();
-
-        $data->setItems($this->getOrderItems($items, $products, $variants));
+        $data->setItems($this->getOrderItems($orderItems, $productVariations));
 
         switch ($order->getStatus()) {
             case Order::STATE_CLOSED:
-                $data->setRefunds($this->getRefunds($orderId, $productIds));
+                $data->setRefunds($this->getRefunds($orderId, $productVariations, $visibleItemIds));
                 break;
             case Order::STATE_COMPLETE:
                 $data->setCarriers($this->getShippingCarriers($orderId));
@@ -362,16 +335,20 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
 
     /**
      * @param OrderItemInterface[] $items
-     * @param OrttoProductInterface[] $products
-     * @param OrttoProductInterface[] $variants
+     * @param array $productVariations
      * @return \Ortto\Connector\Api\Data\OrttoOrderItemInterface[]
      */
-    private function getOrderItems($items, $products, $variants)
+    private function getOrderItems($items, $productVariations)
     {
         $orderItems = [];
         foreach ($items as $item) {
+            $itemId = To::int($item->getItemId());
             $data = $this->orderItemFactory->create();
-            $data->setId(To::int($item->getItemId()));
+            $data->setId($itemId);
+            $data->setProductId(To::int($item->getProductId()));
+            if (key_exists($itemId, $productVariations)) {
+                $data->setVariantProductId($productVariations[$itemId]);
+            }
             $data->setIsVirtual(To::bool($item->getIsVirtual()));
             $data->setSku((string)$item->getSku());
             $data->setDescription((string)$item->getDescription());
@@ -409,23 +386,19 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $data->setIsFreeShipping(To::bool($item->getFreeShipping()));
             $data->setAdditionalData((string)$item->getAdditionalData());
             $data->setStoreId(To::int($item->getStoreId()));
-            if ($product = $products[To::int($item->getProductId())]) {
-                $data->setProduct($product);
-            }
-            if ($item->getProductType() == Configurable::TYPE_CODE) {
-                $data->setVariant($variants[$item->getSku()]);
-            }
             $orderItems[] = $data;
         }
+
         return $orderItems;
     }
 
     /**
      * @param int $orderId
-     * @param int[] $productIds
+     * @param array $productVariations
+     * @param int[] $visibleItemIds
      * @return \Ortto\Connector\Api\Data\OrttoRefundInterface[]
      */
-    private function getRefunds($orderId, $productIds)
+    private function getRefunds($orderId, $productVariations, $visibleItemIds)
     {
         $searchCriteria = $this->searchCriteriaBuilder->addFilter(CreditmemoInterface::ORDER_ID, $orderId)->create();
         $memos = $this->creditMemoRepository->getList($searchCriteria)->getItems();
@@ -453,7 +426,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $refund->setAdjustment(To::float($memo->getAdjustment()));
             $refund->setBaseAdjustment(To::float($memo->getBaseAdjustment()));
             $refund->setRefundedAt($this->helper->toUTC($memo->getCreatedAt()));
-            $refund->setItems($this->getRefundItems($memo->getItems(), $productIds));
+            $refund->setItems($this->getRefundItems($memo->getItems(), $productVariations, $visibleItemIds));
             $refunds[] = $refund;
         }
         return $refunds;
@@ -461,24 +434,27 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
 
     /**
      * @param \Magento\Sales\Api\Data\CreditmemoItemInterface[] $items
-     * @param int[] $productIds
+     * @param array $productVariations
+     * @param int[] $visibleItemIds
      * @return \Ortto\Connector\Api\Data\OrttoRefundItemInterface[]
      */
-    private function getRefundItems(array $items, array $productIds)
+    private function getRefundItems(array $items, array $productVariations, $visibleItemIds)
     {
         $result = [];
         foreach ($items as $item) {
-            $productId = To::int($item->getProductId());
-            if (!array_contains($productIds, $productId)) {
-                // Exclude variants of a configurable product
-                // We don't want both parent and the child product in the refunded items list
-                // Note: `orderProductIds` only includes visible items
+            $data = $this->refundItemFactory->create();
+            $orderItemId = To::int($item->getOrderItemId());
+            if (!array_contains($visibleItemIds, $orderItemId)) {
+                // Variant of a configurable product
                 continue;
             }
-            $data = $this->refundItemFactory->create();
+
+            if (key_exists($orderItemId, $productVariations)) {
+                $data->setVariantProductId($productVariations[$orderItemId]);
+            }
             $data->setId(To::int($item->getEntityId()));
             $data->setOrderItemId(To::int($item->getOrderItemId()));
-            $data->setProductId($productId);
+            $data->setProductId(To::int($item->getProductId()));
             $data->setSku((string)$item->getSku());
             $data->setName((string)$item->getName());
             $data->setPrice(To::float($item->getPrice()));
@@ -547,12 +523,10 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
 
     /**
      * @param OrderInterface $order
-     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface|null $billingAddress
-     * * @param \Ortto\Connector\Api\Data\OrttoAddressInterface|null $shippingAddress
-     * @param int $websiteId
+     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[] $orderAddresses
      * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
      */
-    private function getAnonymousCustomer($order, $billingAddress, $shippingAddress, $websiteId)
+    private function getAnonymousCustomer($order, $orderAddresses)
     {
         $data = $this->customerFactory->create();
         $email = (string)$order->getCustomerEmail();
@@ -569,34 +543,19 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $data->setCreatedAt($this->helper->toUTC($order->getCreatedAt()));
         // Set customer's updated at to order's created at
         $data->setUpdatedAt($this->helper->toUTC($order->getCreatedAt()));
-
-        if ($groupId = $order->getCustomerGroupId()) {
-            try {
-                if ($group = $this->groupRepository->getById($groupId)) {
-                    $data->setGroup(($group->getCode()));
-                }
-            } catch (NoSuchEntityException|LocalizedException $e) {
-                $this->logger->error($e, 'Failed to fetch anonymous customer group details');
-            }
-        }
-        if (!empty($email)) {
-            $sub = $this->subscriber->loadBySubscriberEmail($email, $websiteId);
-            $data->setIsSubscribed($sub->isSubscribed());
-        }
-
         $phoneNumber = '';
-        if ($billingAddress) {
-            $data->setBillingAddress($billingAddress);
-            $phoneNumber = $billingAddress->getPhone();
-        }
-        if ($shippingAddress) {
-            $data->setShippingAddress($shippingAddress);
-            // Billing phone number takes precedence
-            if (empty($phoneNumber)) {
-                $phoneNumber = $shippingAddress->getPhone();
+        foreach ($orderAddresses as $address) {
+            if ($address->getType() == self::BILLING_ADDRESS) {
+                $data->setBillingAddress($address);
+                $phoneNumber = $address->getPhone();
+            } else {
+                $data->setShippingAddress($address);
+                // Billing phone number takes precedence
+                if (empty($phoneNumber)) {
+                    $phoneNumber = $address->getPhone();
+                }
             }
         }
-
         $data->setPhone($phoneNumber);
         return $data;
     }
@@ -624,29 +583,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         if ($street = $address->getData(AddressInterface::STREET)) {
             $data->setStreetLines(explode("\n", $street));
         }
-        $data->setCountry($this->extractCountry($address));
-        return $data;
-    }
-
-    /**
-     * @param DataObject $address
-     * @return \Ortto\Connector\Api\Data\OrttoCountryInterface
-     */
-    private function extractCountry($address)
-    {
-        $data = $this->countryFactory->create();
-        $countryId = (string)$address->getData(AddressInterface::COUNTRY_ID);
-        try {
-            if ($country = $this->countryRepository->getCountryInfo($countryId)) {
-                $data->setAbbr2((string)$country->getTwoLetterAbbreviation());
-                $data->setAbbr3((string)$country->getThreeLetterAbbreviation());
-                $data->setNameEn((string)$country->getFullNameEnglish());
-                $data->setNameLocal((string)$country->getFullNameLocale());
-            }
-        } catch (NoSuchEntityException $e) {
-            $data->setAbbr2($countryId);
-            $this->logger->debug('Failed to fetch country details: ' . $e->getMessage());
-        }
+        $data->setCountryName((string)$address->getData(AddressInterface::COUNTRY_ID));
         return $data;
     }
 
