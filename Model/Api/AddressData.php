@@ -45,10 +45,7 @@ class AddressData
 
         $region = $address->getRegion();
         if ($region instanceof RegionInterface) {
-            $data['region'] = [
-                'code' => (string)$region->getRegionCode(),
-                'name' => (string)$region->getRegion(),
-            ];
+            $data['region'] = (string)$region->getRegion();
         }
 
         try {

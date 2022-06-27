@@ -53,9 +53,9 @@ interface OrttoClientInterface
 
     /**
      * @param ConfigScopeInterface $scope
-     * @param Stock[] $alerts
+     * @param Stock[] $subscriptions
      * @return ImportResponseInterface|null
      * @throws JsonException|OrttoException|LocalizedException
      */
-    public function importProductStockAlerts(ConfigScopeInterface $scope, array $alerts);
+    public function importRestockSubscriptions(ConfigScopeInterface $scope, array $subscriptions);
 }

@@ -5,6 +5,7 @@ namespace Ortto\Connector\Helper;
 
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\ProductAlert\Model\Stock;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\SyncCategoryInterface;

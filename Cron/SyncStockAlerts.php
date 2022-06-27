@@ -224,7 +224,7 @@ class SyncStockAlerts
             }
             $pageSize = count($stockAlerts);
             $page++;
-            $importResult = $this->orttoClient->importProductStockAlerts($scope, $stockAlerts);
+            $importResult = $this->orttoClient->importRestockSubscriptions($scope, $stockAlerts);
             $response->incr($importResult);
             if ($updateState !== null) {
                 $updateState($total, $pageSize, $response->toJSON());

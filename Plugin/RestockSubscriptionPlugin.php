@@ -12,7 +12,7 @@ use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
 
-class StockAlertPlugin
+class RestockSubscriptionPlugin
 {
     private OrttoLoggerInterface $logger;
     private OrttoClientInterface $orttoClient;
@@ -38,7 +38,7 @@ class StockAlertPlugin
             if (!$this->helper->shouldExportStockAlert($scope, $model)) {
                 return $model;
             }
-            $this->orttoClient->importProductStockAlerts($scope, [$model]);
+            $this->orttoClient->importRestockSubscriptions($scope, [$model]);
         } catch (\Exception $e) {
             $this->logger->error($e, "Failed to export product stock alert");
         }
