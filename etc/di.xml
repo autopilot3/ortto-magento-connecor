@@ -11,7 +11,7 @@
     </type>
     <type name="Magento\ProductAlert\Model\Stock">
         <plugin name="stock_alert_plugin"
-                type="Ortto\Connector\Plugin\StockAlertPlugin"/>
+                type="Ortto\Connector\Plugin\RestockSubscriptionPlugin"/>
     </type>
     <!-- END PLUGINS -->
     <virtualType name="OrttoLogger" type="Magento\Framework\Logger\Monolog">
@@ -100,8 +100,8 @@
                 type="Ortto\Connector\Model\Data\OrttoCart"/>
     <preference for="Ortto\Connector\Api\Data\OrttoCartItemInterface"
                 type="Ortto\Connector\Model\Data\OrttoCartItem"/>
-    <preference for="Ortto\Connector\Api\Data\OrttoStockAlertInterface"
-                type="Ortto\Connector\Model\Data\OrttoStockAlert"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoRestockSubscriptionInterface"
+                type="Ortto\Connector\Model\Data\OrttoRestockSubscription"/>
     <preference for="Ortto\Connector\Api\Data\OrttoGiftInterface"
                 type="Ortto\Connector\Model\Data\OrttoGift"/>
 
@@ -116,6 +116,8 @@
                 type="Ortto\Connector\Model\Data\ListCustomerResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListOrderResponseInterface"
                 type="Ortto\Connector\Model\Data\ListOrderResponse"/>
+    <preference for="Ortto\Connector\Api\Data\ListRestockSubscriptionResponseInterface"
+                type="Ortto\Connector\Model\Data\ListRestockSubscriptionResponse"/>
 
     <!-- WEB API REPOSITORIES   -->
     <preference for="Ortto\Connector\Api\OrttoProductRepositoryInterface"
@@ -126,6 +128,8 @@
                 type="Ortto\Connector\Model\Api\OrttoCustomerRepository"/>
     <preference for="Ortto\Connector\Api\OrttoOrderRepositoryInterface"
                 type="Ortto\Connector\Model\Api\OrttoOrderRepository"/>
+    <preference for="Ortto\Connector\Api\OrttoRestockSubscriptionRepositoryInterface"
+                type="Ortto\Connector\Model\Api\OrttoRestockSubscriptionRepository"/>
 
     <!-- WEB API HANDLERS -->
     <preference for="Ortto\Connector\Api\ProductApiInterface"
@@ -136,6 +140,8 @@
                 type="Ortto\Connector\REST\CustomerApi"/>
     <preference for="Ortto\Connector\Api\OrderApiInterface"
                 type="Ortto\Connector\REST\OrderApi"/>
+    <preference for="Ortto\Connector\Api\RestockSubscriptionApiInterface"
+                type="Ortto\Connector\REST\RestockSubscriptionApi"/>
 
     <!-- JOBS ADMIN GRID -->
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">

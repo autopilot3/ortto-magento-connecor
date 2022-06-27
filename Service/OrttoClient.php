@@ -25,7 +25,7 @@ class OrttoClient implements OrttoClientInterface
     private const CUSTOMERS = 'customers';
     private const PRODUCTS = 'products';
     private const CATEGORIES = 'categories';
-    private const ALERTS = 'alerts';
+    private const SUBSCRIPTIONS = 'subscriptions';
 
     private ClientInterface $curl;
     private Data $helper;
@@ -161,11 +161,11 @@ class OrttoClient implements OrttoClientInterface
         return new ImportResponse($response);
     }
 
-    public function importProductStockAlerts(ConfigScopeInterface $scope, array $alerts)
+    public function importRestockSubscriptions(ConfigScopeInterface $scope, array $subscriptions)
     {
         $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_WAITING_ON_STOCK);
         $payload = [];
-        foreach ($alerts as $alert) {
+        foreach ($subscriptions as $alert) {
             $product = $this->productDataFactory->create();
             if (!$product->loadById(To::int($alert->getProductId()), $scope->getId())) {
                 continue;
@@ -179,10 +179,10 @@ class OrttoClient implements OrttoClientInterface
             ];
         }
         if (empty($payload)) {
-            $this->logger->debug("No stock alerts to export");
+            $this->logger->debug("No restock subscriptions to export");
             return new ImportResponse();
         }
-        $response = $this->postJSON($url, $scope, [self::ALERTS => $payload]);
+        $response = $this->postJSON($url, $scope, [self::SUBSCRIPTIONS => $payload]);
         return new ImportResponse($response);
     }
 

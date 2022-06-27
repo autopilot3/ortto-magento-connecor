@@ -62,5 +62,11 @@
             <resource ref="Ortto_Connector::get_order"/>
         </resources>
     </route>
+    <route url="/V1/ortto/restock/list" method="GET">
+        <service class="Ortto\Connector\Api\RestockSubscriptionApiInterface" method="list"/>
+        <resources>
+            <resource ref="Ortto_Connector::get_restock_subscription"/>
+        </resources>
+    </route>
     <!-- END SYNC ENDPOINTS -->
 </routes>

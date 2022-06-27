@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace Ortto\Connector\Model\Data;
 
 use Magento\Framework\DataObject;
-use Ortto\Connector\Api\Data\OrttoStockAlertInterface;
+use Ortto\Connector\Api\Data\OrttoRestockSubscriptionInterface;
 
-class OrttoStockAlert extends DataObject implements OrttoStockAlertInterface
+class OrttoRestockSubscription extends DataObject implements OrttoRestockSubscriptionInterface
 {
     /** @inheirtDoc */
     public function setProduct($product)

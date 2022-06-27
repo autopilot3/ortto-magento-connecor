@@ -131,7 +131,6 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
             return $result;
         }
         $productIds = array_unique($productIds);
-
         $collection = $this->productCollectionFactory->create();
         $collection->addAttributeToSelect('*')
             ->addFieldToFilter(self::ENTITY_ID, ['in' => $productIds]);
@@ -154,6 +153,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
             $p = $this->convert($product, $storeId);
             $products[$p->getId()] = $p;
         }
+
         $result->setProducts($products);
         return $result;
     }

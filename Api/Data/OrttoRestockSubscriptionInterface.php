@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Api\Data;
 
-interface OrttoStockAlertInterface
+interface OrttoRestockSubscriptionInterface
 {
     const PRODUCT = 'product';
     const CUSTOMER = 'customer';
