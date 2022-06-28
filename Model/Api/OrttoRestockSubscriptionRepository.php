@@ -49,6 +49,7 @@ class OrttoRestockSubscriptionRepository implements OrttoRestockSubscriptionRepo
         $this->productRepository = $productRepository;
     }
 
+    /** @inheirtDoc */
     public function getList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize, array $data = [])
     {
         $collection = $this->stockCollection->create()
@@ -78,8 +79,8 @@ class OrttoRestockSubscriptionRepository implements OrttoRestockSubscriptionRepo
             $customerIds[] = To::int($subscription->getCustomerId());
         }
 
-        $customers = $this->customerRepository->getByIds($scope, $customerIds)->getCustomers();
-        $products = $this->productRepository->getByIds($scope, $productIds)->getProducts();
+        $customers = $this->customerRepository->getByIds($scope, $customerIds)->getItems();
+        $products = $this->productRepository->getByIds($scope, $productIds)->getItems();
         $subscriptions = [];
         /** @var Stock $subscription */
         foreach ($stockSubscriptions as $subscription) {
@@ -87,7 +88,7 @@ class OrttoRestockSubscriptionRepository implements OrttoRestockSubscriptionRepo
                 $subscriptions[] = $restockSubscription;
             }
         }
-        $result->setSubscriptions($subscriptions);
+        $result->setItems($subscriptions);
         $result->setHasMore($page < $total / $pageSize);
         return $result;
     }

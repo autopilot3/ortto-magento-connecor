@@ -145,7 +145,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         }
 
         // The returned array is keyed by customer ID
-        $customers = $this->customerRepository->getByIds($scope, $customerIds)->getCustomers();
+        $customers = $this->customerRepository->getByIds($scope, $customerIds)->getItems();
 
         // The returned array is keyed by order ID
         $addresses = $this->getOrderAddresses($orderIds);
@@ -162,7 +162,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             }
             $orttoOrders[] = $orttoOrder;
         }
-        $result->setOrders($orttoOrders);
+        $result->setItems($orttoOrders);
         $result->setHasMore($page < $total / $pageSize);
         return $result;
     }

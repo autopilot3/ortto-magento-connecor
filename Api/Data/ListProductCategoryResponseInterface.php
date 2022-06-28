@@ -9,7 +9,7 @@ interface ListProductCategoryResponseInterface
      */
     const TOTAL = "total";
     const HAS_MORE = "has_more";
-    const CATEGORIES = "categories";
+    const ITEMS = "items";
 
     /**
      * Getter for Total.
@@ -44,13 +44,13 @@ interface ListProductCategoryResponseInterface
     public function setHasMore(bool $hasMore);
 
     /**
-     * @param \Ortto\Connector\Api\Data\OrttoProductCategoryInterface[] $categories
+     * @param \Ortto\Connector\Api\Data\OrttoProductCategoryInterface[] $items
      * @return void
      */
-    public function setCategories(array $categories);
+    public function setItems(array $items);
 
     /**
      * @return \Ortto\Connector\Api\Data\OrttoProductCategoryInterface[]
      */
-    public function getCategories();
+    public function getItems();
 }

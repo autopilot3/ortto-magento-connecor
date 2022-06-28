@@ -33,14 +33,14 @@ class ListOrderResponse extends DataObject implements ListOrderResponseInterface
     }
 
     /** @inheirtDoc */
-    public function setOrders(array $orders)
+    public function setItems(array $items)
     {
-        $this->setData(self::ORDERS, $orders);
+        $this->setData(self::ITEMS, $items);
     }
 
     /** @inheirtDoc */
-    public function getOrders(): array
+    public function getItems(): array
     {
-        return $this->getData(self::ORDERS) ?? [];
+        return $this->getData(self::ITEMS) ?? [];
     }
 }

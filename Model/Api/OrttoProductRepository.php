@@ -117,7 +117,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         foreach ($collection->getItems() as $product) {
             $productList[] = $this->convert($product, $storeId);
         }
-        $result->setProducts($productList);
+        $result->setItems($productList);
         $result->setHasMore($page < $total / $pageSize);
 
         return $result;
@@ -154,7 +154,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
             $products[$p->getId()] = $p;
         }
 
-        $result->setProducts($products);
+        $result->setItems($products);
         return $result;
     }
 

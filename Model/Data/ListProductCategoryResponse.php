@@ -33,14 +33,14 @@ class ListProductCategoryResponse extends DataObject implements ListProductCateg
     }
 
     /** @inheirtDoc */
-    public function setCategories(array $categories)
+    public function setItems(array $items)
     {
-        $this->setData(self::CATEGORIES, $categories);
+        $this->setData(self::ITEMS, $items);
     }
 
     /** @inheirtDoc */
-    public function getCategories()
+    public function getItems()
     {
-        return $this->getData(self::CATEGORIES) ?? [];
+        return $this->getData(self::ITEMS) ?? [];
     }
 }

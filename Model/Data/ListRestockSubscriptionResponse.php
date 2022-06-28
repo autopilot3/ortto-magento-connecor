@@ -33,14 +33,14 @@ class ListRestockSubscriptionResponse extends DataObject implements ListRestockS
     }
 
     /** @inheirtDoc */
-    public function setSubscriptions(array $subscriptions)
+    public function setItems(array $items)
     {
-        $this->setData(self::SUBSCRIPTIONS, $subscriptions);
+        $this->setData(self::ITEMS, $items);
     }
 
     /** @inheirtDoc */
-    public function getSubscriptions()
+    public function getItems()
     {
-        return $this->getData(self::SUBSCRIPTIONS) ?? [];
+        return $this->getData(self::ITEMS) ?? [];
     }
 }

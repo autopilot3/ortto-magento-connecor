@@ -55,7 +55,7 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
         foreach ($collection->getItems() as $category) {
             $categories[] = $this->convert($category);
         }
-        $result->setCategories($categories);
+        $result->setItems($categories);
         $result->setHasMore($page < $total / $pageSize);
         return $result;
     }

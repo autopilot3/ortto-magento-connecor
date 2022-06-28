@@ -155,7 +155,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             $c = $this->convertCustomer($customer, $addresses);
             $customers[$c->getId()] = $c;
         }
-        $result->setCustomers($customers);
+        $result->setItems($customers);
         return $result;
     }
 
@@ -218,7 +218,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         foreach ($customersData as $customer) {
             $customers[] = $this->convertAnonymousCustomer($customer, $addresses, $scope->getWebsiteId());
         }
-        $result->setCustomers($customers);
+        $result->setItems($customers);
         $result->setHasMore($page < $total / $pageSize);
         return $result;
     }
@@ -269,7 +269,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         foreach ($customersData as $customer) {
             $customers[] = $this->convertCustomer($customer, $addresses);
         }
-        $result->setCustomers($customers);
+        $result->setItems($customers);
         $result->setHasMore($page < $total / $pageSize);
         return $result;
     }

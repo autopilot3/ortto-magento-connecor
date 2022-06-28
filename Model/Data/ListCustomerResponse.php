@@ -33,14 +33,14 @@ class ListCustomerResponse extends DataObject implements ListCustomerResponseInt
     }
 
     /** @inheirtDoc */
-    public function setCustomers(array $customers)
+    public function setItems(array $items)
     {
-        $this->setData(self::CUSTOMERS, $customers);
+        $this->setData(self::ITEMS, $items);
     }
 
     /** @inheirtDoc */
-    public function getCustomers(): array
+    public function getItems(): array
     {
-        return $this->getData(self::CUSTOMERS) ?? [];
+        return $this->getData(self::ITEMS) ?? [];
     }
 }

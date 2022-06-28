@@ -8,7 +8,7 @@ interface ListOrderResponseInterface
      * String constants for property names
      */
     const TOTAL = "total";
-    const ORDERS = "orders";
+    const ITEMS = "items";
     const HAS_MORE = "has_more";
 
     /**
@@ -44,13 +44,13 @@ interface ListOrderResponseInterface
     public function setHasMore(bool $hasMore);
 
     /**
-     * @param \Ortto\Connector\Api\Data\OrttoOrderInterface[] $orders
+     * @param \Ortto\Connector\Api\Data\OrttoOrderInterface[] $items
      * @return void
      */
-    public function setOrders(array $orders);
+    public function setItems(array $items);
 
     /**
      * @return \Ortto\Connector\Api\Data\OrttoOrderInterface[]
      */
-    public function getOrders();
+    public function getItems();
 }
