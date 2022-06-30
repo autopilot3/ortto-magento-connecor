@@ -10,7 +10,7 @@ INSTALL_DIR="~/${SITE}/app/code/Ortto/Connector"
 
 function ssh_command() {
   local command=$1
-  ssh "${REMOTE_USER}@${REMOTE_HOST}" -t "cd ~/${SITE}/ && $command"
+  ssh -o StrictHostKeyChecking=no -l "${REMOTE_USER}" "${REMOTE_HOST}" -t "cd ~/${SITE}/ && $command"
 }
 
 function magento_command() {
@@ -24,6 +24,7 @@ ssh_command "mkdir -p $INSTALL_DIR"
 echo "--- Syncing into installation directory"
 rsync \
   -azP --delete \
+  -e "ssh -o StrictHostKeyChecking=no" \
   --exclude ".buildkite" \
   --exclude ".git" \
   --exclude ".gitignore" \
