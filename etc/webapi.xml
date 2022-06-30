@@ -32,12 +32,6 @@
         </resources>
     </route>
     <!-- SYNC ENDPOINTS -->
-    <route url="/V1/ortto/config/get" method="GET">
-        <service class="Ortto\Connector\Api\AppConfigRepositoryInterface" method="get"/>
-        <resources>
-            <resource ref="Ortto_Connector::get_app_config"/>
-        </resources>
-    </route>
     <route url="/V1/ortto/product/list" method="GET">
         <service class="Ortto\Connector\Api\ProductApiInterface" method="list"/>
         <resources>

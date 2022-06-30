@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Ortto\Connector\Model\Api;
 
 use Magento\Catalog\Api\Data\CategoryInterface;
+use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Exception\LocalizedException;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\OrttoProductCategoryRepositoryInterface;
@@ -37,6 +38,7 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
         $collection = $this->categoryCollection->create();
         $collection->setPage($page, $pageSize)
             ->addFieldToSelect("*")
+            ->setOrder(CategoryInterface::KEY_UPDATED_AT, SortOrder::SORT_ASC)
             ->setStoreId($scope->getId());
 
         if (!empty($checkpoint)) {

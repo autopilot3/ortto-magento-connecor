@@ -41,8 +41,7 @@ class ProductApi extends RestApiBase implements ProductApiInterface
             $scope,
             $page,
             $checkpoint,
-            $pageSize,
-            [OrttoProductRepositoryInterface::LOAD_CATEGORIES => true]
+            $pageSize
         );
     }
 }

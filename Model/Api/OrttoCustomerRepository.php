@@ -5,6 +5,7 @@ namespace Ortto\Connector\Model\Api;
 
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
+use Magento\Framework\Api\SortOrder;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\ResourceModel\Quote\Address\CollectionFactory as QuoteAddressCollectionFactory;
@@ -42,7 +43,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     ];
     const ENTITY_ID = 'entity_id';
     const CREATED_AT = 'created_at';
-    const UPDATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
     const STORE_ID = 'store_id';
     const QUOTE_ID = 'quote_id';
     const BILLING_ADDRESS = 'billing';
@@ -192,7 +193,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             // A quote with is_active field set to 1 is a shopping cart (no useful information has been stored yet)
             ->addFieldToFilter(self::IS_ACTIVE, ['eq' => 0])
             ->addFieldToFilter(self::STORE_ID, ['eq' => $scope->getId()])
-            ->setOrder(self::ENTITY_ID, 'DESC');// New customers first
+            ->setOrder(self::UPDATED_AT, SortOrder::SORT_ASC);
 
         if (!empty($checkpoint)) {
             $collection->addFieldToFilter(self::UPDATED_AT, ['gteq' => $checkpoint]);
@@ -238,7 +239,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             ->addAttributeToSelect($this->customerColumnsToSelect)
             ->addFieldToFilter(CustomerInterface::WEBSITE_ID, ['eq' => $scope->getWebsiteId()])
             ->addFieldToFilter(CustomerInterface::STORE_ID, ['eq' => $scope->getId()])
-            ->setOrder(self::ENTITY_ID, 'DESC');// New customers first
+            ->setOrder(CustomerInterface::UPDATED_AT, 'ASC');
 
         if (!empty($checkpoint)) {
             $customerCollection->addFieldToFilter(CustomerInterface::UPDATED_AT, ['gteq' => $checkpoint]);

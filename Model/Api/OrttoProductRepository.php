@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Ortto\Connector\Model\Api;
 
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
+use Magento\Framework\Api\SortOrder;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\OrttoProductParentGroupInterface;
 use Ortto\Connector\Api\OrttoProductRepositoryInterface;
@@ -99,7 +100,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
             ->setCurPage($page)
             ->addAttributeToSelect('*')
             ->setPageSize($pageSize)
-            ->setOrder('entity_id', 'DESC')// Newer products first
+            ->setOrder(ProductInterface::UPDATED_AT, SortOrder::SORT_ASC)
             ->addWebsiteFilter($scope->getWebsiteId());
 
         if (!empty($checkpoint)) {

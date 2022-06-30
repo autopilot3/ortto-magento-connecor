@@ -126,37 +126,4 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
 
         $this->cacheFrontendPool->get('config')->clean();
     }
-
-    /**
-     * @throws Exception
-     */
-    public function get(string $scopeType, int $scopeId): SyncConfigResponseInterface
-    {
-        $this->validateScope($scopeType, $scopeId);
-        $response = $this->syncConfigResponseFactory->create();
-        $response->setCustomer($this->configurationReader->isAutoSyncEnabled(
-            $scopeType,
-            $scopeId,
-            SyncCategory::CUSTOMER
-        ));
-        $response->setProduct($this->configurationReader->isAutoSyncEnabled(
-            $scopeType,
-            $scopeId,
-            SyncCategory::PRODUCT
-        ));
-
-        $response->setOrder($this->configurationReader->isAutoSyncEnabled(
-            $scopeType,
-            $scopeId,
-            SyncCategory::ORDER
-        ));
-        $response->setStockAlert($this->configurationReader->isAutoSyncEnabled(
-            $scopeType,
-            $scopeId,
-            SyncCategory::STOCK_ALERT
-        ));
-        $response->setCoupon(false);
-        $response->setReview(false);
-        return $response;
-    }
 }

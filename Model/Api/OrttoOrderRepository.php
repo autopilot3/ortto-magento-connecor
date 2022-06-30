@@ -115,15 +115,18 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $pageSize = 100;
         }
 
+        $sortOrder = $this->sortOrderBuilder
+            ->setField(OrderInterface::UPDATED_AT)
+            ->setDirection(SortOrder::SORT_ASC)->create();
+        
         $this->searchCriteriaBuilder->setPageSize($pageSize)
             ->setCurrentPage($page)
+            ->addSortOrder($sortOrder)
             ->addFilter(OrderInterface::STORE_ID, $scope->getId());
 
         if (!empty($checkpoint)) {
             $this->searchCriteriaBuilder->addFilter(OrderInterface::UPDATED_AT, $checkpoint, 'gteq');
         }
-        $sortOrder = $this->sortOrderBuilder->setField(OrderInterface::ENTITY_ID)->setDirection(SortOrder::SORT_DESC);
-        $this->searchCriteriaBuilder->addSortOrder($sortOrder->create());
 
         $ordersList = $this->orderRepository->getList($this->searchCriteriaBuilder->create());
 

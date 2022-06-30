@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Ortto\Connector\Model\Api;
 
 use Magento\Catalog\Api\Data\CategoryInterface;
+use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\ProductAlert\Model\Stock;
 use Magento\Store\Model\ScopeInterface;
@@ -56,6 +57,7 @@ class OrttoRestockSubscriptionRepository implements OrttoRestockSubscriptionRepo
             ->setCurPage($page)
             ->addFieldToSelect('*')
             ->setPageSize($pageSize)
+            ->setOrder(self::ADD_DATE, SortOrder::SORT_ASC)
             ->addWebsiteFilter($scope->getWebsiteId())
             ->addFieldToFilter(self::STORE_ID, ['eq' => $scope->getId()]);
 
