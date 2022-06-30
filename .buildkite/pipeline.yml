@@ -3,8 +3,8 @@
 steps:
   - block: ":rocket: Deploy to https://magento-stg.ortto.dev"
 
-  - label: ":php: :package: Package and Deploy :k8s: :mage:"
-    command: .buildkite/deploy.sh
+  - label: ":php: :package: Package and Deploy to 4f875de389.nxcli.net :mage:"
+    command: .buildkite/deploy-nexcess.sh a52f6224_1 4f875de389.nxcli.net 4f875de389.nxcli.net
     agents:
       env: stg
       region: ap-southeast-2
