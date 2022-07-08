@@ -11,6 +11,8 @@ interface OrttoOrderItemInterface
     const DESCRIPTION = 'description';
     const NAME = 'name';
     const PRODUCT_ID = 'product_id';
+    const PRODUCT_IMAGE = 'product_image';
+    const PRODUCT_URL = 'product_url';
     const VARIANT_PRODUCT_ID = 'variant_product_id';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
@@ -135,6 +137,36 @@ interface OrttoOrderItemInterface
     * @return int
     */
     public function getProductId();
+
+    /**
+    * Set product image
+    *
+    * @param string $productImage
+    * @return $this
+    */
+    public function setProductImage($productImage);
+
+    /**
+    * Get product image
+    *
+    * @return string
+    */
+    public function getProductImage();
+
+    /**
+    * Set product url
+    *
+    * @param string $productUrl
+    * @return $this
+    */
+    public function setProductUrl($productUrl);
+
+    /**
+    * Get product url
+    *
+    * @return string
+    */
+    public function getProductUrl();
 
     /**
     * Set variant product id

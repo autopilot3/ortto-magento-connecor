@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
+use Magento\Catalog\Helper\ImageFactory;
+use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Api\SortOrderBuilder;
@@ -41,11 +44,14 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private const CANCELLED_AT = 'canceled_at';
     private const COMPLETED_AT = 'completed_at';
     private const BILLING_ADDRESS = 'billing';
+    private const PRODUCT_IMAGE = 'image';
+    private const PRODUCT_URL = 'url';
 
     private Data $helper;
     private OrttoLogger $logger;
     private ListOrderResponseFactory $listResponseFactory;
     private AddressCollectionFactory $addressCollection;
+    private ImageFactory $imageFactory;
     private OrttoOrderFactory $orderFactory;
     private OrttoAddressFactory $addressFactory;
     private OrttoCustomerRepositoryInterface $customerRepository;
@@ -61,6 +67,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private OrttoOrderItemFactory $orderItemFactory;
     private OrttoGiftFactory $giftFactory;
     private CreditmemoRepositoryInterface $creditMemoRepository;
+    private ProductCollectionFactory $productCollectionFactory;
 
     public function __construct(
         Data $helper,
@@ -81,7 +88,9 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         \Ortto\Connector\Model\Data\OrttoOrderItemFactory $orderItemFactory,
         \Magento\Sales\Api\ShipmentTrackRepositoryInterface $shipmentTrackRepository,
         \Ortto\Connector\Model\Data\OrttoGiftFactory $giftFactory,
-        \Magento\Sales\Api\CreditmemoRepositoryInterface $creditMemoRepository
+        \Magento\Sales\Api\CreditmemoRepositoryInterface $creditMemoRepository,
+        \Magento\Catalog\Helper\ImageFactory $imageFactory,
+        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
     ) {
         $this->helper = $helper;
         $this->logger = $logger;
@@ -102,6 +111,8 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $this->shipmentTrackRepository = $shipmentTrackRepository;
         $this->giftFactory = $giftFactory;
         $this->creditMemoRepository = $creditMemoRepository;
+        $this->imageFactory = $imageFactory;
+        $this->productCollectionFactory = $productCollectionFactory;
     }
 
     /** @inheirtDoc
@@ -118,7 +129,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $sortOrder = $this->sortOrderBuilder
             ->setField(OrderInterface::UPDATED_AT)
             ->setDirection(SortOrder::SORT_ASC)->create();
-        
+
         $this->searchCriteriaBuilder->setPageSize($pageSize)
             ->setCurrentPage($page)
             ->addSortOrder($sortOrder)
@@ -348,10 +359,18 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $itemId = To::int($item->getItemId());
             $data = $this->orderItemFactory->create();
             $data->setId($itemId);
-            $data->setProductId(To::int($item->getProductId()));
+            $productId = To::int($item->getProductId());
+            $data->setProductId($productId);
+            $storeId = To::int($item->getStoreId());
             if (key_exists($itemId, $productVariations)) {
-                $data->setVariantProductId($productVariations[$itemId]);
+                $variantId = $productVariations[$itemId];
+                $data->setVariantProductId($variantId);
+                $urls = $this->getProductURLs($storeId, $productId, $variantId);
+            } else {
+                $urls = $this->getProductURLs($storeId, $productId);
             }
+            $data->setProductImage($urls[self::PRODUCT_IMAGE]);
+            $data->setProductURL($urls[self::PRODUCT_URL]);
             $data->setIsVirtual(To::bool($item->getIsVirtual()));
             $data->setSku((string)$item->getSku());
             $data->setDescription((string)$item->getDescription());
@@ -619,5 +638,24 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                 break;
         }
         return $dates;
+    }
+
+    private function getProductURLs(int $storeId, int $productId, int $variantId = 0): array
+    {
+        $collection = $this->productCollectionFactory->create();
+        /** @var Product $product */
+        $product = $collection->addAttributeToSelect('*')->getItemById($productId);
+        $product->setStoreId($storeId);
+        $urls = [
+            self::PRODUCT_URL => $product->getUrlModel()->getUrlInStore($product, ['_escape' => true]),
+        ];
+        if ($variantId != 0) {
+            /** @var Product $variant */
+            $variant = $collection->addAttributeToSelect('*')->getItemById($variantId);
+            $urls[self::PRODUCT_IMAGE] = $this->helper->getProductImageURL($variant);
+            return $urls;
+        }
+        $urls[self::PRODUCT_IMAGE] = $this->helper->getProductImageURL($product);
+        return $urls;
     }
 }

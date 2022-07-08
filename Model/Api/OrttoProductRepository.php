@@ -35,7 +35,6 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
     private const ENTITY_ID = 'entity_id';
 
     private Data $helper;
-    private ImageFactory $imageFactory;
     private OrttoLogger $logger;
     private GetSalableQuantityDataBySku $salableQty;
     private Configurable $configurable;
@@ -53,7 +52,6 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
 
     public function __construct(
         Data $helper,
-        ImageFactory $imageFactory,
         OrttoLogger $logger,
         GetSalableQuantityDataBySku $salableQty,
         Configurable $configurable,
@@ -70,7 +68,6 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         ListProductResponseFactory $listResponseFactory
     ) {
         $this->helper = $helper;
-        $this->imageFactory = $imageFactory;
         $this->salableQty = $salableQty;
         $this->logger = $logger;
         $this->configurable = $configurable;
@@ -254,23 +251,10 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $orttoProduct->setStock($stockItem);
 
         // URLs
-        $image = $product->getImage();
-        if (!empty($image) && $image != self::NO_SELECT) {
-            $orttoProduct->setImageUrl($this->resolveProductImageURL($product));
-        }
+        $orttoProduct->setImageUrl($this->helper->getProductImageURL($product));
         $orttoProduct->setUrl($product->getUrlModel()->getUrlInStore($product, ['_escape' => true]));
 
         return $orttoProduct;
-    }
-
-    /**
-     * @param Product $product
-     */
-    private function resolveProductImageURL($product): string
-    {
-        $img = $this->imageFactory->create();
-        return $img->init($product, 'product_page_image_small')
-                ->setImageFile($product->getImage())->getUrl() ?? '';
     }
 
     private function getParentIds(int $productId): OrttoProductParentGroupInterface

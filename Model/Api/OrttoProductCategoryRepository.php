@@ -8,6 +8,7 @@ use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Exception\LocalizedException;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\OrttoProductCategoryRepositoryInterface;
+use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
 use Ortto\Connector\Model\Data\OrttoProductCategoryFactory;
@@ -20,8 +21,10 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
     private OrttoProductCategoryFactory $productCategoryFactory;
     private CollectionFactory $categoryCollection;
     private ListProductCategoryResponseFactory $listProductCategoryResponseFactory;
+    private Data $helper;
 
     public function __construct(
+        Data $helper,
         OrttoLogger $logger,
         OrttoProductCategoryFactory $productCategoryFactory,
         CollectionFactory $categoryCollection,
@@ -31,6 +34,7 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
         $this->productCategoryFactory = $productCategoryFactory;
         $this->categoryCollection = $categoryCollection;
         $this->listProductCategoryResponseFactory = $listProductCategoryResponseFactory;
+        $this->helper = $helper;
     }
 
     public function getList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize, array $data = [])
@@ -73,6 +77,8 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
         $data->setName((string)$category->getName());
         $data->setDescription((string)$category->getDescription() ?? '');
         $data->setProductsCount(To::int($category->getProductCount()));
+        $data->setCreatedAt($this->helper->toUTC($category->getCreatedAt()));
+        $data->setUpdatedAt($this->helper->toUTC($category->getUpdatedAt()));
         try {
             if ($imageURL = $category->getImageUrl()) {
                 $data->setImageURL((string)$imageURL);

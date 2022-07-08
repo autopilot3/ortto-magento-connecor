@@ -33,15 +33,15 @@ class RestockSubscriptionPlugin
 
     public function afterSave(Stock $model): Stock
     {
-        try {
-            $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, To::int($model->getStoreId()));
-            if (!$this->helper->shouldExportStockAlert($scope, $model)) {
-                return $model;
-            }
-            $this->orttoClient->importRestockSubscriptions($scope, [$model]);
-        } catch (\Exception $e) {
-            $this->logger->error($e, "Failed to export product stock alert");
-        }
+//        try {
+//            $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, To::int($model->getStoreId()));
+//            if (!$this->helper->shouldExportStockAlert($scope, $model)) {
+//                return $model;
+//            }
+//            $this->orttoClient->importRestockSubscriptions($scope, [$model]);
+//        } catch (\Exception $e) {
+//            $this->logger->error($e, "Failed to export product stock alert");
+//        }
         return $model;
     }
 }

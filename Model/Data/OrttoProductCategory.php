@@ -34,13 +34,13 @@ class OrttoProductCategory extends DataObject implements OrttoProductCategoryInt
     }
 
     /** @inheirtDoc */
-    public function setImageURL($imageURL)
+    public function setImageUrl($imageUrl)
     {
-        return $this->setData(self::IMAGE_URL, $imageURL);
+        return $this->setData(self::IMAGE_URL, $imageUrl);
     }
 
     /** @inheirtDoc */
-    public function getImageURL()
+    public function getImageUrl()
     {
         return (string)$this->getData(self::IMAGE_URL);
     }
@@ -67,5 +67,29 @@ class OrttoProductCategory extends DataObject implements OrttoProductCategoryInt
     public function getProductsCount()
     {
         return To::int($this->getData(self::PRODUCTS_COUNT));
+    }
+
+    /** @inheirtDoc */
+    public function setCreatedAt($createdAt)
+    {
+        return $this->setData(self::CREATED_AT, $createdAt);
+    }
+
+    /** @inheirtDoc */
+    public function getCreatedAt()
+    {
+        return (string)$this->getData(self::CREATED_AT);
+    }
+
+    /** @inheirtDoc */
+    public function setUpdatedAt($updatedAt)
+    {
+        return $this->setData(self::UPDATED_AT, $updatedAt);
+    }
+
+    /** @inheirtDoc */
+    public function getUpdatedAt()
+    {
+        return (string)$this->getData(self::UPDATED_AT);
     }
 }

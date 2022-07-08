@@ -82,6 +82,30 @@ class OrttoOrderItem extends DataObject implements OrttoOrderItemInterface
     }
 
     /** @inheirtDoc */
+    public function setProductImage($productImage)
+    {
+        return $this->setData(self::PRODUCT_IMAGE, $productImage);
+    }
+
+    /** @inheirtDoc */
+    public function getProductImage()
+    {
+        return (string)$this->getData(self::PRODUCT_IMAGE);
+    }
+
+    /** @inheirtDoc */
+    public function setProductUrl($productUrl)
+    {
+        return $this->setData(self::PRODUCT_URL, $productUrl);
+    }
+
+    /** @inheirtDoc */
+    public function getProductUrl()
+    {
+        return (string)$this->getData(self::PRODUCT_URL);
+    }
+
+    /** @inheirtDoc */
     public function setVariantProductId($variantProductId)
     {
         return $this->setData(self::VARIANT_PRODUCT_ID, $variantProductId);

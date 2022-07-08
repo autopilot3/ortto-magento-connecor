@@ -12,13 +12,10 @@ use Magento\Store\Model\StoreManagerInterface;
 use Ortto\Connector\Api\AppConfigRepositoryInterface;
 use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\Data\AppConfigInterface;
-use Ortto\Connector\Api\Data\SyncConfigResponseInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
-use Ortto\Connector\Api\SyncCategoryInterface as SyncCategory;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
-use Ortto\Connector\Model\Data\SyncConfigResponseFactory;
 
 class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInterface
 {
@@ -38,8 +35,6 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
     private StoreManagerInterface $storeManager;
     private Pool $cacheFrontendPool;
     private ConfigurationReaderInterface $configurationReader;
-    private SyncConfigResponseFactory $syncConfigResponseFactory;
-
 
     /**
      * @param OrttoLoggerInterface $logger
@@ -48,7 +43,6 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
      * @param Pool $cacheFrontendPool
      * @param ConfigurationReaderInterface $configurationReader
      * @param ScopeManagerInterface $scopeManager
-     * @param SyncConfigResponseFactory $syncConfigResponseFactory
      */
     public function __construct(
         OrttoLoggerInterface $logger,
@@ -56,8 +50,7 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
         StoreManagerInterface $storeManager,
         Pool $cacheFrontendPool,
         ConfigurationReaderInterface $configurationReader,
-        ScopeManagerInterface $scopeManager,
-        SyncConfigResponseFactory $syncConfigResponseFactory
+        ScopeManagerInterface $scopeManager
     ) {
         parent::__construct($scopeManager);
         $this->logger = $logger;
@@ -65,7 +58,6 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
         $this->storeManager = $storeManager;
         $this->cacheFrontendPool = $cacheFrontendPool;
         $this->configurationReader = $configurationReader;
-        $this->syncConfigResponseFactory = $syncConfigResponseFactory;
     }
 
     /**
