@@ -652,8 +652,11 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         if ($variantId != 0) {
             /** @var Product $variant */
             $variant = $collection->addAttributeToSelect('*')->getItemById($variantId);
-            $urls[self::PRODUCT_IMAGE] = $this->helper->getProductImageURL($variant);
-            return $urls;
+            $variantImage = $this->helper->getProductImageURL($variant);
+            if ($variantImage != '') {
+                $urls[self::PRODUCT_IMAGE] = $variantImage;
+                return $urls;
+            }
         }
         $urls[self::PRODUCT_IMAGE] = $this->helper->getProductImageURL($product);
         return $urls;
