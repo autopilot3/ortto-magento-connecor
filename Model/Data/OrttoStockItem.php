@@ -9,7 +9,6 @@ use Ortto\Connector\Helper\To;
 
 class OrttoStockItem extends DataObject implements OrttoStockItemInterface
 {
-
     /** @inheirtDoc */
     public function setQuantity($quantity)
     {
@@ -44,5 +43,18 @@ class OrttoStockItem extends DataObject implements OrttoStockItemInterface
     public function getIsSalable()
     {
         return To::bool($this->getData(self::IS_SALABLE));
+    }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::QUANTITY] = $this->getQuantity();
+        $result[self::IS_IN_STOCK] = $this->getIsInStock();
+        $result[self::IS_SALABLE] = $this->getIsSalable();
+        return $result;
     }
 }

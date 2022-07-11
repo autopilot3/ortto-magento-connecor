@@ -236,4 +236,36 @@ class OrttoRefund extends DataObject implements OrttoRefundInterface
     {
         return $this->getData(self::ITEMS) ?? [];
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::ID] = $this->getId();
+        $result[self::INVOICE_ID] = $this->getInvoiceId();
+        $result[self::NUMBER] = $this->getNumber();
+        $result[self::SUBTOTAL] = $this->getSubtotal();
+        $result[self::BASE_SUBTOTAL] = $this->getBaseSubtotal();
+        $result[self::SUBTOTAL_INCL_TAX] = $this->getSubtotalInclTax();
+        $result[self::BASE_SUBTOTAL_INCL_TAX] = $this->getBaseSubtotalInclTax();
+        $result[self::TAX] = $this->getTax();
+        $result[self::BASE_TAX] = $this->getBaseTax();
+        $result[self::SHIPPING] = $this->getShipping();
+        $result[self::BASE_SHIPPING] = $this->getBaseShipping();
+        $result[self::SHIPPING_INCL_TAX] = $this->getShippingInclTax();
+        $result[self::BASE_SHIPPING_INCL_TAX] = $this->getBaseShippingInclTax();
+        $result[self::GRAND_TOTAL] = $this->getGrandTotal();
+        $result[self::BASE_GRAND_TOTAL] = $this->getBaseGrandTotal();
+        $result[self::ADJUSTMENT] = $this->getAdjustment();
+        $result[self::BASE_ADJUSTMENT] = $this->getBaseAdjustment();
+        $result[self::REFUNDED_AT] = $this->getRefundedAt();
+        $result[self::ITEMS] = [];
+        foreach ($this->getItems() as $item) {
+            $result[self::ITEMS][] = $item->serializeToArray();
+        }
+        return $result;
+    }
 }

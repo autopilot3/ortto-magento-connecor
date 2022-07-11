@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Ortto\Connector\Block;
 
 use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
+use Ortto\Connector\Api\OrttoOrderRepositoryInterface;
 use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Api\TrackDataProviderInterface;
 use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
 use Ortto\Connector\Model\Api\OrderDataFactory;
 use Magento\Checkout\Model\Session;
@@ -19,24 +21,24 @@ class CheckoutSuccess extends Template
     private TrackDataProviderInterface $trackDataProvider;
     private OrttoLogger $logger;
     private Session $session;
-    private OrderDataFactory $orderDataFactory;
     private OrttoSerializerInterface $serializer;
+    private OrttoOrderRepositoryInterface $orderRepository;
 
     public function __construct(
         Template\Context $context,
         TrackDataProviderInterface $trackDataProvider,
-        OrderDataFactory $cartDataFactory,
         OrttoLogger $logger,
         Session $session,
         OrttoSerializerInterface $serializer,
+        OrttoOrderRepositoryInterface $orderRepository,
         array $data = []
     ) {
         parent::__construct($context, $data);
         $this->trackDataProvider = $trackDataProvider;
-        $this->orderDataFactory = $cartDataFactory;
         $this->logger = $logger;
         $this->session = $session;
         $this->serializer = $serializer;
+        $this->orderRepository = $orderRepository;
     }
 
     /**
@@ -45,26 +47,23 @@ class CheckoutSuccess extends Template
     public function getOrderEventJSON(string $event)
     {
         try {
-            $order = $this->orderDataFactory->create();
-            if (!$order->load($this->session->getLastRealOrder())) {
-                $this->logger->warn("Checkout Succeeded: Order not loaded");
-                return false;
-            }
-
             $trackingData = $this->trackDataProvider->getData();
-
-            $payload = [
-                'email' => $trackingData->getEmail(),
-                'phone' => $trackingData->getPhone(),
-                'payload' => [
-                    'event' => $event,
-                    'scope' => $trackingData->getScope()->toArray(),
-                    'data' => [
-                        'order' => $order->toArray(),
+            $scope = $trackingData->getScope();
+            if ($sessionOrder = $this->session->getLastRealOrder()) {
+                $order = $this->orderRepository->getById($scope, To::int($sessionOrder->getId()));
+                $payload = [
+                    'email' => $trackingData->getEmail(),
+                    'phone' => $trackingData->getPhone(),
+                    'payload' => [
+                        'event' => $event,
+                        'scope' => $scope->toArray(),
+                        'data' => [
+                            'order' => $order->serializeToArray(),
+                        ],
                     ],
-                ],
-            ];
-            return $this->serializer->serializeJson($payload);
+                ];
+                return $this->serializer->serializeJson($payload);
+            }
         } catch (Exception $e) {
             $this->logger->error($e, "Checkout Succeeded: Failed to get order data");
             return false;

@@ -296,4 +296,39 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     {
         return To::float($this->getData(self::QUANTITY));
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $product = $this->getProduct();
+        $result[self::PRODUCT] = $product != null ? $product->serializeToArray() : null;
+        $result[self::CREATED_AT] = $this->getCreatedAt();
+        $result[self::UPDATED_AT] = $this->getUpdatedAt();
+        $result[self::DISCOUNT] = $this->getDiscount();
+        $result[self::DISCOUNT_TAX_COMPENSATION] = $this->getDiscountTaxCompensation();
+        $result[self::DISCOUNT_CALCULATED] = $this->getDiscountCalculated();
+        $result[self::BASE_DISCOUNT] = $this->getBaseDiscount();
+        $result[self::BASE_DISCOUNT_TAX_COMPENSATION] = $this->getBaseDiscountTaxCompensation();
+        $result[self::BASE_DISCOUNT_CALCULATED] = $this->getBaseDiscountCalculated();
+        $result[self::BASE_PRICE] = $this->getBasePrice();
+        $result[self::BASE_PRICE_INCL_TAX] = $this->getBasePriceInclTax();
+        $result[self::PRICE] = $this->getPrice();
+        $result[self::PRICE_INCL_TAX] = $this->getPriceInclTax();
+        $result[self::BASE_ROW_TOTAL] = $this->getBaseRowTotal();
+        $result[self::BASE_ROW_TOTAL_INCL_TAX] = $this->getBaseRowTotalInclTax();
+        $result[self::ROW_TOTAL] = $this->getRowTotal();
+        $result[self::ROW_TOTAL_INCL_TAX] = $this->getRowTotalInclTax();
+        $result[self::ROW_TOTAL_AFTER_DISCOUNT] = $this->getRowTotalAfterDiscount();
+        $result[self::BASE_TAX] = $this->getBaseTax();
+        $result[self::BASE_TAX_BEFORE_DISCOUNT] = $this->getBaseTaxBeforeDiscount();
+        $result[self::TAX] = $this->getTax();
+        $result[self::TAX_BEFORE_DISCOUNT] = $this->getTaxBeforeDiscount();
+        $result[self::TAX_PERCENT] = $this->getTaxPercent();
+        $result[self::QUANTITY] = $this->getQuantity();
+        return $result;
+    }
 }

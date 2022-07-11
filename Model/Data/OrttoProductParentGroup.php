@@ -43,4 +43,17 @@ class OrttoProductParentGroup extends DataObject implements OrttoProductParentGr
     {
         return $this->getData(self::GROUPED) ?? [];
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::BUNDLE] = $this->getBundle();
+        $result[self::CONFIGURABLE] = $this->getConfigurable();
+        $result[self::GROUPED] = $this->getGrouped();
+        return $result;
+    }
 }

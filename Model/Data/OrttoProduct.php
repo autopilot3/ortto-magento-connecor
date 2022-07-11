@@ -9,7 +9,6 @@ use Ortto\Connector\Helper\To;
 
 class OrttoProduct extends DataObject implements OrttoProductInterface
 {
-
     /** @inheirtDoc */
     public function setId($id)
     {
@@ -43,7 +42,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     /** @inheirtDoc */
     public function getType()
     {
-        return $this->getData(self::TYPE);
+        return (string)$this->getData(self::TYPE);
     }
 
     /** @inheirtDoc */
@@ -55,7 +54,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     /** @inheirtDoc */
     public function getName()
     {
-        return $this->getData(self::NAME);
+        return (string)$this->getData(self::NAME);
     }
 
     /** @inheirtDoc */
@@ -67,7 +66,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     /** @inheirtDoc */
     public function getCreatedAt()
     {
-        return $this->getData(self::CREATED_AT);
+        return (string)$this->getData(self::CREATED_AT);
     }
 
     /** @inheirtDoc */
@@ -79,7 +78,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     /** @inheirtDoc */
     public function getUpdatedAt()
     {
-        return $this->getData(self::UPDATED_AT);
+        return (string)$this->getData(self::UPDATED_AT);
     }
 
     /** @inheirtDoc */
@@ -91,7 +90,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     /** @inheirtDoc */
     public function getSku()
     {
-        return $this->getData(self::SKU);
+        return (string)$this->getData(self::SKU);
     }
 
     /** @inheirtDoc */
@@ -103,7 +102,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     /** @inheirtDoc */
     public function getUrl()
     {
-        return $this->getData(self::URL);
+        return (string)$this->getData(self::URL);
     }
 
     /** @inheirtDoc */
@@ -163,7 +162,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     /** @inheirtDoc */
     public function getImageUrl()
     {
-        return $this->getData(self::IMAGE_URL);
+        return (string)$this->getData(self::IMAGE_URL);
     }
 
     /** @inheirtDoc */
@@ -235,7 +234,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     /** @inheirtDoc */
     public function getShortDescription()
     {
-        return $this->getData(self::SHORT_DESCRIPTION);
+        return (string)$this->getData(self::SHORT_DESCRIPTION);
     }
 
     /** @inheirtDoc */
@@ -247,7 +246,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     /** @inheirtDoc */
     public function getDescription()
     {
-        return $this->getData(self::DESCRIPTION);
+        return (string)$this->getData(self::DESCRIPTION);
     }
 
     /** @inheirtDoc */
@@ -271,7 +270,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     /** @inheirtDoc */
     public function getCurrencyCode()
     {
-        return $this->getData(self::CURRENCY_CODE);
+        return (string)$this->getData(self::CURRENCY_CODE);
     }
 
     /** @inheirtDoc */
@@ -284,5 +283,46 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     public function getLinks(): array
     {
         return $this->getData(self::LINKS) ?? [];
+    }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::ID] = $this->getId();
+        $result[self::IS_VISIBLE] = $this->getIsVisible();
+        $result[self::TYPE] = $this->getType();
+        $result[self::NAME] = $this->getName();
+        $result[self::CREATED_AT] = $this->getCreatedAt();
+        $result[self::UPDATED_AT] = $this->getUpdatedAt();
+        $result[self::SKU] = $this->getSku();
+        $result[self::URL] = $this->getUrl();
+        $result[self::PRICE] = $this->getPrice();
+        $result[self::CALCULATED_PRICE] = $this->getCalculatedPrice();
+        $result[self::MINIMAL_PRICE] = $this->getMinimalPrice();
+        $result[self::WEIGHT] = $this->getWeight();
+        $result[self::IMAGE_URL] = $this->getImageUrl();
+        $stock = $this->getStock();
+        $result[self::STOCK] = $stock != null ? $stock->serializeToArray() : null;
+        $result[self::STOCKS] = [];
+        foreach ($this->getStocks() as $item) {
+            $result[self::STOCKS][] = $item->serializeToArray();
+        }
+        $result[self::CATEGORY_IDS] = $this->getCategoryIds();
+        $parents = $this->getParents();
+        $result[self::PARENTS] = $parents != null ? $parents->serializeToArray() : null;
+        $result[self::CHILDREN] = $this->getChildren();
+        $result[self::SHORT_DESCRIPTION] = $this->getShortDescription();
+        $result[self::DESCRIPTION] = $this->getDescription();
+        $result[self::IS_OPTION_REQUIRED] = $this->getIsOptionRequired();
+        $result[self::CURRENCY_CODE] = $this->getCurrencyCode();
+        $result[self::LINKS] = [];
+        foreach ($this->getLinks() as $item) {
+            $result[self::LINKS][] = $item->serializeToArray();
+        }
+        return $result;
     }
 }

@@ -92,4 +92,21 @@ class OrttoProductCategory extends DataObject implements OrttoProductCategoryInt
     {
         return (string)$this->getData(self::UPDATED_AT);
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::ID] = $this->getId();
+        $result[self::NAME] = $this->getName();
+        $result[self::IMAGE_URL] = $this->getImageUrl();
+        $result[self::DESCRIPTION] = $this->getDescription();
+        $result[self::PRODUCTS_COUNT] = $this->getProductsCount();
+        $result[self::CREATED_AT] = $this->getCreatedAt();
+        $result[self::UPDATED_AT] = $this->getUpdatedAt();
+        return $result;
+    }
 }

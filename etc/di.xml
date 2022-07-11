@@ -128,6 +128,8 @@
                 type="Ortto\Connector\Model\Api\OrttoOrderRepository"/>
     <preference for="Ortto\Connector\Api\OrttoRestockSubscriptionRepositoryInterface"
                 type="Ortto\Connector\Model\Api\OrttoRestockSubscriptionRepository"/>
+    <preference for="Ortto\Connector\Api\OrttoCartRepositoryInterface"
+                type="Ortto\Connector\Model\Api\OrttoCartRepository"/>
 
     <!-- WEB API HANDLERS -->
     <preference for="Ortto\Connector\Api\ProductApiInterface"

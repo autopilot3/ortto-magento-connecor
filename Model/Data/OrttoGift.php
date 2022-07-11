@@ -43,4 +43,17 @@ class OrttoGift extends DataObject implements OrttoGiftInterface
     {
         return (string)$this->getData(self::RECIPIENT);
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::MESSAGE] = $this->getMessage();
+        $result[self::SENDER] = $this->getSender();
+        $result[self::RECIPIENT] = $this->getRecipient();
+        return $result;
+    }
 }

@@ -309,4 +309,11 @@ interface OrttoRefundInterface
     * @return \Ortto\Connector\Api\Data\OrttoRefundItemInterface[]
     */
     public function getItems(): array;
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

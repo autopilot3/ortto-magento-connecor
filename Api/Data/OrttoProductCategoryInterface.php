@@ -117,4 +117,11 @@ interface OrttoProductCategoryInterface
     * @return string
     */
     public function getUpdatedAt();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

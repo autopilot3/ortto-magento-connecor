@@ -1205,4 +1205,11 @@ interface OrttoOrderInterface
     * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
     */
     public function getCustomer();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

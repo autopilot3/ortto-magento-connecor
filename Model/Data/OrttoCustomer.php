@@ -200,4 +200,32 @@ class OrttoCustomer extends DataObject implements OrttoCustomerInterface
     {
         return (string)$this->getData(self::PHONE);
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::ID] = $this->getId();
+        $result[self::IP_ADDRESS] = $this->getIpAddress();
+        $result[self::FIRST_NAME] = $this->getFirstName();
+        $result[self::MIDDLE_NAME] = $this->getMiddleName();
+        $result[self::LAST_NAME] = $this->getLastName();
+        $result[self::SUFFIX] = $this->getSuffix();
+        $result[self::PREFIX] = $this->getPrefix();
+        $result[self::GENDER] = $this->getGender();
+        $result[self::EMAIL] = $this->getEmail();
+        $result[self::DOB] = $this->getDateOfBirth();
+        $result[self::CREATED_AT] = $this->getCreatedAt();
+        $result[self::CREATED_IN] = $this->getCreatedIn();
+        $billingAddress = $this->getBillingAddress();
+        $result[self::BILLING_ADDRESS] = $billingAddress != null ? $billingAddress->serializeToArray() : null;
+        $shippingAddress = $this->getShippingAddress();
+        $result[self::SHIPPING_ADDRESS] = $shippingAddress != null ? $shippingAddress->serializeToArray() : null;
+        $result[self::UPDATED_AT] = $this->getUpdatedAt();
+        $result[self::PHONE] = $this->getPhone();
+        return $result;
+    }
 }

@@ -501,4 +501,11 @@ interface OrttoCartInterface
     * @return float
     */
     public function getBaseDiscount();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

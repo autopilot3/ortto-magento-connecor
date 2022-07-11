@@ -380,4 +380,50 @@ class OrttoCart extends DataObject implements OrttoCartInterface
     {
         return To::float($this->getData(self::BASE_DISCOUNT));
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::ID] = $this->getId();
+        $result[self::IP_ADDRESS] = $this->getIpAddress();
+        $result[self::CREATED_AT] = $this->getCreatedAt();
+        $result[self::UPDATED_AT] = $this->getUpdatedAt();
+        $result[self::ITEMS_COUNT] = $this->getItemsCount();
+        $result[self::ITEMS_QUANTITY] = $this->getItemsQuantity();
+        $result[self::CURRENCY_CODE] = $this->getCurrencyCode();
+        $result[self::BASE_CURRENCY_CODE] = $this->getBaseCurrencyCode();
+        $result[self::STORE_CURRENCY_CODE] = $this->getStoreCurrencyCode();
+        $result[self::DISCOUNT_CODES] = $this->getDiscountCodes();
+        $result[self::ITEMS] = [];
+        foreach ($this->getItems() as $item) {
+            $result[self::ITEMS][] = $item->serializeToArray();
+        }
+        $result[self::GRAND_TOTAL] = $this->getGrandTotal();
+        $result[self::BASE_GRAND_TOTAL] = $this->getBaseGrandTotal();
+        $result[self::SUBTOTAL] = $this->getSubtotal();
+        $result[self::BASE_SUBTOTAL] = $this->getBaseSubtotal();
+        $result[self::SUBTOTAL_WITH_DISCOUNT] = $this->getSubtotalWithDiscount();
+        $result[self::BASE_SUBTOTAL_WITH_DISCOUNT] = $this->getBaseSubtotalWithDiscount();
+        $result[self::TAX] = $this->getTax();
+        $result[self::BASE_TAX] = $this->getBaseTax();
+        $result[self::SHIPPING] = $this->getShipping();
+        $result[self::BASE_SHIPPING] = $this->getBaseShipping();
+        $result[self::SHIPPING_INCL_TAX] = $this->getShippingInclTax();
+        $result[self::BASE_SHIPPING_INCL_TAX] = $this->getBaseShippingInclTax();
+        $result[self::SHIPPING_TAX] = $this->getShippingTax();
+        $result[self::BASE_SHIPPING_TAX] = $this->getBaseShippingTax();
+        $shippingAddress = $this->getShippingAddress();
+        $result[self::SHIPPING_ADDRESS] = $shippingAddress != null ? $shippingAddress->serializeToArray() : null;
+        $billingAddress = $this->getBillingAddress();
+        $result[self::BILLING_ADDRESS] = $billingAddress != null ? $billingAddress->serializeToArray() : null;
+        $result[self::CART_URL] = $this->getCartUrl();
+        $result[self::CHECKOUT_URL] = $this->getCheckoutUrl();
+        $result[self::DISCOUNT] = $this->getDiscount();
+        $result[self::BASE_DISCOUNT] = $this->getBaseDiscount();
+        return $result;
+    }
 }

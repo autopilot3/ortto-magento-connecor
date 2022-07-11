@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Api;
 
+use Ortto\Connector\Api\Data\OrttoOrderInterface;
+
 interface OrttoOrderRepositoryInterface
 {
     /**
@@ -20,4 +22,12 @@ interface OrttoOrderRepositoryInterface
         int $pageSize,
         array $data = []
     );
+
+    /**
+     * @param ConfigScopeInterface $scope
+     * @param int $orderId
+     * @param array $data
+     * @return OrttoOrderInterface
+     */
+    public function getById(ConfigScopeInterface $scope, int $orderId, array $data = []);
 }

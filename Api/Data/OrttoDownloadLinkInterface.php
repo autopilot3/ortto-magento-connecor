@@ -16,137 +16,144 @@ interface OrttoDownloadLinkInterface
     const PRICE = 'price';
 
     /**
-     * Set title
-     *
-     * @param string $title
-     * @return $this
-     */
+    * Set title
+    *
+    * @param string $title
+    * @return $this
+    */
     public function setTitle($title);
 
     /**
-     * Get title
-     *
-     * @return string
-     */
+    * Get title
+    *
+    * @return string
+    */
     public function getTitle();
 
     /**
-     * Set downloads
-     *
-     * @param int $downloads
-     * @return $this
-     */
+    * Set downloads
+    *
+    * @param int $downloads
+    * @return $this
+    */
     public function setDownloads($downloads);
 
     /**
-     * Get downloads
-     *
-     * @return int
-     */
+    * Get downloads
+    *
+    * @return int
+    */
     public function getDownloads();
 
     /**
-     * Set type
-     *
-     * @param string $type
-     * @return $this
-     */
+    * Set type
+    *
+    * @param string $type
+    * @return $this
+    */
     public function setType($type);
 
     /**
-     * Get type
-     *
-     * @return string
-     */
+    * Get type
+    *
+    * @return string
+    */
     public function getType();
 
     /**
-     * Set url
-     *
-     * @param string $url
-     * @return $this
-     */
+    * Set url
+    *
+    * @param string $url
+    * @return $this
+    */
     public function setUrl($url);
 
     /**
-     * Get url
-     *
-     * @return string
-     */
+    * Get url
+    *
+    * @return string
+    */
     public function getUrl();
 
     /**
-     * Set file
-     *
-     * @param string $file
-     * @return $this
-     */
+    * Set file
+    *
+    * @param string $file
+    * @return $this
+    */
     public function setFile($file);
 
     /**
-     * Get file
-     *
-     * @return string
-     */
+    * Get file
+    *
+    * @return string
+    */
     public function getFile();
 
     /**
-     * Set sample type
-     *
-     * @param string $sampleType
-     * @return $this
-     */
+    * Set sample type
+    *
+    * @param string $sampleType
+    * @return $this
+    */
     public function setSampleType($sampleType);
 
     /**
-     * Get sample type
-     *
-     * @return string
-     */
+    * Get sample type
+    *
+    * @return string
+    */
     public function getSampleType();
 
     /**
-     * Set sample url
-     *
-     * @param string $sampleUrl
-     * @return $this
-     */
+    * Set sample url
+    *
+    * @param string $sampleUrl
+    * @return $this
+    */
     public function setSampleUrl($sampleUrl);
 
     /**
-     * Get sample url
-     *
-     * @return string
-     */
+    * Get sample url
+    *
+    * @return string
+    */
     public function getSampleUrl();
 
     /**
-     * Set sample file
-     *
-     * @param string $sampleFile
-     * @return $this
-     */
+    * Set sample file
+    *
+    * @param string $sampleFile
+    * @return $this
+    */
     public function setSampleFile($sampleFile);
 
     /**
-     * Get sample file
-     *
-     * @return string
-     */
+    * Get sample file
+    *
+    * @return string
+    */
     public function getSampleFile();
 
     /**
-     * Set price
-     *
-     * @param float $price
-     * @return $this
-     */
+    * Set price
+    *
+    * @param float $price
+    * @return $this
+    */
     public function setPrice($price);
 
     /**
-     * Get price
-     *
-     * @return float
-     */
+    * Get price
+    *
+    * @return float
+    */
     public function getPrice();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

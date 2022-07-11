@@ -85,4 +85,11 @@ interface OrttoCarrierInterface
     * @return string
     */
     public function getCreatedAt();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

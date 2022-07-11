@@ -248,4 +248,34 @@ class OrttoRefundItem extends DataObject implements OrttoRefundItemInterface
     {
         return To::float($this->getData(self::BASE_DISCOUNT));
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::ID] = $this->getId();
+        $result[self::ORDER_ITEM_ID] = $this->getOrderItemId();
+        $result[self::PRODUCT_ID] = $this->getProductId();
+        $result[self::VARIANT_PRODUCT_ID] = $this->getVariantProductId();
+        $result[self::SKU] = $this->getSku();
+        $result[self::NAME] = $this->getName();
+        $result[self::PRICE] = $this->getPrice();
+        $result[self::PRICE_INCL_TAX] = $this->getPriceInclTax();
+        $result[self::BASE_PRICE] = $this->getBasePrice();
+        $result[self::BASE_PRICE_INCL_TAX] = $this->getBasePriceInclTax();
+        $result[self::QUANTITY] = $this->getQuantity();
+        $result[self::TAX] = $this->getTax();
+        $result[self::BASE_TAX] = $this->getBaseTax();
+        $result[self::TOTAL] = $this->getTotal();
+        $result[self::BASE_TOTAL] = $this->getBaseTotal();
+        $result[self::TOTAL_INCL_TAX] = $this->getTotalInclTax();
+        $result[self::BASE_TOTAL_INCL_TAX] = $this->getBaseTotalInclTax();
+        $result[self::DESCRIPTION] = $this->getDescription();
+        $result[self::DISCOUNT] = $this->getDiscount();
+        $result[self::BASE_DISCOUNT] = $this->getBaseDiscount();
+        return $result;
+    }
 }

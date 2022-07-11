@@ -118,7 +118,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     public function getByIds(ConfigScopeInterface $scope, array $customerIds, array $data = [])
     {
         $result = $this->listResponseFactory->create();
-        $customerIds = array_unique($customerIds);
+        $customerIds = array_unique($customerIds, SORT_NUMERIC);
         if (empty($customerIds)) {
             return $result;
         }
@@ -323,7 +323,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             AddressInterface::COMPANY,
             AddressInterface::VAT_ID,
         ];
-        $addressIds = array_unique($addressIds);
+        $addressIds = array_unique($addressIds, SORT_NUMERIC);
         $collection = $this->addressCollection->create();
         $collection->addAttributeToSelect($columnsToSelect)
             ->addFieldToFilter(self::ENTITY_ID, ['in' => $addressIds]);
@@ -363,7 +363,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             QuoteAddressInterface::KEY_COMPANY,
             QuoteAddressInterface::KEY_VAT_ID,
         ];
-        $quoteIds = array_unique($quoteIds);
+        $quoteIds = array_unique($quoteIds, SORT_NUMERIC);
         $collection = $this->quoteAddressCollection->create();
         $collection->addFieldToSelect($columnsToSelect)
             ->addFieldToFilter(self::QUOTE_ID, ['in' => $quoteIds])

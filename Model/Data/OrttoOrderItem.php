@@ -70,54 +70,6 @@ class OrttoOrderItem extends DataObject implements OrttoOrderItemInterface
     }
 
     /** @inheirtDoc */
-    public function setProductId($productId)
-    {
-        return $this->setData(self::PRODUCT_ID, $productId);
-    }
-
-    /** @inheirtDoc */
-    public function getProductId()
-    {
-        return To::int($this->getData(self::PRODUCT_ID));
-    }
-
-    /** @inheirtDoc */
-    public function setProductImage($productImage)
-    {
-        return $this->setData(self::PRODUCT_IMAGE, $productImage);
-    }
-
-    /** @inheirtDoc */
-    public function getProductImage()
-    {
-        return (string)$this->getData(self::PRODUCT_IMAGE);
-    }
-
-    /** @inheirtDoc */
-    public function setProductUrl($productUrl)
-    {
-        return $this->setData(self::PRODUCT_URL, $productUrl);
-    }
-
-    /** @inheirtDoc */
-    public function getProductUrl()
-    {
-        return (string)$this->getData(self::PRODUCT_URL);
-    }
-
-    /** @inheirtDoc */
-    public function setVariantProductId($variantProductId)
-    {
-        return $this->setData(self::VARIANT_PRODUCT_ID, $variantProductId);
-    }
-
-    /** @inheirtDoc */
-    public function getVariantProductId()
-    {
-        return To::int($this->getData(self::VARIANT_PRODUCT_ID));
-    }
-
-    /** @inheirtDoc */
     public function setCreatedAt($createdAt)
     {
         return $this->setData(self::CREATED_AT, $createdAt);
@@ -511,5 +463,81 @@ class OrttoOrderItem extends DataObject implements OrttoOrderItemInterface
     public function getStoreId()
     {
         return To::int($this->getData(self::STORE_ID));
+    }
+
+    /** @inheirtDoc */
+    public function setProduct($product)
+    {
+        return $this->setData(self::PRODUCT, $product);
+    }
+
+    /** @inheirtDoc */
+    public function getProduct()
+    {
+        return $this->getData(self::PRODUCT);
+    }
+
+    /** @inheirtDoc */
+    public function setVariant($variant)
+    {
+        return $this->setData(self::VARIANT, $variant);
+    }
+
+    /** @inheirtDoc */
+    public function getVariant()
+    {
+        return $this->getData(self::VARIANT);
+    }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::ID] = $this->getId();
+        $result[self::IS_VIRTUAL] = $this->getIsVirtual();
+        $result[self::SKU] = $this->getSku();
+        $result[self::DESCRIPTION] = $this->getDescription();
+        $result[self::NAME] = $this->getName();
+        $result[self::CREATED_AT] = $this->getCreatedAt();
+        $result[self::UPDATED_AT] = $this->getUpdatedAt();
+        $result[self::REFUNDED] = $this->getRefunded();
+        $result[self::BASE_REFUNDED] = $this->getBaseRefunded();
+        $result[self::BASE_COST] = $this->getBaseCost();
+        $result[self::DISCOUNT] = $this->getDiscount();
+        $result[self::DISCOUNT_PERCENT] = $this->getDiscountPercent();
+        $result[self::DISCOUNT_INVOICED] = $this->getDiscountInvoiced();
+        $result[self::BASE_DISCOUNT_INVOICED] = $this->getBaseDiscountInvoiced();
+        $result[self::BASE_DISCOUNT] = $this->getBaseDiscount();
+        $result[self::DISCOUNT_REFUNDED] = $this->getDiscountRefunded();
+        $result[self::BASE_DISCOUNT_REFUNDED] = $this->getBaseDiscountRefunded();
+        $result[self::PRICE] = $this->getPrice();
+        $result[self::BASE_PRICE] = $this->getBasePrice();
+        $result[self::ORIGINAL_PRICE] = $this->getOriginalPrice();
+        $result[self::BASE_ORIGINAL_PRICE] = $this->getBaseOriginalPrice();
+        $result[self::TOTAL] = $this->getTotal();
+        $result[self::BASE_TOTAL] = $this->getBaseTotal();
+        $result[self::TOTAL_INCL_TAX] = $this->getTotalInclTax();
+        $result[self::BASE_TOTAL_INCL_TAX] = $this->getBaseTotalInclTax();
+        $result[self::QTY_INVOICED] = $this->getQtyInvoiced();
+        $result[self::QTY_BACK_ORDERED] = $this->getQtyBackOrdered();
+        $result[self::QTY_CANCELLED] = $this->getQtyCancelled();
+        $result[self::QTY_ORDERED] = $this->getQtyOrdered();
+        $result[self::QTY_REFUNDED] = $this->getQtyRefunded();
+        $result[self::QTY_RETURNED] = $this->getQtyReturned();
+        $result[self::QTY_SHIPPED] = $this->getQtyShipped();
+        $result[self::TAX] = $this->getTax();
+        $result[self::BASE_TAX] = $this->getBaseTax();
+        $result[self::IS_FREE_SHIPPING] = $this->getIsFreeShipping();
+        $result[self::TAX_PERCENT] = $this->getTaxPercent();
+        $result[self::ADDITIONAL_DATA] = $this->getAdditionalData();
+        $result[self::STORE_ID] = $this->getStoreId();
+        $product = $this->getProduct();
+        $result[self::PRODUCT] = $product != null ? $product->serializeToArray() : null;
+        $variant = $this->getVariant();
+        $result[self::VARIANT] = $variant != null ? $variant->serializeToArray() : null;
+        return $result;
     }
 }

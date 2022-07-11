@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Block;
 
-use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
 use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Api\TrackDataProviderInterface;
+use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
+use Ortto\Connector\Model\Api\OrttoProductRepository;
 use Ortto\Connector\Model\Api\ProductDataFactory;
 use Exception;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -23,10 +24,10 @@ use Magento\Framework\Url\EncoderInterface;
 
 class ProductView extends View
 {
-    private ProductDataFactory $productDataFactory;
     private TrackDataProviderInterface $trackDataProvider;
     private OrttoLogger $logger;
     private OrttoSerializerInterface $serializer;
+    private OrttoProductRepository $orttoProductRepository;
 
     public function __construct(
         Context $context,
@@ -43,6 +44,7 @@ class ProductView extends View
         TrackDataProviderInterface $trackDataProvider,
         OrttoLogger $logger,
         OrttoSerializerInterface $serializer,
+        OrttoProductRepository $orttoProductRepository,
         array $data = []
     ) {
         parent::__construct(
@@ -58,10 +60,10 @@ class ProductView extends View
             $priceCurrency,
             $data
         );
-        $this->productDataFactory = $productDataFactory;
         $this->trackDataProvider = $trackDataProvider;
         $this->logger = $logger;
         $this->serializer = $serializer;
+        $this->orttoProductRepository = $orttoProductRepository;
     }
 
     /**
@@ -71,13 +73,15 @@ class ProductView extends View
     public function getEventJSON(string $event)
     {
         try {
-            $product = $this->productDataFactory->create();
             $trackingData = $this->trackDataProvider->getData();
             $scope = $trackingData->getScope();
-            if (!$product->load($this->getProduct(), $scope->getId())) {
+            if ($p = $this->getProduct()) {
+                $productId = To::int($p->getId());
+            } else {
                 $this->logger->warn("Product View: Product not loaded");
                 return false;
             }
+            $product = $this->orttoProductRepository->getById($scope, $productId);
             $payload = [
                 'email' => $trackingData->getEmail(),
                 'phone' => $trackingData->getPhone(),
@@ -85,7 +89,7 @@ class ProductView extends View
                     'event' => $event,
                     'scope' => $scope->toArray(),
                     'data' => [
-                        'product' => $product->toArray(),
+                        'product' => $product->serializeToArray(),
                     ],
                 ],
             ];

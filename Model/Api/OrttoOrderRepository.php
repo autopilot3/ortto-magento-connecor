@@ -3,9 +3,6 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
-use Magento\Catalog\Helper\ImageFactory;
-use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Api\SortOrderBuilder;
@@ -19,8 +16,10 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\Data\OrttoOrderInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
 use Ortto\Connector\Api\OrttoOrderRepositoryInterface;
+use Ortto\Connector\Api\OrttoProductRepositoryInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
@@ -44,14 +43,11 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private const CANCELLED_AT = 'canceled_at';
     private const COMPLETED_AT = 'completed_at';
     private const BILLING_ADDRESS = 'billing';
-    private const PRODUCT_IMAGE = 'image';
-    private const PRODUCT_URL = 'url';
 
     private Data $helper;
     private OrttoLogger $logger;
     private ListOrderResponseFactory $listResponseFactory;
     private AddressCollectionFactory $addressCollection;
-    private ImageFactory $imageFactory;
     private OrttoOrderFactory $orderFactory;
     private OrttoAddressFactory $addressFactory;
     private OrttoCustomerRepositoryInterface $customerRepository;
@@ -67,7 +63,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private OrttoOrderItemFactory $orderItemFactory;
     private OrttoGiftFactory $giftFactory;
     private CreditmemoRepositoryInterface $creditMemoRepository;
-    private ProductCollectionFactory $productCollectionFactory;
+    private OrttoProductRepositoryInterface $productRepository;
 
     public function __construct(
         Data $helper,
@@ -89,8 +85,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         \Magento\Sales\Api\ShipmentTrackRepositoryInterface $shipmentTrackRepository,
         \Ortto\Connector\Model\Data\OrttoGiftFactory $giftFactory,
         \Magento\Sales\Api\CreditmemoRepositoryInterface $creditMemoRepository,
-        \Magento\Catalog\Helper\ImageFactory $imageFactory,
-        \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
+        OrttoProductRepositoryInterface $productRepository
     ) {
         $this->helper = $helper;
         $this->logger = $logger;
@@ -111,8 +106,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $this->shipmentTrackRepository = $shipmentTrackRepository;
         $this->giftFactory = $giftFactory;
         $this->creditMemoRepository = $creditMemoRepository;
-        $this->imageFactory = $imageFactory;
-        $this->productCollectionFactory = $productCollectionFactory;
+        $this->productRepository = $productRepository;
     }
 
     /** @inheirtDoc
@@ -151,12 +145,20 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $orders = $ordersList->getItems();
         $customerIds = [];
         $orderIds = [];
+        $productIds = [];
         foreach ($orders as $order) {
             if ($customerId = $order->getCustomerId()) {
                 $customerIds[] = To::int($customerId);
             }
             $orderIds[] = To::int($order->getEntityId());
+            foreach ($order->getItems() as $item) {
+                $productIds[] = To::int($item->getProductId());
+            }
         }
+
+
+        // The returned array is keyed by product ID
+        $products = $this->productRepository->getByIds($scope, $productIds)->getItems();
 
         // The returned array is keyed by customer ID
         $customers = $this->customerRepository->getByIds($scope, $customerIds)->getItems();
@@ -166,7 +168,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $orttoOrders = [];
         foreach ($orders as $order) {
             $orderId = To::int($order->getEntityId());
-            $orttoOrder = $this->convertOrder($order, $addresses[$orderId]);
+            $orttoOrder = $this->convertOrder($order, $addresses[$orderId], $products);
             if ($customerId = $order->getCustomerId()) {
                 if ($customer = $customers[To::int($customerId)]) {
                     $orttoOrder->setCustomer($customer);
@@ -179,6 +181,27 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $result->setItems($orttoOrders);
         $result->setHasMore($page < $total / $pageSize);
         return $result;
+    }
+
+    public function getById(ConfigScopeInterface $scope, int $orderId, array $data = [])
+    {
+        $order = $this->orderRepository->get($orderId);
+        $productIds = [];
+        foreach ($order->getItems() as $item) {
+            $productIds[] = To::int($item->getProductId());
+        }
+
+        // The returned array is keyed by product ID
+        $products = $this->productRepository->getByIds($scope, $productIds)->getItems();
+
+        $addresses = $this->getOrderAddresses([$orderId]);
+        $data = $this->convertOrder($order, $addresses[$orderId], $products);
+        if ($customerId = $order->getCustomerId()) {
+            $data->setCustomer($this->customerRepository->getById($scope, $customerId));
+        } else {
+            $data->setCustomer($this->getAnonymousCustomer($order, $addresses[$orderId]));
+        }
+        return $data;
     }
 
 
@@ -210,7 +233,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             AddressInterface::COMPANY,
             AddressInterface::VAT_ID,
         ];
-        $orderIds = array_unique($orderIds);
+        $orderIds = array_unique($orderIds, SORT_NUMERIC);
         $collection = $this->addressCollection->create();
         $collection->addFieldToSelect($columnsToSelect)
             ->addFieldToFilter(AddressInterface::PARENT_ID, ['in' => $orderIds]);
@@ -230,9 +253,10 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     /**
      * @param OrderInterface $order
      * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[] $addresses
+     * @param \Ortto\Connector\Api\Data\OrttoProductInterface[] $products
      * @return \Ortto\Connector\Api\Data\OrttoOrderInterface
      */
-    private function convertOrder($order, $addresses)
+    private function convertOrder($order, $addresses, $products)
     {
         $data = $this->orderFactory->create();
         $orderId = To::int($order->getData(OrderInterface::ENTITY_ID));
@@ -332,7 +356,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             }
         }
 
-        $data->setItems($this->getOrderItems($orderItems, $productVariations));
+        $data->setItems($this->getOrderItems($orderItems, $productVariations, $products));
 
         switch ($order->getStatus()) {
             case Order::STATE_CLOSED:
@@ -350,9 +374,10 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     /**
      * @param OrderItemInterface[] $items
      * @param array $productVariations
+     * @param \Ortto\Connector\Api\Data\OrttoProductInterface[] $products
      * @return \Ortto\Connector\Api\Data\OrttoOrderItemInterface[]
      */
-    private function getOrderItems($items, $productVariations)
+    private function getOrderItems($items, $productVariations, $products)
     {
         $orderItems = [];
         foreach ($items as $item) {
@@ -360,17 +385,17 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $data = $this->orderItemFactory->create();
             $data->setId($itemId);
             $productId = To::int($item->getProductId());
-            $data->setProductId($productId);
+            $product = $products[$productId];
+            if ($product == null) {
+                $this->logger->warn("Ordered product was not loaded", ['product_id' => $productId]);
+                continue;
+            }
+            $data->setProduct($product);
             $storeId = To::int($item->getStoreId());
             if (key_exists($itemId, $productVariations)) {
                 $variantId = $productVariations[$itemId];
-                $data->setVariantProductId($variantId);
-                $urls = $this->getProductURLs($storeId, $productId, $variantId);
-            } else {
-                $urls = $this->getProductURLs($storeId, $productId);
+                $data->setVariant($products[$variantId]);
             }
-            $data->setProductImage($urls[self::PRODUCT_IMAGE]);
-            $data->setProductURL($urls[self::PRODUCT_URL]);
             $data->setIsVirtual(To::bool($item->getIsVirtual()));
             $data->setSku((string)$item->getSku());
             $data->setDescription((string)$item->getDescription());
@@ -638,27 +663,5 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                 break;
         }
         return $dates;
-    }
-
-    private function getProductURLs(int $storeId, int $productId, int $variantId = 0): array
-    {
-        $collection = $this->productCollectionFactory->create();
-        /** @var Product $product */
-        $product = $collection->addAttributeToSelect('*')->getItemById($productId);
-        $product->setStoreId($storeId);
-        $urls = [
-            self::PRODUCT_URL => $product->getUrlModel()->getUrlInStore($product, ['_escape' => true]),
-        ];
-        if ($variantId != 0) {
-            /** @var Product $variant */
-            $variant = $collection->addAttributeToSelect('*')->getItemById($variantId);
-            $variantImage = $this->helper->getProductImageURL($variant);
-            if ($variantImage != '') {
-                $urls[self::PRODUCT_IMAGE] = $variantImage;
-                return $urls;
-            }
-        }
-        $urls[self::PRODUCT_IMAGE] = $this->helper->getProductImageURL($product);
-        return $urls;
     }
 }

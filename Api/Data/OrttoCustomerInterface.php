@@ -261,4 +261,11 @@ interface OrttoCustomerInterface
     * @return string
     */
     public function getPhone();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

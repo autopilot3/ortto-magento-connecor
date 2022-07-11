@@ -3,35 +3,36 @@
 namespace Ortto\Connector\Controller\Cart;
 
 use Magento\Checkout\Model\Session;
+use Ortto\Connector\Api\OrttoCartRepositoryInterface;
 use Ortto\Connector\Api\RoutesInterface;
 use Ortto\Connector\Api\TrackDataProviderInterface;
 use Ortto\Connector\Controller\AbstractJsonController;
 use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
-use Ortto\Connector\Model\Api\CartDataFactory;
 use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\App\Action\Context;
 
 class Get extends AbstractJsonController implements HttpGetActionInterface
 {
-    private CartDataFactory $cartDataFactory;
     private TrackDataProviderInterface $trackDataProvider;
     private OrttoLoggerInterface $logger;
     private Session $session;
+    private OrttoCartRepositoryInterface $cartRepository;
 
     public function __construct(
         Context $context,
         OrttoLoggerInterface $logger,
-        CartDataFactory $cartDataFactory,
         TrackDataProviderInterface $trackDataProvider,
+        OrttoCartRepositoryInterface $cartRepository,
         Session $session
     ) {
         parent::__construct($context, $logger);
-        $this->cartDataFactory = $cartDataFactory;
         $this->trackDataProvider = $trackDataProvider;
         $this->logger = $logger;
         $this->session = $session;
+        $this->cartRepository = $cartRepository;
     }
 
     /**
@@ -48,13 +49,14 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
             }
 
             $trackingData = $this->trackDataProvider->getData();
-            $cartData = $this->cartDataFactory->create();
-            if ($cartData->load($this->session->getQuote())) {
+            $scope = $trackingData->getScope();
+            if ($quoteId = $this->session->getQuoteId()) {
+                $cart = $this->cartRepository->getById($scope, To::int($quoteId));
                 $payload = [
                     'event' => Config::EVENT_TYPE_PRODUCT_ADDED_TO_CART,
-                    'scope' => $trackingData->getScope()->toArray(),
+                    'scope' => $scope->toArray(),
                     'data' => [
-                        'cart' => $cartData->toArray(),
+                        'cart' => $cart->serializeToArray(),
                         'sku' => $sku,
                     ],
                 ];

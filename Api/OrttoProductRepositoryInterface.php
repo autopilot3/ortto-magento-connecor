@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Api;
 
+use Ortto\Connector\Api\Data\OrttoProductInterface;
+
 interface OrttoProductRepositoryInterface
 {
     /**
@@ -30,4 +32,12 @@ interface OrttoProductRepositoryInterface
      * @return \Ortto\Connector\Api\Data\ListProductResponseInterface
      */
     public function getByIds(ConfigScopeInterface $scope, array $productIds, array $data = []);
+
+    /**
+     * @param ConfigScopeInterface $scope
+     * @param int $productId
+     * @param array $data
+     * @return OrttoProductInterface
+     */
+    public function getById(ConfigScopeInterface $scope, int $productId, array $data = []);
 }
