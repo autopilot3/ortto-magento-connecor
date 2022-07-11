@@ -44,4 +44,17 @@ class OrttoStock extends DataObject implements OrttoStockInterface
     {
         return To::bool($this->getData(self::IS_MANAGE));
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::NAME] = $this->getName();
+        $result[self::QUANTITY] = $this->getQuantity();
+        $result[self::IS_MANAGE] = $this->getIsManage();
+        return $result;
+    }
 }

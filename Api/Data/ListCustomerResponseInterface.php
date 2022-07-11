@@ -8,7 +8,7 @@ interface ListCustomerResponseInterface
      * String constants for property names
      */
     const TOTAL = "total";
-    const CUSTOMERS = "customers";
+    const ITEMS = "items";
     const HAS_MORE = "has_more";
 
     /**
@@ -44,13 +44,13 @@ interface ListCustomerResponseInterface
     public function setHasMore(bool $hasMore);
 
     /**
-     * @param \Ortto\Connector\Api\Data\OrttoCustomerInterface[] $customers
+     * @param \Ortto\Connector\Api\Data\OrttoCustomerInterface[] $items
      * @return void
      */
-    public function setCustomers(array $customers);
+    public function setItems(array $items);
 
     /**
      * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface[]
      */
-    public function getCustomers();
+    public function getItems();
 }

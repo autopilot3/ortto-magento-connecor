@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Helper;
 
-use Magento\Catalog\Api\Data\ProductInterface;
+use Magento\Catalog\Api\ProductAttributeMediaGalleryManagementInterface;
+use Magento\Catalog\Helper\ImageFactory;
 use Magento\Catalog\Model\Product;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\ProductAlert\Model\Stock;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\SyncCategoryInterface;
@@ -43,9 +43,9 @@ class Data extends AbstractHelper
     private Subscriber $subscriber;
     private ConfigurationReaderInterface $config;
     private CheckpointCollectionFactory $checkpointCollectionFactory;
-    private JobCollectionFactory $jobCollectionFactory;
     private OrderDataFactory $orderDataFactory;
     private \DateTimeZone $utcTZ;
+    private Product\Media\Config $productMedia;
 
     public function __construct(
         Context $context,
@@ -55,8 +55,8 @@ class Data extends AbstractHelper
         OrttoLoggerInterface $logger,
         ConfigurationReaderInterface $config,
         CheckpointCollectionFactory $checkpointCollectionFactory,
-        JobCollectionFactory $jobCollectionFactory,
-        OrderDataFactory $orderDataFactory
+        OrderDataFactory $orderDataFactory,
+        \Magento\Catalog\Model\Product\Media\Config $productMedia
     ) {
         parent::__construct($context);
         $this->_request = $context->getRequest();
@@ -66,10 +66,10 @@ class Data extends AbstractHelper
         $this->subscriber = $subscriber;
         $this->config = $config;
         $this->checkpointCollectionFactory = $checkpointCollectionFactory;
-        $this->jobCollectionFactory = $jobCollectionFactory;
         $this->orderDataFactory = $orderDataFactory;
 
         $this->utcTZ = timezone_open('UTC');
+        $this->productMedia = $productMedia;
     }
 
     /**
@@ -273,5 +273,21 @@ class Data extends AbstractHelper
     public function newHTTPException(string $message, int $code = 500): \Magento\Framework\Webapi\Exception
     {
         return new \Magento\Framework\Webapi\Exception(__($message), $code, $code);
+    }
+
+    /**
+     * @param Product $product
+     */
+    public function getProductImageURL($product): string
+    {
+        $image = $product->getImage();
+        if (empty($image) || $image == 'no_select') {
+            return '';
+        }
+
+        return $this->productMedia->getMediaUrl($image);
+        // Return cached image
+        // $img = $this->imageFactory->create();
+        // return $img->init($product, 'product_page_image_base')->setImageFile($image)->getUrl() ?? '';
     }
 }

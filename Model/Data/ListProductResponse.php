@@ -21,15 +21,15 @@ class ListProductResponse extends DataObject implements ListProductResponseInter
     }
 
     /** @inheirtDoc */
-    public function setProducts(array $products)
+    public function setItems(array $items)
     {
-        $this->setData(self::PRODUCTS, $products);
+        $this->setData(self::ITEMS, $items);
     }
 
     /** @inheirtDoc */
-    public function getProducts(): array
+    public function getItems(): array
     {
-        return $this->getData(self::PRODUCTS) ?? [];
+        return $this->getData(self::ITEMS) ?? [];
     }
 
     /** @inheirtDoc */

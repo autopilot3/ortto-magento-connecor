@@ -908,4 +908,102 @@ class OrttoOrder extends DataObject implements OrttoOrderInterface
     {
         return $this->getData(self::CUSTOMER);
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::ID] = $this->getId();
+        $result[self::NUMBER] = $this->getNumber();
+        $result[self::CART_ID] = $this->getCartId();
+        $result[self::CREATED_AT] = $this->getCreatedAt();
+        $result[self::UPDATED_AT] = $this->getUpdatedAt();
+        $result[self::CANCELED_AT] = $this->getCanceledAt();
+        $result[self::COMPLETED_AT] = $this->getCompletedAt();
+        $result[self::STATUS] = $this->getStatus();
+        $result[self::STATE] = $this->getState();
+        $result[self::BASE_CURRENCY_CODE] = $this->getBaseCurrencyCode();
+        $result[self::GLOBAL_CURRENCY_CODE] = $this->getGlobalCurrencyCode();
+        $result[self::ORDER_CURRENCY_CODE] = $this->getOrderCurrencyCode();
+        $result[self::QUANTITY] = $this->getQuantity();
+        $result[self::BASE_QUANTITY] = $this->getBaseQuantity();
+        $result[self::GRAND_TOTAL] = $this->getGrandTotal();
+        $result[self::BASE_GRAND_TOTAL] = $this->getBaseGrandTotal();
+        $result[self::TOTAL_DUE] = $this->getTotalDue();
+        $result[self::BASE_TOTAL_DUE] = $this->getBaseTotalDue();
+        $result[self::TOTAL_CANCELLED] = $this->getTotalCancelled();
+        $result[self::BASE_TOTAL_CANCELLED] = $this->getBaseTotalCancelled();
+        $result[self::TOTAL_INVOICED] = $this->getTotalInvoiced();
+        $result[self::BASE_TOTAL_INVOICED] = $this->getBaseTotalInvoiced();
+        $result[self::SUBTOTAL] = $this->getSubtotal();
+        $result[self::BASE_SUBTOTAL] = $this->getBaseSubtotal();
+        $result[self::SUBTOTAL_INCL_TAX] = $this->getSubtotalInclTax();
+        $result[self::BASE_SUBTOTAL_INCL_TAX] = $this->getBaseSubtotalInclTax();
+        $result[self::BASE_TOTAL_OFFLINE_REFUNDED] = $this->getBaseTotalOfflineRefunded();
+        $result[self::BASE_TOTAL_ONLINE_REFUNDED] = $this->getBaseTotalOnlineRefunded();
+        $result[self::TOTAL_OFFLINE_REFUNDED] = $this->getTotalOfflineRefunded();
+        $result[self::TOTAL_ONLINE_REFUNDED] = $this->getTotalOnlineRefunded();
+        $result[self::TOTAL_PAID] = $this->getTotalPaid();
+        $result[self::BASE_TOTAL_PAID] = $this->getBaseTotalPaid();
+        $result[self::IP_ADDRESS] = $this->getIpAddress();
+        $result[self::TAX] = $this->getTax();
+        $result[self::BASE_TAX] = $this->getBaseTax();
+        $result[self::TAX_CANCELLED] = $this->getTaxCancelled();
+        $result[self::BASE_TAX_CANCELLED] = $this->getBaseTaxCancelled();
+        $result[self::TAX_INVOICED] = $this->getTaxInvoiced();
+        $result[self::BASE_TAX_INVOICED] = $this->getBaseTaxInvoiced();
+        $result[self::TAX_REFUNDED] = $this->getTaxRefunded();
+        $result[self::BASE_TAX_REFUNDED] = $this->getBaseTaxRefunded();
+        $result[self::SHIPPING] = $this->getShipping();
+        $result[self::BASE_SHIPPING] = $this->getBaseShipping();
+        $result[self::SHIPPING_INCL_TAX] = $this->getShippingInclTax();
+        $result[self::BASE_SHIPPING_INCL_TAX] = $this->getBaseShippingInclTax();
+        $result[self::SHIPPING_TAX] = $this->getShippingTax();
+        $result[self::BASE_SHIPPING_TAX] = $this->getBaseShippingTax();
+        $result[self::SHIPPING_CANCELLED] = $this->getShippingCancelled();
+        $result[self::BASE_SHIPPING_CANCELLED] = $this->getBaseShippingCancelled();
+        $result[self::SHIPPING_INVOICED] = $this->getShippingInvoiced();
+        $result[self::BASE_SHIPPING_INVOICED] = $this->getBaseShippingInvoiced();
+        $result[self::SHIPPING_REFUNDED] = $this->getShippingRefunded();
+        $result[self::BASE_SHIPPING_REFUNDED] = $this->getBaseShippingRefunded();
+        $result[self::DISCOUNT] = $this->getDiscount();
+        $result[self::BASE_DISCOUNT] = $this->getBaseDiscount();
+        $result[self::DISCOUNT_DESCRIPTION] = $this->getDiscountDescription();
+        $result[self::DISCOUNT_REFUNDED] = $this->getDiscountRefunded();
+        $result[self::BASE_DISCOUNT_REFUNDED] = $this->getBaseDiscountRefunded();
+        $result[self::DISCOUNT_INVOICED] = $this->getDiscountInvoiced();
+        $result[self::BASE_DISCOUNT_INVOICED] = $this->getBaseDiscountInvoiced();
+        $result[self::DISCOUNT_CANCELLED] = $this->getDiscountCancelled();
+        $result[self::BASE_DISCOUNT_CANCELLED] = $this->getBaseDiscountCancelled();
+        $result[self::SHIPPING_DISCOUNT] = $this->getShippingDiscount();
+        $result[self::BASE_SHIPPING_DISCOUNT] = $this->getBaseShippingDiscount();
+        $result[self::LAST_TRANSACTION_ID] = $this->getLastTransactionId();
+        $result[self::PAYMENT_METHOD] = $this->getPaymentMethod();
+        $result[self::DISCOUNT_CODES] = $this->getDiscountCodes();
+        $result[self::PROTECT_CODE] = $this->getProtectCode();
+        $shippingAddress = $this->getShippingAddress();
+        $result[self::SHIPPING_ADDRESS] = $shippingAddress != null ? $shippingAddress->serializeToArray() : null;
+        $billingAddress = $this->getBillingAddress();
+        $result[self::BILLING_ADDRESS] = $billingAddress != null ? $billingAddress->serializeToArray() : null;
+        $result[self::ITEMS] = [];
+        foreach ($this->getItems() as $item) {
+            $result[self::ITEMS][] = $item->serializeToArray();
+        }
+        $extension = $this->getExtension();
+        $result[self::EXTENSION] = $extension != null ? $extension->serializeToArray() : null;
+        $result[self::REFUNDS] = [];
+        foreach ($this->getRefunds() as $item) {
+            $result[self::REFUNDS][] = $item->serializeToArray();
+        }
+        $result[self::CARRIERS] = [];
+        foreach ($this->getCarriers() as $item) {
+            $result[self::CARRIERS][] = $item->serializeToArray();
+        }
+        $customer = $this->getCustomer();
+        $result[self::CUSTOMER] = $customer != null ? $customer->serializeToArray() : null;
+        return $result;
+    }
 }

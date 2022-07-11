@@ -67,23 +67,23 @@ class OrderSavedAfter implements ObserverInterface
                         $this->logger->error($e, $msg);
                     }
             }
-            $this->syncOrder($order);
+            // $this->syncOrder($order);
         } catch (Exception $e) {
             $this->logger->error($e, "Failed to export the order");
         }
     }
 
-    private function syncOrder(OrderInterface $order)
-    {
-        try {
-            $scope = $this->scopeManager->initialiseScope(
-                ScopeInterface::SCOPE_STORE,
-                To::int($order->getStoreId())
-            );
-
-            $this->orttoClient->importOrder($scope, $order);
-        } catch (\Exception $e) {
-            $this->logger->error($e, "Failed to export the closed order");
-        }
-    }
+//    private function syncOrder(OrderInterface $order)
+//    {
+//        try {
+//            $scope = $this->scopeManager->initialiseScope(
+//                ScopeInterface::SCOPE_STORE,
+//                To::int($order->getStoreId())
+//            );
+//
+//            $this->orttoClient->importOrder($scope, $order);
+//        } catch (\Exception $e) {
+//            $this->logger->error($e, "Failed to export the closed order");
+//        }
+//    }
 }

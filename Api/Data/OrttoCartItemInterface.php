@@ -389,4 +389,11 @@ interface OrttoCartItemInterface
     * @return float
     */
     public function getQuantity();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

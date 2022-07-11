@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Ortto\Connector\Model\Api;
 
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
+use Magento\Framework\Api\SortOrder;
 use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\Data\OrttoProductInterface;
 use Ortto\Connector\Api\Data\OrttoProductParentGroupInterface;
 use Ortto\Connector\Api\OrttoProductRepositoryInterface;
 use Ortto\Connector\Helper\Data;
@@ -12,7 +14,6 @@ use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Bundle\Model\ResourceModel\Selection;
 use Magento\Catalog\Api\Data\ProductInterface;
-use Magento\Catalog\Helper\ImageFactory;
 use Magento\Catalog\Model\Product;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Downloadable\Api\LinkRepositoryInterface;
@@ -30,11 +31,9 @@ use Ortto\Connector\Model\Data\OrttoStockItemFactory;
 
 class OrttoProductRepository implements OrttoProductRepositoryInterface
 {
-    private const NO_SELECT = 'no_select';
     private const ENTITY_ID = 'entity_id';
 
     private Data $helper;
-    private ImageFactory $imageFactory;
     private OrttoLogger $logger;
     private GetSalableQuantityDataBySku $salableQty;
     private Configurable $configurable;
@@ -52,7 +51,6 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
 
     public function __construct(
         Data $helper,
-        ImageFactory $imageFactory,
         OrttoLogger $logger,
         GetSalableQuantityDataBySku $salableQty,
         Configurable $configurable,
@@ -69,7 +67,6 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         ListProductResponseFactory $listResponseFactory
     ) {
         $this->helper = $helper;
-        $this->imageFactory = $imageFactory;
         $this->salableQty = $salableQty;
         $this->logger = $logger;
         $this->configurable = $configurable;
@@ -99,7 +96,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
             ->setCurPage($page)
             ->addAttributeToSelect('*')
             ->setPageSize($pageSize)
-            ->setOrder('entity_id', 'DESC')// Newer products first
+            ->setOrder(ProductInterface::UPDATED_AT, SortOrder::SORT_ASC)
             ->addWebsiteFilter($scope->getWebsiteId());
 
         if (!empty($checkpoint)) {
@@ -117,7 +114,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         foreach ($collection->getItems() as $product) {
             $productList[] = $this->convert($product, $storeId);
         }
-        $result->setProducts($productList);
+        $result->setItems($productList);
         $result->setHasMore($page < $total / $pageSize);
 
         return $result;
@@ -130,7 +127,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         if (empty($productIds)) {
             return $result;
         }
-        $productIds = array_unique($productIds);
+        $productIds = array_unique($productIds, SORT_NUMERIC);
         $collection = $this->productCollectionFactory->create();
         $collection->addAttributeToSelect('*')
             ->addFieldToFilter(self::ENTITY_ID, ['in' => $productIds]);
@@ -151,11 +148,21 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         /** @var  Product $product */
         foreach ($collection->getItems() as $product) {
             $p = $this->convert($product, $storeId);
-            $products[$p->getId()] = $p;
+            $products[To::int($p->getId())] = $p;
         }
 
-        $result->setProducts($products);
+        $result->setItems($products);
         return $result;
+    }
+
+
+    /** @inheirtDoc */
+    public function getById(ConfigScopeInterface $scope, int $productId, array $data = [])
+    {
+        $collection = $this->productCollectionFactory->create();
+        /** @var  Product $product */
+        $product = $collection->addAttributeToSelect('*')->getItemById($productId);
+        return $this->convert($product, $scope->getId());
     }
 
     /**
@@ -253,23 +260,10 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $orttoProduct->setStock($stockItem);
 
         // URLs
-        $image = $product->getImage();
-        if (!empty($image) && $image != self::NO_SELECT) {
-            $orttoProduct->setImageUrl($this->resolveProductImageURL($product));
-        }
+        $orttoProduct->setImageUrl($this->helper->getProductImageURL($product));
         $orttoProduct->setUrl($product->getUrlModel()->getUrlInStore($product, ['_escape' => true]));
 
         return $orttoProduct;
-    }
-
-    /**
-     * @param Product $product
-     */
-    private function resolveProductImageURL($product): string
-    {
-        $img = $this->imageFactory->create();
-        return $img->init($product, 'product_page_image_small')
-                ->setImageFile($product->getImage())->getUrl() ?? '';
     }
 
     private function getParentIds(int $productId): OrttoProductParentGroupInterface

@@ -32,4 +32,17 @@ class OrttoOrderExtension extends DataObject implements OrttoOrderExtensionInter
     {
         return $this->getData(self::GIFT);
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::AMAZON_REFERENCE_ID] = $this->getAmazonReferenceId();
+        $gift = $this->getGift();
+        $result[self::GIFT] = $gift != null ? $gift->serializeToArray() : null;
+        return $result;
+    }
 }

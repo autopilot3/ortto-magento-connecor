@@ -37,4 +37,11 @@ interface OrttoOrderExtensionInterface
     * @return \Ortto\Connector\Api\Data\OrttoGiftInterface
     */
     public function getGift();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

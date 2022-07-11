@@ -106,8 +106,6 @@
                 type="Ortto\Connector\Model\Data\OrttoGift"/>
 
     <!-- WEB API RESPONSE MODELS   -->
-    <preference for="Ortto\Connector\Api\Data\SyncConfigResponseInterface"
-                type="Ortto\Connector\Model\Data\SyncConfigResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListProductResponseInterface"
                 type="Ortto\Connector\Model\Data\ListProductResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListProductCategoryResponseInterface"
@@ -130,6 +128,8 @@
                 type="Ortto\Connector\Model\Api\OrttoOrderRepository"/>
     <preference for="Ortto\Connector\Api\OrttoRestockSubscriptionRepositoryInterface"
                 type="Ortto\Connector\Model\Api\OrttoRestockSubscriptionRepository"/>
+    <preference for="Ortto\Connector\Api\OrttoCartRepositoryInterface"
+                type="Ortto\Connector\Model\Api\OrttoCartRepository"/>
 
     <!-- WEB API HANDLERS -->
     <preference for="Ortto\Connector\Api\ProductApiInterface"

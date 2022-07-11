@@ -57,12 +57,12 @@ class OrderCanceledAfter implements ObserverInterface
         $attr->setOrttoCanceledAt($this->helper->toUTC($now));
         $order->setExtensionAttributes($attr);
 
-        try {
-            $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, $storeId);
-            $this->orttoClient->importOrder($scope, $order);
-        } catch (\Exception $e) {
-            $msg = sprintf('Failed to export the cancelled order ID %d for store ID %d', $orderId, $storeId);
-            $this->logger->error($e, $msg);
-        }
+//        try {
+//            $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, $storeId);
+//            $this->orttoClient->importOrder($scope, $order);
+//        } catch (\Exception $e) {
+//            $msg = sprintf('Failed to export the cancelled order ID %d for store ID %d', $orderId, $storeId);
+//            $this->logger->error($e, $msg);
+//        }
     }
 }

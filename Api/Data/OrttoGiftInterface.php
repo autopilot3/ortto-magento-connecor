@@ -53,4 +53,11 @@ interface OrttoGiftInterface
     * @return string
     */
     public function getRecipient();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

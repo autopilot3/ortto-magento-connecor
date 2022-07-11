@@ -10,47 +10,54 @@ interface OrttoStockInterface
     const IS_MANAGE = 'is_manage';
 
     /**
-     * Set name
-     *
-     * @param string $name
-     * @return $this
-     */
+    * Set name
+    *
+    * @param string $name
+    * @return $this
+    */
     public function setName($name);
 
     /**
-     * Get name
-     *
-     * @return string
-     */
+    * Get name
+    *
+    * @return string
+    */
     public function getName();
 
     /**
-     * Set quantity
-     *
-     * @param float $quantity
-     * @return $this
-     */
+    * Set quantity
+    *
+    * @param float $quantity
+    * @return $this
+    */
     public function setQuantity($quantity);
 
     /**
-     * Get quantity
-     *
-     * @return float
-     */
+    * Get quantity
+    *
+    * @return float
+    */
     public function getQuantity();
 
     /**
-     * Set is manage
-     *
-     * @param bool $isManage
-     * @return $this
-     */
+    * Set is manage
+    *
+    * @param bool $isManage
+    * @return $this
+    */
     public function setIsManage($isManage);
 
     /**
-     * Get is manage
-     *
-     * @return bool
-     */
+    * Get is manage
+    *
+    * @return bool
+    */
     public function getIsManage();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

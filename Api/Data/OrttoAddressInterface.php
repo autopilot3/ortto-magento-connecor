@@ -245,4 +245,11 @@ interface OrttoAddressInterface
     * @return string
     */
     public function getFax();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

@@ -10,8 +10,6 @@ interface OrttoOrderItemInterface
     const SKU = 'sku';
     const DESCRIPTION = 'description';
     const NAME = 'name';
-    const PRODUCT_ID = 'product_id';
-    const VARIANT_PRODUCT_ID = 'variant_product_id';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
     const REFUNDED = 'refunded';
@@ -45,6 +43,8 @@ interface OrttoOrderItemInterface
     const TAX_PERCENT = 'tax_percent';
     const ADDITIONAL_DATA = 'additional_data';
     const STORE_ID = 'store_id';
+    const PRODUCT = 'product';
+    const VARIANT = 'variant';
 
     /**
     * Set id
@@ -120,36 +120,6 @@ interface OrttoOrderItemInterface
     * @return string
     */
     public function getName();
-
-    /**
-    * Set product id
-    *
-    * @param int $productId
-    * @return $this
-    */
-    public function setProductId($productId);
-
-    /**
-    * Get product id
-    *
-    * @return int
-    */
-    public function getProductId();
-
-    /**
-    * Set variant product id
-    *
-    * @param int|null $variantProductId
-    * @return $this
-    */
-    public function setVariantProductId($variantProductId);
-
-    /**
-    * Get variant product id
-    *
-    * @return int|null
-    */
-    public function getVariantProductId();
 
     /**
     * Set created at
@@ -645,4 +615,41 @@ interface OrttoOrderItemInterface
     * @return int
     */
     public function getStoreId();
+
+    /**
+    * Set product
+    *
+    * @param \Ortto\Connector\Api\Data\OrttoProductInterface $product
+    * @return $this
+    */
+    public function setProduct($product);
+
+    /**
+    * Get product
+    *
+    * @return \Ortto\Connector\Api\Data\OrttoProductInterface
+    */
+    public function getProduct();
+
+    /**
+    * Set variant
+    *
+    * @param \Ortto\Connector\Api\Data\OrttoProductInterface|null $variant
+    * @return $this
+    */
+    public function setVariant($variant);
+
+    /**
+    * Get variant
+    *
+    * @return \Ortto\Connector\Api\Data\OrttoProductInterface|null
+    */
+    public function getVariant();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

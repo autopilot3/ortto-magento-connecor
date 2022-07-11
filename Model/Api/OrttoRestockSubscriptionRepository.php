@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Ortto\Connector\Model\Api;
 
 use Magento\Catalog\Api\Data\CategoryInterface;
+use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\ProductAlert\Model\Stock;
 use Magento\Store\Model\ScopeInterface;
@@ -49,12 +50,14 @@ class OrttoRestockSubscriptionRepository implements OrttoRestockSubscriptionRepo
         $this->productRepository = $productRepository;
     }
 
+    /** @inheirtDoc */
     public function getList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize, array $data = [])
     {
         $collection = $this->stockCollection->create()
             ->setCurPage($page)
             ->addFieldToSelect('*')
             ->setPageSize($pageSize)
+            ->setOrder(self::ADD_DATE, SortOrder::SORT_ASC)
             ->addWebsiteFilter($scope->getWebsiteId())
             ->addFieldToFilter(self::STORE_ID, ['eq' => $scope->getId()]);
 
@@ -78,8 +81,8 @@ class OrttoRestockSubscriptionRepository implements OrttoRestockSubscriptionRepo
             $customerIds[] = To::int($subscription->getCustomerId());
         }
 
-        $customers = $this->customerRepository->getByIds($scope, $customerIds)->getCustomers();
-        $products = $this->productRepository->getByIds($scope, $productIds)->getProducts();
+        $customers = $this->customerRepository->getByIds($scope, $customerIds)->getItems();
+        $products = $this->productRepository->getByIds($scope, $productIds)->getItems();
         $subscriptions = [];
         /** @var Stock $subscription */
         foreach ($stockSubscriptions as $subscription) {
@@ -87,7 +90,7 @@ class OrttoRestockSubscriptionRepository implements OrttoRestockSubscriptionRepo
                 $subscriptions[] = $restockSubscription;
             }
         }
-        $result->setSubscriptions($subscriptions);
+        $result->setItems($subscriptions);
         $result->setHasMore($page < $total / $pageSize);
         return $result;
     }

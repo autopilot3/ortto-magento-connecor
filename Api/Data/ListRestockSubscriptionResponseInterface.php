@@ -8,7 +8,7 @@ interface ListRestockSubscriptionResponseInterface
      * String constants for property names
      */
     const TOTAL = "total";
-    const SUBSCRIPTIONS = "subscriptions";
+    const ITEMS = "items";
     const HAS_MORE = "has_more";
 
     /**
@@ -44,13 +44,13 @@ interface ListRestockSubscriptionResponseInterface
     public function setHasMore(bool $hasMore);
 
     /**
-     * @param \Ortto\Connector\Api\Data\OrttoRestockSubscriptionInterface[] $subscriptions
+     * @param \Ortto\Connector\Api\Data\OrttoRestockSubscriptionInterface[] $items
      * @return void
      */
-    public function setSubscriptions(array $subscriptions);
+    public function setItems(array $items);
 
     /**
      * @return \Ortto\Connector\Api\Data\OrttoRestockSubscriptionInterface[]
      */
-    public function getSubscriptions();
+    public function getItems();
 }

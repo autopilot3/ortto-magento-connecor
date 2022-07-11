@@ -187,4 +187,29 @@ class OrttoAddress extends DataObject implements OrttoAddressInterface
     {
         return (string)$this->getData(self::FAX);
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::TYPE] = $this->getType();
+        $result[self::CITY] = $this->getCity();
+        $result[self::COMPANY] = $this->getCompany();
+        $result[self::COUNTRY_NAME] = $this->getCountryName();
+        $result[self::FIRST_NAME] = $this->getFirstName();
+        $result[self::LAST_NAME] = $this->getLastName();
+        $result[self::MIDDLE_NAME] = $this->getMiddleName();
+        $result[self::POST_CODE] = $this->getPostCode();
+        $result[self::PREFIX] = $this->getPrefix();
+        $result[self::SUFFIX] = $this->getSuffix();
+        $result[self::REGION] = $this->getRegion();
+        $result[self::STREET_LINES] = $this->getStreetLines();
+        $result[self::VAT] = $this->getVat();
+        $result[self::PHONE] = $this->getPhone();
+        $result[self::FAX] = $this->getFax();
+        return $result;
+    }
 }

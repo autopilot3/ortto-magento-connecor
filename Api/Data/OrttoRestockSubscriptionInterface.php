@@ -53,4 +53,11 @@ interface OrttoRestockSubscriptionInterface
     * @return string
     */
     public function getDateAdded();
+
+    /**
+    * Convert object data to array
+    *
+    * @return array
+    */
+    public function serializeToArray();
 }

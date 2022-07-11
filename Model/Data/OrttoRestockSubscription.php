@@ -43,4 +43,19 @@ class OrttoRestockSubscription extends DataObject implements OrttoRestockSubscri
     {
         return (string)$this->getData(self::DATE_ADDED);
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $product = $this->getProduct();
+        $result[self::PRODUCT] = $product != null ? $product->serializeToArray() : null;
+        $customer = $this->getCustomer();
+        $result[self::CUSTOMER] = $customer != null ? $customer->serializeToArray() : null;
+        $result[self::DATE_ADDED] = $this->getDateAdded();
+        return $result;
+    }
 }

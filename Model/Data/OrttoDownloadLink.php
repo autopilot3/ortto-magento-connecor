@@ -9,7 +9,6 @@ use Ortto\Connector\Helper\To;
 
 class OrttoDownloadLink extends DataObject implements OrttoDownloadLinkInterface
 {
-
     /** @inheirtDoc */
     public function setTitle($title)
     {
@@ -116,5 +115,24 @@ class OrttoDownloadLink extends DataObject implements OrttoDownloadLinkInterface
     public function getPrice()
     {
         return To::float($this->getData(self::PRICE));
+    }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::TITLE] = $this->getTitle();
+        $result[self::DOWNLOADS] = $this->getDownloads();
+        $result[self::TYPE] = $this->getType();
+        $result[self::URL] = $this->getUrl();
+        $result[self::FILE] = $this->getFile();
+        $result[self::SAMPLE_TYPE] = $this->getSampleType();
+        $result[self::SAMPLE_URL] = $this->getSampleUrl();
+        $result[self::SAMPLE_FILE] = $this->getSampleFile();
+        $result[self::PRICE] = $this->getPrice();
+        return $result;
     }
 }

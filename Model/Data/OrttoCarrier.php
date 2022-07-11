@@ -68,4 +68,19 @@ class OrttoCarrier extends DataObject implements OrttoCarrierInterface
     {
         return (string)$this->getData(self::CREATED_AT);
     }
+
+    /** @inheirtDoc */
+    public function serializeToArray()
+    {
+        if ($this == null) {
+            return null;
+        }
+        $result=[];
+        $result[self::ID] = $this->getId();
+        $result[self::CODE] = $this->getCode();
+        $result[self::TITLE] = $this->getTitle();
+        $result[self::TRACKING_NUMBER] = $this->getTrackingNumber();
+        $result[self::CREATED_AT] = $this->getCreatedAt();
+        return $result;
+    }
 }
