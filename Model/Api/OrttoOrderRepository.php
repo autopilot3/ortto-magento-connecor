@@ -391,7 +391,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                 continue;
             }
             $data->setProduct($product);
-            $storeId = To::int($item->getStoreId());
             if (key_exists($itemId, $productVariations)) {
                 $variantId = $productVariations[$itemId];
                 $data->setVariant($products[$variantId]);

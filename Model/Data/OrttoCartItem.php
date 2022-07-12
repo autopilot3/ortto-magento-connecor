@@ -54,31 +54,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getDiscount()
     {
-        return To::float($this->getData(self::DISCOUNT));
-    }
-
-    /** @inheirtDoc */
-    public function setDiscountTaxCompensation($discountTaxCompensation)
-    {
-        return $this->setData(self::DISCOUNT_TAX_COMPENSATION, $discountTaxCompensation);
-    }
-
-    /** @inheirtDoc */
-    public function getDiscountTaxCompensation()
-    {
-        return To::float($this->getData(self::DISCOUNT_TAX_COMPENSATION));
-    }
-
-    /** @inheirtDoc */
-    public function setDiscountCalculated($discountCalculated)
-    {
-        return $this->setData(self::DISCOUNT_CALCULATED, $discountCalculated);
-    }
-
-    /** @inheirtDoc */
-    public function getDiscountCalculated()
-    {
-        return To::float($this->getData(self::DISCOUNT_CALCULATED));
+        return To::int($this->getData(self::DISCOUNT));
     }
 
     /** @inheirtDoc */
@@ -90,55 +66,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getBaseDiscount()
     {
-        return To::float($this->getData(self::BASE_DISCOUNT));
-    }
-
-    /** @inheirtDoc */
-    public function setBaseDiscountTaxCompensation($baseDiscountTaxCompensation)
-    {
-        return $this->setData(self::BASE_DISCOUNT_TAX_COMPENSATION, $baseDiscountTaxCompensation);
-    }
-
-    /** @inheirtDoc */
-    public function getBaseDiscountTaxCompensation()
-    {
-        return To::float($this->getData(self::BASE_DISCOUNT_TAX_COMPENSATION));
-    }
-
-    /** @inheirtDoc */
-    public function setBaseDiscountCalculated($baseDiscountCalculated)
-    {
-        return $this->setData(self::BASE_DISCOUNT_CALCULATED, $baseDiscountCalculated);
-    }
-
-    /** @inheirtDoc */
-    public function getBaseDiscountCalculated()
-    {
-        return To::float($this->getData(self::BASE_DISCOUNT_CALCULATED));
-    }
-
-    /** @inheirtDoc */
-    public function setBasePrice($basePrice)
-    {
-        return $this->setData(self::BASE_PRICE, $basePrice);
-    }
-
-    /** @inheirtDoc */
-    public function getBasePrice()
-    {
-        return To::float($this->getData(self::BASE_PRICE));
-    }
-
-    /** @inheirtDoc */
-    public function setBasePriceInclTax($basePriceInclTax)
-    {
-        return $this->setData(self::BASE_PRICE_INCL_TAX, $basePriceInclTax);
-    }
-
-    /** @inheirtDoc */
-    public function getBasePriceInclTax()
-    {
-        return To::float($this->getData(self::BASE_PRICE_INCL_TAX));
+        return To::int($this->getData(self::BASE_DISCOUNT));
     }
 
     /** @inheirtDoc */
@@ -150,43 +78,19 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getPrice()
     {
-        return To::float($this->getData(self::PRICE));
+        return To::int($this->getData(self::PRICE));
     }
 
     /** @inheirtDoc */
-    public function setPriceInclTax($priceInclTax)
+    public function setBasePrice($basePrice)
     {
-        return $this->setData(self::PRICE_INCL_TAX, $priceInclTax);
+        return $this->setData(self::BASE_PRICE, $basePrice);
     }
 
     /** @inheirtDoc */
-    public function getPriceInclTax()
+    public function getBasePrice()
     {
-        return To::float($this->getData(self::PRICE_INCL_TAX));
-    }
-
-    /** @inheirtDoc */
-    public function setBaseRowTotal($baseRowTotal)
-    {
-        return $this->setData(self::BASE_ROW_TOTAL, $baseRowTotal);
-    }
-
-    /** @inheirtDoc */
-    public function getBaseRowTotal()
-    {
-        return To::float($this->getData(self::BASE_ROW_TOTAL));
-    }
-
-    /** @inheirtDoc */
-    public function setBaseRowTotalInclTax($baseRowTotalInclTax)
-    {
-        return $this->setData(self::BASE_ROW_TOTAL_INCL_TAX, $baseRowTotalInclTax);
-    }
-
-    /** @inheirtDoc */
-    public function getBaseRowTotalInclTax()
-    {
-        return To::float($this->getData(self::BASE_ROW_TOTAL_INCL_TAX));
+        return To::int($this->getData(self::BASE_PRICE));
     }
 
     /** @inheirtDoc */
@@ -198,55 +102,19 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getRowTotal()
     {
-        return To::float($this->getData(self::ROW_TOTAL));
+        return To::int($this->getData(self::ROW_TOTAL));
     }
 
     /** @inheirtDoc */
-    public function setRowTotalInclTax($rowTotalInclTax)
+    public function setBaseRowTotal($baseRowTotal)
     {
-        return $this->setData(self::ROW_TOTAL_INCL_TAX, $rowTotalInclTax);
+        return $this->setData(self::BASE_ROW_TOTAL, $baseRowTotal);
     }
 
     /** @inheirtDoc */
-    public function getRowTotalInclTax()
+    public function getBaseRowTotal()
     {
-        return To::float($this->getData(self::ROW_TOTAL_INCL_TAX));
-    }
-
-    /** @inheirtDoc */
-    public function setRowTotalAfterDiscount($rowTotalAfterDiscount)
-    {
-        return $this->setData(self::ROW_TOTAL_AFTER_DISCOUNT, $rowTotalAfterDiscount);
-    }
-
-    /** @inheirtDoc */
-    public function getRowTotalAfterDiscount()
-    {
-        return To::float($this->getData(self::ROW_TOTAL_AFTER_DISCOUNT));
-    }
-
-    /** @inheirtDoc */
-    public function setBaseTax($baseTax)
-    {
-        return $this->setData(self::BASE_TAX, $baseTax);
-    }
-
-    /** @inheirtDoc */
-    public function getBaseTax()
-    {
-        return To::float($this->getData(self::BASE_TAX));
-    }
-
-    /** @inheirtDoc */
-    public function setBaseTaxBeforeDiscount($baseTaxBeforeDiscount)
-    {
-        return $this->setData(self::BASE_TAX_BEFORE_DISCOUNT, $baseTaxBeforeDiscount);
-    }
-
-    /** @inheirtDoc */
-    public function getBaseTaxBeforeDiscount()
-    {
-        return To::float($this->getData(self::BASE_TAX_BEFORE_DISCOUNT));
+        return To::int($this->getData(self::BASE_ROW_TOTAL));
     }
 
     /** @inheirtDoc */
@@ -258,19 +126,19 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getTax()
     {
-        return To::float($this->getData(self::TAX));
+        return To::int($this->getData(self::TAX));
     }
 
     /** @inheirtDoc */
-    public function setTaxBeforeDiscount($taxBeforeDiscount)
+    public function setBaseTax($baseTax)
     {
-        return $this->setData(self::TAX_BEFORE_DISCOUNT, $taxBeforeDiscount);
+        return $this->setData(self::BASE_TAX, $baseTax);
     }
 
     /** @inheirtDoc */
-    public function getTaxBeforeDiscount()
+    public function getBaseTax()
     {
-        return To::float($this->getData(self::TAX_BEFORE_DISCOUNT));
+        return To::int($this->getData(self::BASE_TAX));
     }
 
     /** @inheirtDoc */
@@ -282,7 +150,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getTaxPercent()
     {
-        return To::float($this->getData(self::TAX_PERCENT));
+        return To::int($this->getData(self::TAX_PERCENT));
     }
 
     /** @inheirtDoc */
@@ -294,7 +162,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getQuantity()
     {
-        return To::float($this->getData(self::QUANTITY));
+        return To::int($this->getData(self::QUANTITY));
     }
 
     /** @inheirtDoc */
@@ -309,24 +177,13 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
         $result[self::CREATED_AT] = $this->getCreatedAt();
         $result[self::UPDATED_AT] = $this->getUpdatedAt();
         $result[self::DISCOUNT] = $this->getDiscount();
-        $result[self::DISCOUNT_TAX_COMPENSATION] = $this->getDiscountTaxCompensation();
-        $result[self::DISCOUNT_CALCULATED] = $this->getDiscountCalculated();
         $result[self::BASE_DISCOUNT] = $this->getBaseDiscount();
-        $result[self::BASE_DISCOUNT_TAX_COMPENSATION] = $this->getBaseDiscountTaxCompensation();
-        $result[self::BASE_DISCOUNT_CALCULATED] = $this->getBaseDiscountCalculated();
-        $result[self::BASE_PRICE] = $this->getBasePrice();
-        $result[self::BASE_PRICE_INCL_TAX] = $this->getBasePriceInclTax();
         $result[self::PRICE] = $this->getPrice();
-        $result[self::PRICE_INCL_TAX] = $this->getPriceInclTax();
-        $result[self::BASE_ROW_TOTAL] = $this->getBaseRowTotal();
-        $result[self::BASE_ROW_TOTAL_INCL_TAX] = $this->getBaseRowTotalInclTax();
+        $result[self::BASE_PRICE] = $this->getBasePrice();
         $result[self::ROW_TOTAL] = $this->getRowTotal();
-        $result[self::ROW_TOTAL_INCL_TAX] = $this->getRowTotalInclTax();
-        $result[self::ROW_TOTAL_AFTER_DISCOUNT] = $this->getRowTotalAfterDiscount();
-        $result[self::BASE_TAX] = $this->getBaseTax();
-        $result[self::BASE_TAX_BEFORE_DISCOUNT] = $this->getBaseTaxBeforeDiscount();
+        $result[self::BASE_ROW_TOTAL] = $this->getBaseRowTotal();
         $result[self::TAX] = $this->getTax();
-        $result[self::TAX_BEFORE_DISCOUNT] = $this->getTaxBeforeDiscount();
+        $result[self::BASE_TAX] = $this->getBaseTax();
         $result[self::TAX_PERCENT] = $this->getTaxPercent();
         $result[self::QUANTITY] = $this->getQuantity();
         return $result;

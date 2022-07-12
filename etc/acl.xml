@@ -15,7 +15,7 @@
                         <resource id="Ortto_Connector::get_category" title="Read Product Categories" sortOrder="4"/>
                         <resource id="Ortto_Connector::get_customer" title="Read Customers" sortOrder="5"/>
                         <resource id="Ortto_Connector::get_order" title="Read Orders" sortOrder="6"/>
-                        <resource id="Ortto_Connector::restock_subscription"
+                        <resource id="Ortto_Connector::get_restock_subscription"
                                   title="Read Product Restock Notification Subscriptions" sortOrder="7"/>
                     </resource>
                 </resource>
