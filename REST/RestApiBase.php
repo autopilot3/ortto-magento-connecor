@@ -21,8 +21,11 @@ class RestApiBase
     /**
      * @throws Exception
      */
-    protected function validateScope(string $scopeType, int $scopeId): ConfigScopeInterface
-    {
+    protected function validateScope(
+        string $scopeType,
+        int $scopeId,
+        bool $validateConnection = true
+    ): ConfigScopeInterface {
         try {
             $scope = $this->scopeManager->initialiseScope($scopeType, $scopeId);
         } catch (\InvalidArgumentException $e) {
@@ -33,7 +36,7 @@ class RestApiBase
             throw $this->httpError($e->getMessage());
         }
 
-        if (!$scope->isConnected()) {
+        if ($validateConnection && !$scope->isConnected()) {
             throw $this->httpError('Scope is not connected', 406);
         }
         return $scope;

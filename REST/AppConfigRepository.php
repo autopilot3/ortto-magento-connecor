@@ -67,7 +67,7 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
     public function update(AppConfigInterface $config)
     {
         $this->logger->debug("Configuration Request Received", $config->toArray());
-        $this->validateScope($config->getScopeType(), $config->getScopeId());
+        $this->validateScope($config->getScopeType(), $config->getScopeId(), false);
 
         $keys = $config->getKeys();
         if (empty($keys)) {
