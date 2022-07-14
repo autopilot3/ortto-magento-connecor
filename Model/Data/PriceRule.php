@@ -45,15 +45,15 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
-    public function getFreeShippingToMatchingItemsOnly(): bool
+    public function getApplyFreeShippingToMatchingItemsOnly(): bool
     {
-        return To::bool($this->getData(self::FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY));
+        return To::bool($this->getData(self::APPLY_FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY));
     }
 
     /** @inerhitDoc */
-    public function setFreeShippingToMatchingItemsOnly(bool $freeShippingToMatchingItemsOnly): void
+    public function setApplyFreeShippingToMatchingItemsOnly(bool $applyFreeShippingToMatchingItemsOnly): void
     {
-        $this->setData(self::FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY, $freeShippingToMatchingItemsOnly);
+        $this->setData(self::APPLY_FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY, $applyFreeShippingToMatchingItemsOnly);
     }
 
     /** @inerhitDoc */
@@ -334,6 +334,14 @@ class PriceRule extends DataObject implements PriceRuleInterface
      */
     public function getDescription(): string
     {
-        return sprintf('Created by Ortto: %s (%s)', $this->getName(), $this->getType());
+        return (string)$this->getData(self::DESCRIPTION);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setDescription(string $description)
+    {
+        $this->setData(self::DESCRIPTION, $description);
     }
 }

@@ -38,7 +38,8 @@ interface PriceRuleInterface extends SerializableInterface
     const MIN_PURCHASE_AMOUNT = 'min_purchase_amount';
     const BUY_X_QUANTITY = 'buy_x_quantity';
     const APPLY_TO_SHIPPING = "apply_to_shipping";
-    const FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY = "free_shipping_to_matching_items_only";
+    const APPLY_FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY = "apply_free_shipping_to_matching_items_only";
+    const DESCRIPTION = "description";
 
     /**
      * Getter for Name.
@@ -109,16 +110,16 @@ interface PriceRuleInterface extends SerializableInterface
      *
      * @return bool
      */
-    public function getFreeShippingToMatchingItemsOnly(): bool;
+    public function getApplyFreeShippingToMatchingItemsOnly(): bool;
 
     /**
-     * Setter for FreeShippingToMatchingItemsOnly.
+     * Setter for ApplyFreeShippingToMatchingItemsOnly.
      *
-     * @param bool $freeShippingToMatchingItemsOnly
+     * @param bool $applyFreeShippingToMatchingItemsOnly
      *
      * @return void
      */
-    public function setFreeShippingToMatchingItemsOnly(bool $freeShippingToMatchingItemsOnly): void;
+    public function setApplyFreeShippingToMatchingItemsOnly(bool $applyFreeShippingToMatchingItemsOnly): void;
 
 
     /**
@@ -413,4 +414,10 @@ interface PriceRuleInterface extends SerializableInterface
      * @return string
      */
     public function getDescription(): string;
+
+    /**
+     * @param string $description
+     * @return void
+     */
+    public function setDescription(string $description);
 }

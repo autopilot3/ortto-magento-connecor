@@ -36,8 +36,6 @@
     </type>
     <preference for="Ortto\Connector\Api\OrttoSerializerInterface"
                 type="Ortto\Connector\Service\OrttoSerializer"/>
-    <preference for="Ortto\Connector\Api\DiscountRepositoryInterface"
-                type="Ortto\Connector\Model\ResourceModel\DiscountRepository"/>
     <preference for="Ortto\Connector\Api\ScopeManagerInterface"
                 type="Ortto\Connector\Service\ScopeManager"/>
     <preference for="Ortto\Connector\Api\ConfigScopeInterface"
@@ -116,6 +114,8 @@
                 type="Ortto\Connector\Model\Data\ListOrderResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListRestockSubscriptionResponseInterface"
                 type="Ortto\Connector\Model\Data\ListRestockSubscriptionResponse"/>
+    <preference for="Ortto\Connector\Api\Data\ListPriceRuleResponseInterface"
+                type="Ortto\Connector\Model\Data\ListPriceRuleResponse"/>
 
     <!-- WEB API REPOSITORIES   -->
     <preference for="Ortto\Connector\Api\OrttoProductRepositoryInterface"
@@ -142,6 +142,8 @@
                 type="Ortto\Connector\REST\OrderApi"/>
     <preference for="Ortto\Connector\Api\RestockSubscriptionApiInterface"
                 type="Ortto\Connector\REST\RestockSubscriptionApi"/>
+    <preference for="Ortto\Connector\Api\DiscountRepositoryInterface"
+                type="Ortto\Connector\REST\DiscountApi"/>
 
     <!-- JOBS ADMIN GRID -->
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">

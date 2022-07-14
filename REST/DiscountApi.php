@@ -1,39 +1,41 @@
 <?php
 declare(strict_types=1);
 
-namespace Ortto\Connector\Model\ResourceModel;
+namespace Ortto\Connector\REST;
 
 use Magento\Catalog\Api\CategoryRepositoryInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Customer\Api\GroupRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\AlreadyExistsException;
-use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Webapi\Exception;
 use Magento\SalesRule\Api\CouponRepositoryInterface;
 use Magento\SalesRule\Api\Data\ConditionInterface;
+use Magento\SalesRule\Api\Data\ConditionInterfaceFactory;
 use Magento\SalesRule\Api\Data\CouponInterface;
+use Magento\SalesRule\Api\Data\RuleInterface;
+use Magento\SalesRule\Api\Data\RuleInterfaceFactory;
+use Magento\SalesRule\Api\RuleRepositoryInterface;
 use Magento\SalesRule\Model\Coupon;
 use Magento\SalesRule\Model\CouponFactory;
-use Magento\SalesRule\Api\Data\RuleInterface;
-use Magento\SalesRule\Api\RuleRepositoryInterface;
-use Magento\SalesRule\Api\Data\ConditionInterfaceFactory;
 use Magento\SalesRule\Model\CouponGenerator;
 use Ortto\Connector\Api\Data\DiscountInterface;
-use Ortto\Connector\Api\Data\PriceRuleResponseInterface;
-use Ortto\Connector\Model\Data\DiscountFactory;
-use Ortto\Connector\Model\Data\PriceRuleResponseFactory;
 use Ortto\Connector\Api\Data\PriceRuleInterface;
+use Ortto\Connector\Api\Data\PriceRuleResponseInterface;
 use Ortto\Connector\Api\DiscountRepositoryInterface;
+use Ortto\Connector\Api\ScopeManagerInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
-use Magento\SalesRule\Api\Data\RuleInterfaceFactory;
+use Ortto\Connector\Model\Data\DiscountFactory;
+use Ortto\Connector\Model\Data\ListPriceRuleResponseFactory;
+use Ortto\Connector\Model\Data\PriceRuleFactory;
+use Ortto\Connector\Model\Data\PriceRuleResponseFactory;
 
-class DiscountRepository implements DiscountRepositoryInterface
+class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
 {
     const NO_FREE_SHIPPING = 0;
     const APPLY_FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY = 1;
@@ -53,6 +55,8 @@ class DiscountRepository implements DiscountRepositoryInterface
     private DiscountFactory $discountFactory;
     private PriceRuleResponseFactory $ruleResponseFactory;
     private CouponGenerator $couponGenerator;
+    private PriceRuleFactory $priceRuleFactory;
+    private ListPriceRuleResponseFactory $listPriceRuleResponseFactory;
 
     /**
      * @param OrttoLoggerInterface $logger
@@ -69,6 +73,9 @@ class DiscountRepository implements DiscountRepositoryInterface
      * @param PriceRuleResponseFactory $ruleResponseFactory
      * @param CouponGenerator $couponGenerator
      * @param Data $helper
+     * @param PriceRuleFactory $priceRuleFactory
+     * @param ListPriceRuleResponseFactory $listPriceRuleResponseFactory
+     * @param ScopeManagerInterface $scopeManager
      */
     public function __construct(
         OrttoLoggerInterface $logger,
@@ -84,8 +91,12 @@ class DiscountRepository implements DiscountRepositoryInterface
         DiscountFactory $discountFactory,
         PriceRuleResponseFactory $ruleResponseFactory,
         CouponGenerator $couponGenerator,
-        Data $helper
+        Data $helper,
+        \Ortto\Connector\Model\Data\PriceRuleFactory $priceRuleFactory,
+        ListPriceRuleResponseFactory $listPriceRuleResponseFactory,
+        ScopeManagerInterface $scopeManager
     ) {
+        parent::__construct($scopeManager);
         $this->logger = $logger;
         $this->ruleRepository = $ruleRepository;
         $this->couponRepository = $couponRepository;
@@ -100,6 +111,113 @@ class DiscountRepository implements DiscountRepositoryInterface
         $this->discountFactory = $discountFactory;
         $this->ruleResponseFactory = $ruleResponseFactory;
         $this->couponGenerator = $couponGenerator;
+        $this->priceRuleFactory = $priceRuleFactory;
+        $this->listPriceRuleResponseFactory = $listPriceRuleResponseFactory;
+    }
+
+    /** @inheirtDoc
+     * @throws LocalizedException
+     */
+    public function list(
+        string $scopeType,
+        int $scopeId,
+        int $page,
+        int $pageSize,
+        array $data = []
+    ) {
+        $scope = $this->validateScope($scopeType, $scopeId);
+
+        $search = $this->searchCriteriaBuilder
+            ->setPageSize($pageSize)
+            ->setCurrentPage($page)
+            ->addFilter('is_active', 1)
+            ->addFilter('coupon_type', 2)
+            ->addFilter('simple_action', [
+                RuleInterface::DISCOUNT_ACTION_FIXED_AMOUNT,
+                RuleInterface::DISCOUNT_ACTION_FIXED_AMOUNT_FOR_CART,
+                RuleInterface::DISCOUNT_ACTION_BY_PERCENT,
+                RuleInterface::DISCOUNT_ACTION_BUY_X_GET_Y,
+            ], 'in');
+
+        $collection = $this->ruleRepository->getList($search->create());
+        $total = To::int($collection->getTotalCount());
+        $result = $this->listPriceRuleResponseFactory->create();
+        $result->setTotal($total);
+        if ($total == 0) {
+            return $result;
+        }
+
+        $rules = [];
+        foreach ($collection->getItems() as $rule) {
+            if ($priceRule = $this->convertRule($rule, $scope->getWebsiteId())) {
+                $rules[] = $priceRule;
+            };
+        }
+        $result->setItems($rules);
+        $result->setHasMore($page < $total / $pageSize);
+        return $result;
+    }
+
+    /**
+     * @param RuleInterface $rule
+     * @param int $websiteId
+     * @return PriceRuleInterface|bool
+     */
+    private function convertRule(RuleInterface $rule, int $websiteId)
+    {
+        $data = $this->priceRuleFactory->create();
+        $data->setId(To::int($rule->getRuleId()));
+        $data->setName((string)$rule->getName());
+        $data->setIsUnique(To::bool($rule->getUseAutoGeneration()));
+        $data->setDescription((string)$rule->getDescription());
+        $data->setIsRSS(To::bool($rule->getIsRss()));
+        $data->setPriority(To::int($rule->getSortOrder()));
+        $data->setTotalLimit(To::int($rule->getUsesPerCoupon()));
+        $data->setPerCustomerLimit(To::int($rule->getUsesPerCustomer()));
+        $data->setDiscardSubsequentRules(To::bool($rule->getStopRulesProcessing()));
+        $applyToShipping = To::bool($rule->getApplyToShipping());
+        $data->setApplyToShipping($applyToShipping);
+        $data->setMaxQuantity(To::int($rule->getDiscountQty()));
+        $data->setValue(To::float($rule->getDiscountAmount()));
+        $data->setStartDate($rule->getFromDate());
+        $data->setExpirationDate($rule->getToDate());
+        $data->setWebsiteId($websiteId);
+        switch ($rule->getSimpleAction()) {
+            case RuleInterface::DISCOUNT_ACTION_FIXED_AMOUNT:
+                $data->setType(PriceRuleInterface::TYPE_FIXED_EACH_ITEM);
+                break;
+            case RuleInterface::DISCOUNT_ACTION_FIXED_AMOUNT_FOR_CART:
+                $data->setType(PriceRuleInterface::TYPE_FIXED_CART_TOTAL);
+                break;
+            case RuleInterface::DISCOUNT_ACTION_BY_PERCENT:
+                if ($applyToShipping) {
+                    $data->setType(PriceRuleInterface::TYPE_FREE_SHIPPING);
+                    $simpleFreeShipping = (string)$rule->getSimpleFreeShipping();
+                    $toMatchingItems = ($simpleFreeShipping == self::APPLY_FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY);
+                    $data->setApplyFreeShippingToMatchingItemsOnly($toMatchingItems);
+                    $data->setValue(0);
+                } else {
+                    $data->setType(PriceRuleInterface::TYPE_PERCENTAGE);
+                }
+                break;
+            case RuleInterface::DISCOUNT_ACTION_BUY_X_GET_Y:
+                $data->setType(PriceRuleInterface::TYPE_BUY_X_GET_Y_FREE);
+                $data->setApplyToShipping(false);
+                $data->setBuyXQuantity(To::int($rule->getDiscountStep()));
+                break;
+            default:
+                $this->logger->warn("Invalid price rule type", ['simple_action' => $rule->getSimpleAction()]);
+                return false;
+        }
+
+//        $data->setRuleCategories();
+//        $data->setActionCategories();
+//        $data->setRuleProducts();
+//        $data->setActionProducts();
+//        $data->setWebsiteId();
+//        $data->setMinQuantity();
+//        $data->setMinPurchaseAmount();
+        return $data;
     }
 
     /**
@@ -333,7 +451,7 @@ class DiscountRepository implements DiscountRepositoryInterface
                 $newRule->setSimpleAction(RuleInterface::DISCOUNT_ACTION_BY_PERCENT);
                 $newRule->setApplyToShipping(true);
                 // NOTE: There is a bug in Magento. `salesrules.simple_free_shipping` column is numeric
-                if ($rule->getFreeShippingToMatchingItemsOnly()) {
+                if ($rule->getApplyFreeShippingToMatchingItemsOnly()) {
                     $newRule->setSimpleFreeShipping(self::APPLY_FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY);
                 } else {
                     $newRule->setSimpleFreeShipping(self::APPLY_FREE_SHIPPING_TO_CART_WITH_MATCHING_ITEMS);

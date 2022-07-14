@@ -19,6 +19,12 @@
             <resource ref="Ortto_Connector::coupons"/>
         </resources>
     </route>
+    <route url="/V1/ortto/price-rule/list" method="GET">
+        <service class="Ortto\Connector\Api\DiscountRepositoryInterface" method="list"/>
+        <resources>
+            <resource ref="Ortto_Connector::coupons"/>
+        </resources>
+    </route>
     <route url="/V1/ortto/discount/create" method="POST">
         <service class="Ortto\Connector\Api\DiscountRepositoryInterface" method="createDiscount"/>
         <resources>
