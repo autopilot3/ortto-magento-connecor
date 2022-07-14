@@ -487,7 +487,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $data->setVat((string)$address->getData(AddressInterface::VAT_ID));
         $data->setPhone((string)$address->getData(AddressInterface::TELEPHONE));
         $data->setFax((string)$address->getData(AddressInterface::FAX));
-        $data->setCountryName((string)$address->getData(AddressInterface::COUNTRY_ID));
+        $data->setCountryCode((string)$address->getData(AddressInterface::COUNTRY_ID));
         if ($street = $address->getData(AddressInterface::STREET)) {
             $data->setStreetLines(explode("\n", $street));
         }
@@ -514,7 +514,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $data->setPhone((string)$address->getData(QuoteAddressInterface::KEY_TELEPHONE));
         $data->setType((string)$address->getData(self::ADDRESS_TYPE));
         $data->setFax((string)$address->getData(QuoteAddressInterface::KEY_FAX));
-        $data->setCountryName((string)$address->getData(QuoteAddressInterface::KEY_COUNTRY_ID));
+        $data->setCountryCode((string)$address->getData(QuoteAddressInterface::KEY_COUNTRY_ID));
         if ($street = $address->getData(QuoteAddressInterface::KEY_STREET)) {
             $data->setStreetLines(explode("\n", $street));
         }

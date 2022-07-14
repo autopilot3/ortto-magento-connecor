@@ -45,15 +45,15 @@ class OrttoAddress extends DataObject implements OrttoAddressInterface
     }
 
     /** @inheirtDoc */
-    public function setCountryName($countryName)
+    public function setCountryCode($countryCode)
     {
-        return $this->setData(self::COUNTRY_NAME, $countryName);
+        return $this->setData(self::COUNTRY_CODE, $countryCode);
     }
 
     /** @inheirtDoc */
-    public function getCountryName()
+    public function getCountryCode()
     {
-        return (string)$this->getData(self::COUNTRY_NAME);
+        return (string)$this->getData(self::COUNTRY_CODE);
     }
 
     /** @inheirtDoc */
@@ -198,7 +198,7 @@ class OrttoAddress extends DataObject implements OrttoAddressInterface
         $result[self::TYPE] = $this->getType();
         $result[self::CITY] = $this->getCity();
         $result[self::COMPANY] = $this->getCompany();
-        $result[self::COUNTRY_NAME] = $this->getCountryName();
+        $result[self::COUNTRY_CODE] = $this->getCountryCode();
         $result[self::FIRST_NAME] = $this->getFirstName();
         $result[self::LAST_NAME] = $this->getLastName();
         $result[self::MIDDLE_NAME] = $this->getMiddleName();

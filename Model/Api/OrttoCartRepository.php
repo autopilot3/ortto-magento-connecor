@@ -180,7 +180,7 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
                 $this->logger->warn("Cart product was not loaded", ['product_id' => $productId]);
                 continue;
             }
-            
+
             $data = $this->cartItemFactory->create();
             $data->setProduct($product);
             $data->setCreatedAt($this->helper->toUTC($item->getData(self::CREATED_AT)));
@@ -220,7 +220,7 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
         $data->setPhone((string)$address->getTelephone());
         $data->setType((string)$address->getAddressType());
         $data->setFax((string)$address->getFax());
-        $data->setCountryName((string)$address->getCountry());
+        $data->setCountryCode((string)$address->getCountry());
         if ($street = $address->getStreetFull()) {
             $data->setStreetLines(explode("\n", $street));
         }

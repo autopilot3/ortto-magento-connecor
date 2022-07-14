@@ -629,7 +629,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         if ($street = $address->getData(AddressInterface::STREET)) {
             $data->setStreetLines(explode("\n", $street));
         }
-        $data->setCountryName((string)$address->getData(AddressInterface::COUNTRY_ID));
+        $data->setCountryCode((string)$address->getData(AddressInterface::COUNTRY_ID));
         return $data;
     }
 
