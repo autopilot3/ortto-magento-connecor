@@ -16,7 +16,6 @@ class Config
     const XML_PATH_MAGENTO_CAPTURE_JS_URL = "ortto_general/tracking/magento_js_url";
     const XML_PATH_CAPTURE_API_URL = "ortto_general/tracking/capture_url";
     const XML_PATH_INSTANCE_ID = "ortto_general/general/instance_id";
-    const XML_PATH_DATA_SOURCE_ID = "ortto_general/general/data_source_id";
     const XML_PATH_LOGGING_VERBOSE = "ortto_general/logging/verbose";
 
     const XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED = "ortto_sync/customer/auto_sync_enabled";

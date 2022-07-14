@@ -10,7 +10,6 @@ use Magento\Framework\Webapi\Exception;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Ortto\Connector\Api\AppConfigRepositoryInterface;
-use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\Data\AppConfigInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
 use Ortto\Connector\Helper\Config;
@@ -21,12 +20,12 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
 {
     private array $validKeys = [
         'instance_id' => Config::XML_PATH_INSTANCE_ID,
-        'data_source_id' => Config::XML_PATH_DATA_SOURCE_ID,
         'capture_js_url' => Config::XML_PATH_CAPTURE_JS_URL,
         'capture_api_url' => Config::XML_PATH_CAPTURE_API_URL,
         'magento_capture_js_url' => Config::XML_PATH_MAGENTO_CAPTURE_JS_URL,
         'tracking_code' => Config::XML_PATH_TRACKING_CODE,
         'enable' => Config::XML_PATH_ACTIVE,
+        'api_key' => Config::XML_PATH_API_KEY,
         'enable_tracking' => Config::XML_PATH_TRACKING_ENABLED,
     ];
 
@@ -34,30 +33,30 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
     private WriterInterface $configWriter;
     private StoreManagerInterface $storeManager;
     private Pool $cacheFrontendPool;
-    private ConfigurationReaderInterface $configurationReader;
+    private \Magento\Framework\Encryption\EncryptorInterface $encryptor;
 
     /**
      * @param OrttoLoggerInterface $logger
      * @param WriterInterface $configWriter
      * @param StoreManagerInterface $storeManager
      * @param Pool $cacheFrontendPool
-     * @param ConfigurationReaderInterface $configurationReader
      * @param ScopeManagerInterface $scopeManager
+     * @param \Magento\Framework\Encryption\EncryptorInterface $encryptor
      */
     public function __construct(
         OrttoLoggerInterface $logger,
         WriterInterface $configWriter,
         StoreManagerInterface $storeManager,
         Pool $cacheFrontendPool,
-        ConfigurationReaderInterface $configurationReader,
-        ScopeManagerInterface $scopeManager
+        ScopeManagerInterface $scopeManager,
+        \Magento\Framework\Encryption\EncryptorInterface $encryptor
     ) {
         parent::__construct($scopeManager);
         $this->logger = $logger;
         $this->configWriter = $configWriter;
         $this->storeManager = $storeManager;
         $this->cacheFrontendPool = $cacheFrontendPool;
-        $this->configurationReader = $configurationReader;
+        $this->encryptor = $encryptor;
     }
 
     /**
@@ -86,6 +85,9 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
             }
             if ($key == 'enable' || $key == 'enable_tracking') {
                 $value = To::bool($value) ? '1' : '0';
+            }
+            if ($key == 'api_key') {
+                $value = $this->encryptor->encrypt($value);
             }
             $toChange[$configKey] = $value;
         }
