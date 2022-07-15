@@ -14,7 +14,7 @@ interface OrttoCustomerInterface
     const PREFIX = 'prefix';
     const GENDER = 'gender';
     const EMAIL = 'email';
-    const DOB = 'dob';
+    const DATE_OF_BIRTH = 'date_of_birth';
     const CREATED_AT = 'created_at';
     const CREATED_IN = 'created_in';
     const BILLING_ADDRESS = 'billing_address';
@@ -158,7 +158,7 @@ interface OrttoCustomerInterface
     public function getEmail();
 
     /**
-    * Set dob
+    * Set date of birth
     *
     * @param string $dateOfBirth
     * @return $this
@@ -166,7 +166,7 @@ interface OrttoCustomerInterface
     public function setDateOfBirth($dateOfBirth);
 
     /**
-    * Get dob
+    * Get date of birth
     *
     * @return string
     */

@@ -120,13 +120,13 @@ class OrttoCustomer extends DataObject implements OrttoCustomerInterface
     /** @inheirtDoc */
     public function setDateOfBirth($dateOfBirth)
     {
-        return $this->setData(self::DOB, $dateOfBirth);
+        return $this->setData(self::DATE_OF_BIRTH, $dateOfBirth);
     }
 
     /** @inheirtDoc */
     public function getDateOfBirth()
     {
-        return (string)$this->getData(self::DOB);
+        return (string)$this->getData(self::DATE_OF_BIRTH);
     }
 
     /** @inheirtDoc */
@@ -217,7 +217,7 @@ class OrttoCustomer extends DataObject implements OrttoCustomerInterface
         $result[self::PREFIX] = $this->getPrefix();
         $result[self::GENDER] = $this->getGender();
         $result[self::EMAIL] = $this->getEmail();
-        $result[self::DOB] = $this->getDateOfBirth();
+        $result[self::DATE_OF_BIRTH] = $this->getDateOfBirth();
         $result[self::CREATED_AT] = $this->getCreatedAt();
         $result[self::CREATED_IN] = $this->getCreatedIn();
         $billingAddress = $this->getBillingAddress();
