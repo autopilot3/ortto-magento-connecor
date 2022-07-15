@@ -132,6 +132,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
     ) {
         $scope = $this->validateScope($scopeType, $scopeId);
 
+        // TODO: Filter by website ID
         $search = $this->searchCriteriaBuilder
             ->setPageSize($pageSize)
             ->setCurrentPage($page)
@@ -153,6 +154,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
         }
 
         $rules = [];
+        // TODO: Optimize loading product IDs from SKUs
         foreach ($collection->getItems() as $rule) {
             if ($priceRule = $this->convertRule($rule, $scope->getWebsiteId())) {
                 $rules[] = $priceRule;
