@@ -41,6 +41,11 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
     const APPLY_FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY = 1;
     const APPLY_FREE_SHIPPING_TO_CART_WITH_MATCHING_ITEMS = 2;
 
+    private const MIN_PURCHASE_AMOUNT = 'min_purchase_amount';
+    private const MIN_QUANTITY = 'min_quantity';
+    private const PRODUCTS = 'products';
+    private const CATEGORIES = 'categories';
+
     private OrttoLoggerInterface $logger;
     private RuleRepositoryInterface $ruleRepository;
     private CouponRepositoryInterface $couponRepository;
@@ -210,14 +215,168 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
                 return false;
         }
 
-//        $data->setRuleCategories();
-//        $data->setActionCategories();
-//        $data->setRuleProducts();
-//        $data->setActionProducts();
-//        $data->setWebsiteId();
-//        $data->setMinQuantity();
-//        $data->setMinPurchaseAmount();
+        $ruleConditions = $this->processCondition($rule->getCondition());
+        if (array_key_exists(self::MIN_QUANTITY, $ruleConditions)) {
+            $data->setMinQuantity($ruleConditions[self::MIN_QUANTITY]);
+        }
+        if (array_key_exists(self::MIN_PURCHASE_AMOUNT, $ruleConditions)) {
+            $data->setMinPurchaseAmount($ruleConditions[self::MIN_PURCHASE_AMOUNT]);
+        }
+        if (array_key_exists(self::PRODUCTS, $ruleConditions)) {
+            $data->setRuleProducts(array_unique($ruleConditions[self::PRODUCTS]));
+        }
+        if (array_key_exists(self::CATEGORIES, $ruleConditions)) {
+            $data->setRuleCategories(array_unique($ruleConditions[self::CATEGORIES]));
+        }
+
+        $ruleConditions = $this->processCondition($rule->getActionCondition());
+        if (array_key_exists(self::PRODUCTS, $ruleConditions)) {
+            $data->setActionProducts(array_unique($ruleConditions[self::PRODUCTS]));
+        }
+        if (array_key_exists(self::CATEGORIES, $ruleConditions)) {
+            $data->setActionCategories(array_unique($ruleConditions[self::CATEGORIES]));
+        }
+
         return $data;
+    }
+
+
+    private function processCondition(ConditionInterface $condition): array
+    {
+        $data = [];
+        switch ($condition->getConditionType()) {
+            case 'Magento\SalesRule\Model\Rule\Condition\Combine':
+            case 'Magento\SalesRule\Model\Rule\Condition\Product\Found':
+                if ($subConditions = $condition->getConditions()) {
+                    foreach ($subConditions as $subCondition) {
+                        $subData = $this->processCondition($subCondition);
+                        if (!empty($subData)) {
+                            foreach ($subData as $key => $value) {
+                                if (is_array($value)) {
+                                    foreach ($value as $v) {
+                                        $data[$key][] = $v;
+                                    }
+                                } else {
+                                    $data[$key] = $value;
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            case 'Magento\SalesRule\Model\Rule\Condition\Address':
+                switch ($condition->getAttributeName()) {
+                    case 'base_subtotal':
+                        if ($condition->getOperator() == '>=') {
+                            $data[self::MIN_PURCHASE_AMOUNT] = To::float($condition->getValue());
+                        }
+                        break;
+                    case 'total_qty':
+                        if ($condition->getOperator() == '>=') {
+                            $data[self::MIN_QUANTITY] = To::float($condition->getValue());
+                        }
+                        break;
+                }
+                break;
+            case 'Magento\SalesRule\Model\Rule\Condition\Product':
+                switch ($condition->getAttributeName()) {
+                    case 'category_ids':
+                        $entityIds = $this->getCategoryIdsFromCondition($condition);
+                        foreach ($entityIds as $id) {
+                            $data[self::CATEGORIES][] = $id;
+                        }
+                        break;
+                    case 'sku':
+                        $entityIds = $this->getProductIdsFromCondition($condition);
+                        foreach ($entityIds as $id) {
+                            $data[self::PRODUCTS][] = $id;
+                        }
+                        break;
+                }
+                break;
+        }
+        return $data;
+    }
+
+    private function getCategoryIdsFromCondition(ConditionInterface $condition): array
+    {
+        $operator = $condition->getOperator();
+        if ($operator == '()' || $operator == '==') {
+            return $this->getIntegerList($condition->getValue());
+        }
+        return [];
+    }
+
+    private function getProductIdsFromCondition(ConditionInterface $condition): array
+    {
+        $skus = [];
+        $operator = $condition->getOperator();
+        if ($operator == '()' || $operator == '==') {
+            $skus = $this->getStringList($condition->getValue());
+        }
+
+        $entityIds = [];
+        if (!empty($skus)) {
+            $skus = array_unique($skus);
+            $this->searchCriteriaBuilder->addFilter('sku', $skus, 'in');
+            $products = $this->productRepository->getList($this->searchCriteriaBuilder->create())->getItems();
+            foreach ($products as $product) {
+                $entityIds[] = To::int($product->getId());
+            }
+        }
+
+        return $entityIds;
+    }
+
+    private function getStringList($value): array
+    {
+        if (is_string($value)) {
+            if (empty($value)) {
+                return [];
+            }
+            return [$value];
+        }
+        $result = [];
+        if (is_array($value)) {
+            foreach ($value as $v) {
+                if ($item = (string)$v) {
+                    $result[] = $item;
+                }
+            }
+            return $result;
+        }
+        return [];
+    }
+
+    private function getIntegerList($value): array
+    {
+        if (is_string($value)) {
+            $v = To::int($value);
+            if ($v > 0) {
+                return [$v];
+            }
+            return [];
+        }
+        if (is_int($value)) {
+            return [$value];
+        }
+        $result = [];
+        if (is_array($value)) {
+            foreach ($value as $v) {
+                if (is_int($v) && $v > 0) {
+                    $result[] = $v;
+                    continue;
+                }
+                if (is_string($v)) {
+                    $v = To::int($value);
+                    if ($v > 0) {
+                        $result[] = $v;
+                    }
+                }
+            }
+            return $result;
+        }
+        return [];
     }
 
     /**
