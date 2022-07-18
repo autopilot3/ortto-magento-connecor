@@ -193,7 +193,6 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $orttoProduct->setIsOptionRequired(To::int($product->getData('required_options')) > 0);
         $orttoProduct->setCurrencyCode($product->getStore()->getCurrentCurrencyCode());
 
-
         switch ($productType) {
             case Configurable::TYPE_CODE:
             case Grouped::TYPE_CODE:
@@ -205,6 +204,10 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
                     }
                 }
                 $orttoProduct->setChildren($children);
+                if ($orttoProduct->getPrice() == 0) {
+                    $finalPrice = $product->getPriceInfo()->getPrice('final_price');
+                    $orttoProduct->setPrice(To::float($finalPrice->getMinimalPrice()->getValue()));
+                }
                 break;
             case "simple":
             case "virtual":
