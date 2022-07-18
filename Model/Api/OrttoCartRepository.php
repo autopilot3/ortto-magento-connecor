@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
+use Magento\Framework\Api\SortOrder;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Api\Data\CartInterface;
 use Magento\Quote\Api\CartRepositoryInterface;
@@ -146,6 +147,8 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
     {
         $collection = $this->quoteItemsCollectionFactory->create();
         $collection->addFieldToSelect("*")
+            // Items with null parent item ids will always be first
+            ->setOrder(self::PARENT_ITEM_ID, SortOrder::SORT_ASC)
             ->addFieldToFilter(
                 CartItemInterface::KEY_QUOTE_ID,
                 ["eq" => $cartId]
@@ -154,13 +157,24 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
         $productIds = [];
         $cartItems = [];
         $productVariations = [];
+        $bundles = [];
         foreach ($collection->getItems() as $item) {
             $productId = To::int($item->getData(self::PRODUCT_ID));
             $productIds[] = $productId;
+
+            if ((string)$item->getData('product_type') == 'bundle') {
+                $bundles[] = $item->getData(self::ITEM_ID);
+                $cartItems[] = $item;
+                continue;
+            }
             // An item wih non-empty parent ID is variation of a configurable product
             // which should not be listed in the items
-            if ($patentId = $item->getData(self::PARENT_ITEM_ID)) {
-                $productVariations[To::int($patentId)] = $productId;
+            if ($patentItemId = $item->getData(self::PARENT_ITEM_ID)) {
+                if (array_contains($bundles, $patentItemId, false)) {
+                    // It's not a variant of a configurable product. It's a bundled sub-product.
+                    continue;
+                }
+                $productVariations[To::int($patentItemId)] = $productId;
             } else {
                 $cartItems[] = $item;
             }
