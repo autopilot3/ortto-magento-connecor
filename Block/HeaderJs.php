@@ -11,6 +11,7 @@ use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Framework\View\Element\Template;
 use Exception;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Customer\Model\Session;
 
 class HeaderJs extends Template
 {
@@ -19,30 +20,38 @@ class HeaderJs extends Template
     public const CAPTURE_JS = 'cj';
     public const CAPTURE_API = 'ca';
     public const BASE_URL = 'bu';
+    public const EMAIL = 'e';
 
     private ConfigurationReaderInterface $configReader;
     private OrttoLogger $logger;
     private ScopeManagerInterface $scopeManager;
+    private Session $session;
 
     public function __construct(
         Template\Context $context,
         ConfigurationReaderInterface $configReader,
         ScopeManagerInterface $scopeManager,
         OrttoLogger $logger,
+        Session $session,
         array $data = []
     ) {
         parent::__construct($context, $data);
         $this->configReader = $configReader;
         $this->logger = $logger;
         $this->scopeManager = $scopeManager;
+        $this->session = $session;
     }
 
     public function getConfiguration(): array
     {
+        $email = '';
         try {
             $store = $this->_storeManager->getStore();
             $storeId = To::int($store->getId());
             $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, $storeId);
+            if ($this->session->isLoggedIn()) {
+                $email = $this->session->getCustomer()->getEmail();
+            }
         } catch (Exception $e) {
             $this->logger->error($e, "Failed to get current store details");
             return [];
@@ -79,6 +88,7 @@ class HeaderJs extends Template
             self::CAPTURE_API => $captureURL,
             self::CAPTURE_JS => $captureJS,
             self::MAGENTO_JS => $magentoJS,
+            self::EMAIL => $email,
             self::BASE_URL => $scope->getBaseURL(),
         ];
     }

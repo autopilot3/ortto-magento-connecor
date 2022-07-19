@@ -26,10 +26,9 @@ $config = $block->getConfiguration();
 
         var context = {
             scope: {},
-            email: '',
+            email: '<?= $config[HeaderJs::EMAIL] ?>',
             phone: ''
         };
-
         ap3c.cmdMagento.push(function () {
             ap3c.initMagento('<?= $config[HeaderJs::TRACKING_CODE] ?>', '<?= $config[HeaderJs::CAPTURE_API] ?>', context);
         });
