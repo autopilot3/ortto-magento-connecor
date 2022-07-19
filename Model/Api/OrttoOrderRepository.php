@@ -16,7 +16,6 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Ortto\Connector\Api\ConfigScopeInterface;
-use Ortto\Connector\Api\Data\OrttoOrderInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
 use Ortto\Connector\Api\OrttoOrderRepositoryInterface;
 use Ortto\Connector\Api\OrttoProductRepositoryInterface;
@@ -197,7 +196,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $addresses = $this->getOrderAddresses([$orderId]);
         $data = $this->convertOrder($order, $addresses[$orderId], $products);
         if ($customerId = $order->getCustomerId()) {
-            $data->setCustomer($this->customerRepository->getById($scope, $customerId));
+            $data->setCustomer($this->customerRepository->getById($scope, To::int($customerId)));
         } else {
             $data->setCustomer($this->getAnonymousCustomer($order, $addresses[$orderId]));
         }
