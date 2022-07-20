@@ -183,20 +183,23 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
         $products = $this->productRepository->getByIds($scope, $productIds)->getItems();
         $result = [];
         foreach ($cartItems as $item) {
-            $itemId = To::int($item->getData(self::ITEM_ID));
-            if (key_exists($itemId, $productVariations)) {
-                $productId = $productVariations[$itemId];
-            } else {
-                $productId = To::int($item->getData(self::PRODUCT_ID));
-            }
+            $data = $this->cartItemFactory->create();
+            $productId = To::int($item->getData(self::PRODUCT_ID));
+
             $product = $products[$productId];
             if ($product == null) {
                 $this->logger->warn("Cart product was not loaded", ['product_id' => $productId]);
                 continue;
             }
 
-            $data = $this->cartItemFactory->create();
             $data->setProduct($product);
+
+            $itemId = To::int($item->getData(self::ITEM_ID));
+            if (key_exists($itemId, $productVariations)) {
+                $variantId = $productVariations[$itemId];
+                $data->setVariant($products[$variantId]);
+            }
+
             $data->setCreatedAt($this->helper->toUTC($item->getData(self::CREATED_AT)));
             $data->setUpdatedAt($this->helper->toUTC($item->getData(self::UPDATED_AT)));
             $data->setDiscount(To::float($item->getData(self::DISCOUNT)));
@@ -209,6 +212,7 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
             $data->setTax(To::float($item->getData(self::TAX)));
             $data->setTaxPercent(To::float($item->getData(self::TAX_PERCENT)));
             $data->setQuantity(To::float($item->getData(self::QUANTITY)));
+
             $result[] = $data;
         }
         return $result;

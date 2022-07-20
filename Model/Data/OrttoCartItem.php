@@ -166,6 +166,18 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     }
 
     /** @inheirtDoc */
+    public function setVariant($variant)
+    {
+        return $this->setData(self::VARIANT, $variant);
+    }
+
+    /** @inheirtDoc */
+    public function getVariant()
+    {
+        return $this->getData(self::VARIANT);
+    }
+
+    /** @inheirtDoc */
     public function serializeToArray()
     {
         if ($this == null) {
@@ -186,6 +198,8 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
         $result[self::BASE_TAX] = $this->getBaseTax();
         $result[self::TAX_PERCENT] = $this->getTaxPercent();
         $result[self::QUANTITY] = $this->getQuantity();
+        $variant = $this->getVariant();
+        $result[self::VARIANT] = $variant != null ? $variant->serializeToArray() : null;
         return $result;
     }
 }

@@ -264,7 +264,9 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
 
         // URLs
         $orttoProduct->setImageUrl($this->helper->getProductImageURL($product));
-        $orttoProduct->setUrl($product->getUrlModel()->getUrlInStore($product, ['_escape' => true]));
+        if ($orttoProduct->getIsVisible()) {
+            $orttoProduct->setUrl($product->getUrlModel()->getUrlInStore($product, ['_escape' => true]));
+        }
 
         return $orttoProduct;
     }

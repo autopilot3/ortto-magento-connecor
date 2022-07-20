@@ -12,6 +12,7 @@ use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Api\Data\OrderExtensionInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\Data\ShipmentTrackInterface;
+use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -155,7 +156,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             }
         }
 
-
         // The returned array is keyed by product ID
         $products = $this->productRepository->getByIds($scope, $productIds)->getItems();
 
@@ -267,6 +267,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                 $data->setShippingAddress($address);
             }
         }
+
         $data->setNumber((string)$order->getData(OrderInterface::INCREMENT_ID));
         $data->setCartId(To::int($order->getData(OrderInterface::QUOTE_ID)));
         $data->setCreatedAt($this->helper->toUTC((string)$order->getData(OrderInterface::CREATED_AT)));
@@ -344,10 +345,21 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $visibleItemIds = [];
         $orderItems = [];
         $productVariations = [];
+        $bundles = [];
+        // We need to find the bundles in a separate loop because we cannot rely on the order of the items
+        foreach ($items as $item) {
+            if ((string)$item->getProductType() == 'bundle') {
+                $bundles[] = $item->getItemId();
+            }
+        }
         foreach ($items as $item) {
             // An item wih non-empty parent ID is variation of a configurable product
             // which should not be listed in the items
             if ($patentId = $item->getParentItemId()) {
+                if (array_contains($bundles, $patentId, false)) {
+                    // It's not a variant of a configurable product. It's a bundled sub-product.
+                    continue;
+                }
                 $productVariations[To::int($patentId)] = To::int($item->getProductId());
             } else {
                 $orderItems[] = $item;

@@ -18,6 +18,7 @@ interface OrttoCartItemInterface
     const BASE_TAX = 'base_tax';
     const TAX_PERCENT = 'tax_percent';
     const QUANTITY = 'quantity';
+    const VARIANT = 'variant';
 
     /**
     * Set product
@@ -213,6 +214,21 @@ interface OrttoCartItemInterface
     * @return int
     */
     public function getQuantity();
+
+    /**
+    * Set variant
+    *
+    * @param \Ortto\Connector\Api\Data\OrttoProductInterface|null $variant
+    * @return $this
+    */
+    public function setVariant($variant);
+
+    /**
+    * Get variant
+    *
+    * @return \Ortto\Connector\Api\Data\OrttoProductInterface|null
+    */
+    public function getVariant();
 
     /**
     * Convert object data to array
