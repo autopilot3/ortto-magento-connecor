@@ -27,6 +27,7 @@ use Magento\Sales\Model\ResourceModel\Order\Address\CollectionFactory as Address
 use Ortto\Connector\Model\Data\OrttoCustomerFactory;
 use Ortto\Connector\Model\Data\OrttoOrderExtensionFactory;
 use Ortto\Connector\Model\Data\OrttoRefundFactory;
+use Ortto\Connector\Model\Data\OrttoRefundItemFactory;
 use Ortto\Connector\Model\Data\OrttoCarrierFactory;
 use Ortto\Connector\Model\Data\OrttoOrderFactory;
 use Ortto\Connector\Model\Data\ListOrderResponseFactory;
@@ -61,6 +62,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private OrttoGiftFactory $giftFactory;
     private CreditmemoRepositoryInterface $creditMemoRepository;
     private OrttoProductRepositoryInterface $productRepository;
+    private OrttoRefundItemFactory $refundItemFactory;
 
     public function __construct(
         Data $helper,
@@ -81,7 +83,8 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         \Magento\Sales\Api\ShipmentTrackRepositoryInterface $shipmentTrackRepository,
         \Ortto\Connector\Model\Data\OrttoGiftFactory $giftFactory,
         \Magento\Sales\Api\CreditmemoRepositoryInterface $creditMemoRepository,
-        OrttoProductRepositoryInterface $productRepository
+        OrttoProductRepositoryInterface $productRepository,
+        \Ortto\Connector\Model\Data\OrttoRefundItemFactory $refundItemFactory
     ) {
         $this->helper = $helper;
         $this->logger = $logger;
@@ -102,6 +105,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $this->giftFactory = $giftFactory;
         $this->creditMemoRepository = $creditMemoRepository;
         $this->productRepository = $productRepository;
+        $this->refundItemFactory = $refundItemFactory;
     }
 
     /** @inheirtDoc
@@ -368,7 +372,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $data->setItems($this->getOrderItems($orderItems, $productVariations, $products));
 
         if ($data->getTotalOfflineRefunded() > 0 || $data->getTotalOnlineRefunded() > 0) {
-            $data->setRefunds($this->getRefunds($orderId));
+            $data->setRefunds($this->getRefunds($orderId, $products));
         }
 
         if ($anyItemShipped) {
@@ -449,9 +453,10 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
 
     /**
      * @param int $orderId
+     * @param \Ortto\Connector\Api\Data\OrttoProductInterface[] $products
      * @return \Ortto\Connector\Api\Data\OrttoRefundInterface[]
      */
-    private function getRefunds($orderId)
+    private function getRefunds($orderId, $products)
     {
         $searchCriteria = $this->searchCriteriaBuilder->addFilter(CreditmemoInterface::ORDER_ID, $orderId)->create();
         $memos = $this->creditMemoRepository->getList($searchCriteria)->getItems();
@@ -479,11 +484,31 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $refund->setAdjustment(To::float($memo->getAdjustment()));
             $refund->setBaseAdjustment(To::float($memo->getBaseAdjustment()));
             $refund->setRefundedAt($this->helper->toUTC($memo->getCreatedAt()));
-            $itemIds = [];
+            $items = [];
             foreach ($memo->getItems() as $item) {
-                $itemIds[] = To::int($item->getOrderItemId());
+                $totalRefunded = To::float($item->getRowTotal());
+                if ($totalRefunded == 0) {
+                    continue;
+                }
+                $productId = To::int($item->getProductId());
+                $product = $products[$productId];
+                if (empty($product)) {
+                    $this->logger->warn('Refund product was not loaded', ['product_id' => $productId]);
+                    continue;
+                }
+
+                $data = $this->refundItemFactory->create();
+                $data->setId(To::int($item->getEntityId()));
+                $data->setProduct($product);
+                $data->setTotalRefunded($totalRefunded);
+                $data->setBaseTotalRefunded(To::float($item->getBaseRowTotal()));
+                $data->setDiscountRefunded(To::float($item->getDiscountAmount()));
+                $data->setBaseDiscountRefunded(To::float($item->getBaseDiscountAmount()));
+                $data->setRefundQuantity(To::float($item->getQty()));
+                $data->setOrderItemId(TO::int($item->getOrderItemId()));
+                $items[] = $data;
             }
-            $refund->setOrderItemIds($itemIds);
+            $refund->setItems($items);
             $refunds[] = $refund;
         }
         return $refunds;

@@ -226,15 +226,15 @@ class OrttoRefund extends DataObject implements OrttoRefundInterface
     }
 
     /** @inheirtDoc */
-    public function setOrderItemIds(array $orderItemIds)
+    public function setItems(array $items)
     {
-        return $this->setData(self::ORDER_ITEM_IDS, $orderItemIds);
+        return $this->setData(self::ITEMS, $items);
     }
 
     /** @inheirtDoc */
-    public function getOrderItemIds(): array
+    public function getItems(): array
     {
-        return $this->getData(self::ORDER_ITEM_IDS) ?? [];
+        return $this->getData(self::ITEMS) ?? [];
     }
 
     /** @inheirtDoc */
@@ -262,7 +262,10 @@ class OrttoRefund extends DataObject implements OrttoRefundInterface
         $result[self::ADJUSTMENT] = $this->getAdjustment();
         $result[self::BASE_ADJUSTMENT] = $this->getBaseAdjustment();
         $result[self::REFUNDED_AT] = $this->getRefundedAt();
-        $result[self::ORDER_ITEM_IDS] = $this->getOrderItemIds();
+        $result[self::ITEMS] = [];
+        foreach ($this->getItems() as $item) {
+            $result[self::ITEMS][] = $item->serializeToArray();
+        }
         return $result;
     }
 }
