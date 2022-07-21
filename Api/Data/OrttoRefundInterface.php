@@ -23,7 +23,7 @@ interface OrttoRefundInterface
     const ADJUSTMENT = 'adjustment';
     const BASE_ADJUSTMENT = 'base_adjustment';
     const REFUNDED_AT = 'refunded_at';
-    const ITEMS = 'items';
+    const ORDER_ITEM_IDS = 'order_item_ids';
 
     /**
     * Set id
@@ -296,19 +296,19 @@ interface OrttoRefundInterface
     public function getRefundedAt();
 
     /**
-    * Set items
+    * Set order item ids
     *
-    * @param \Ortto\Connector\Api\Data\OrttoRefundItemInterface[] $items
+    * @param int[] $orderItemIds
     * @return $this
     */
-    public function setItems(array $items);
+    public function setOrderItemIds(array $orderItemIds);
 
     /**
-    * Get items
+    * Get order item ids
     *
-    * @return \Ortto\Connector\Api\Data\OrttoRefundItemInterface[]
+    * @return int[]
     */
-    public function getItems(): array;
+    public function getOrderItemIds(): array;
 
     /**
     * Convert object data to array

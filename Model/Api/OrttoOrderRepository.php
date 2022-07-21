@@ -12,7 +12,6 @@ use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Api\Data\OrderExtensionInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\Data\ShipmentTrackInterface;
-use Magento\Sales\Api\OrderItemRepositoryInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -28,7 +27,6 @@ use Magento\Sales\Model\ResourceModel\Order\Address\CollectionFactory as Address
 use Ortto\Connector\Model\Data\OrttoCustomerFactory;
 use Ortto\Connector\Model\Data\OrttoOrderExtensionFactory;
 use Ortto\Connector\Model\Data\OrttoRefundFactory;
-use Ortto\Connector\Model\Data\OrttoRefundItemFactory;
 use Ortto\Connector\Model\Data\OrttoCarrierFactory;
 use Ortto\Connector\Model\Data\OrttoOrderFactory;
 use Ortto\Connector\Model\Data\ListOrderResponseFactory;
@@ -58,7 +56,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private ShipmentTrackRepositoryInterface $shipmentTrackRepository;
     private OrttoOrderExtensionFactory $extensionFactory;
     private OrttoRefundFactory $refundFactory;
-    private OrttoRefundItemFactory $refundItemFactory;
     private OrttoCarrierFactory $carrierFactory;
     private OrttoOrderItemFactory $orderItemFactory;
     private OrttoGiftFactory $giftFactory;
@@ -79,7 +76,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         \Magento\Framework\Api\SortOrderBuilder $sortOrderBuilder,
         \Ortto\Connector\Model\Data\OrttoOrderExtensionFactory $extensionFactory,
         \Ortto\Connector\Model\Data\OrttoRefundFactory $refundFactory,
-        \Ortto\Connector\Model\Data\OrttoRefundItemFactory $refundItemFactory,
         \Ortto\Connector\Model\Data\OrttoCarrierFactory $carrierFactory,
         \Ortto\Connector\Model\Data\OrttoOrderItemFactory $orderItemFactory,
         \Magento\Sales\Api\ShipmentTrackRepositoryInterface $shipmentTrackRepository,
@@ -100,7 +96,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $this->sortOrderBuilder = $sortOrderBuilder;
         $this->extensionFactory = $extensionFactory;
         $this->refundFactory = $refundFactory;
-        $this->refundItemFactory = $refundItemFactory;
         $this->carrierFactory = $carrierFactory;
         $this->orderItemFactory = $orderItemFactory;
         $this->shipmentTrackRepository = $shipmentTrackRepository;
@@ -342,7 +337,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $data->setProtectCode((string)$order->getProtectCode());
 
         $items = $order->getAllItems();
-        $visibleItemIds = [];
         $orderItems = [];
         $productVariations = [];
         $bundles = [];
@@ -352,7 +346,12 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                 $bundles[] = $item->getItemId();
             }
         }
+
+        $anyItemShipped = false;
         foreach ($items as $item) {
+            if ($item->getQtyShipped() > 0) {
+                $anyItemShipped = true;
+            }
             // An item wih non-empty parent ID is variation of a configurable product
             // which should not be listed in the items
             if ($patentId = $item->getParentItemId()) {
@@ -363,19 +362,17 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                 $productVariations[To::int($patentId)] = To::int($item->getProductId());
             } else {
                 $orderItems[] = $item;
-                $visibleItemIds[] = To::int($item->getId());
             }
         }
 
         $data->setItems($this->getOrderItems($orderItems, $productVariations, $products));
 
-        switch ($order->getStatus()) {
-            case Order::STATE_CLOSED:
-                $data->setRefunds($this->getRefunds($orderId, $productVariations, $visibleItemIds));
-                break;
-            case Order::STATE_COMPLETE:
-                $data->setCarriers($this->getShippingCarriers($orderId));
-                break;
+        if ($data->getTotalOfflineRefunded() > 0 || $data->getTotalOnlineRefunded() > 0) {
+            $data->setRefunds($this->getRefunds($orderId));
+        }
+
+        if ($anyItemShipped) {
+            $data->setCarriers($this->getShippingCarriers($orderId));
         }
 
         $data->setExtension($this->getExtension($order));
@@ -408,6 +405,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             }
             $data->setIsVirtual(To::bool($item->getIsVirtual()));
             $data->setSku((string)$item->getSku());
+
             $data->setDescription((string)$item->getDescription());
             $data->setName((string)$item->getName());
             $data->setCreatedAt($this->helper->toUTC($item->getCreatedAt()));
@@ -451,11 +449,9 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
 
     /**
      * @param int $orderId
-     * @param array $productVariations
-     * @param int[] $visibleItemIds
      * @return \Ortto\Connector\Api\Data\OrttoRefundInterface[]
      */
-    private function getRefunds($orderId, $productVariations, $visibleItemIds)
+    private function getRefunds($orderId)
     {
         $searchCriteria = $this->searchCriteriaBuilder->addFilter(CreditmemoInterface::ORDER_ID, $orderId)->create();
         $memos = $this->creditMemoRepository->getList($searchCriteria)->getItems();
@@ -483,54 +479,14 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $refund->setAdjustment(To::float($memo->getAdjustment()));
             $refund->setBaseAdjustment(To::float($memo->getBaseAdjustment()));
             $refund->setRefundedAt($this->helper->toUTC($memo->getCreatedAt()));
-            $refund->setItems($this->getRefundItems($memo->getItems(), $productVariations, $visibleItemIds));
+            $itemIds = [];
+            foreach ($memo->getItems() as $item) {
+                $itemIds[] = To::int($item->getOrderItemId());
+            }
+            $refund->setOrderItemIds($itemIds);
             $refunds[] = $refund;
         }
         return $refunds;
-    }
-
-    /**
-     * @param \Magento\Sales\Api\Data\CreditmemoItemInterface[] $items
-     * @param array $productVariations
-     * @param int[] $visibleItemIds
-     * @return \Ortto\Connector\Api\Data\OrttoRefundItemInterface[]
-     */
-    private function getRefundItems(array $items, array $productVariations, $visibleItemIds)
-    {
-        $result = [];
-        foreach ($items as $item) {
-            $data = $this->refundItemFactory->create();
-            $orderItemId = To::int($item->getOrderItemId());
-            if (!array_contains($visibleItemIds, $orderItemId)) {
-                // Variant of a configurable product
-                continue;
-            }
-
-            if (key_exists($orderItemId, $productVariations)) {
-                $data->setVariantProductId($productVariations[$orderItemId]);
-            }
-            $data->setId(To::int($item->getEntityId()));
-            $data->setOrderItemId(To::int($item->getOrderItemId()));
-            $data->setProductId(To::int($item->getProductId()));
-            $data->setSku((string)$item->getSku());
-            $data->setName((string)$item->getName());
-            $data->setPrice(To::float($item->getPrice()));
-            $data->setPriceInclTax(To::float($item->getPriceInclTax()));
-            $data->setBasePrice(To::float($item->getBasePrice()));
-            $data->setBasePriceInclTax(To::float($item->getBasePriceInclTax()));
-            $data->setQuantity(To::float($item->getQty()));
-            $data->setTax(To::float($item->getTaxAmount()));
-            $data->setBaseTax(To::float($item->getBaseTaxAmount()));
-            $data->setTotal(To::float($item->getRowTotal()));
-            $data->setBaseTotal(To::float($item->getBaseRowTotal()));
-            $data->setTotalInclTax(To::float($item->getRowTotalInclTax()));
-            $data->setBaseTotalInclTax(To::float($item->getBaseRowTotalInclTax()));
-            $data->setDescription((string)$item->getDescription());
-            $data->setDiscount(To::float($item->getDiscountAmount()));
-            $data->setBaseDiscount(To::float($item->getBaseDiscountAmount()));
-            $result[] = $data;
-        }
-        return $result;
     }
 
 

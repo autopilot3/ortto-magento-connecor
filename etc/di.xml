@@ -80,8 +80,6 @@
                 type="Ortto\Connector\Model\Data\OrttoProductCategory"/>
     <preference for="Ortto\Connector\Api\Data\OrttoCarrierInterface"
                 type="Ortto\Connector\Model\Data\OrttoCarrier"/>
-    <preference for="Ortto\Connector\Api\Data\OrttoRefundItemInterface"
-                type="Ortto\Connector\Model\Data\OrttoRefundItem"/>
     <preference for="Ortto\Connector\Api\Data\OrttoRefundInterface"
                 type="Ortto\Connector\Model\Data\OrttoRefund"/>
     <preference for="Ortto\Connector\Api\Data\OrttoOrderExtensionInterface"
