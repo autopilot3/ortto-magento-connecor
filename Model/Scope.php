@@ -76,6 +76,22 @@ class Scope extends DataObject implements ConfigScopeInterface
     /**
      * @inheirtDoc
      */
+    public function getWebsiteCode(): string
+    {
+        return (string)$this->getData(self::WEBSITE_CODE);
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function setWebsiteCode(string $websiteCode)
+    {
+        return $this->setData(self::WEBSITE_CODE, $websiteCode);
+    }
+
+    /**
+     * @inheirtDoc
+     */
     public function getBaseURL(): string
     {
         return (string)$this->getData(self::URL);

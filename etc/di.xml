@@ -66,10 +66,6 @@
                 type="Ortto\Connector\Model\ResourceModel\SyncJobRepository"/>
 
     <!-- WEB API MODELS -->
-    <preference for="Ortto\Connector\Api\Data\OrttoStockItemInterface"
-                type="Ortto\Connector\Model\Data\OrttoStockItem"/>
-    <preference for="Ortto\Connector\Api\Data\OrttoStockInterface"
-                type="Ortto\Connector\Model\Data\OrttoStock"/>
     <preference for="Ortto\Connector\Api\Data\OrttoDownloadLinkInterface"
                 type="Ortto\Connector\Model\Data\OrttoDownloadLink"/>
     <preference for="Ortto\Connector\Api\Data\OrttoProductParentGroupInterface"

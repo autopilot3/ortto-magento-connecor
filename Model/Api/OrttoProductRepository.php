@@ -5,8 +5,8 @@ namespace Ortto\Connector\Model\Api;
 
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Framework\Api\SortOrder;
+use Magento\Framework\App\ResourceConnection;
 use Ortto\Connector\Api\ConfigScopeInterface;
-use Ortto\Connector\Api\Data\OrttoProductInterface;
 use Ortto\Connector\Api\Data\OrttoProductParentGroupInterface;
 use Ortto\Connector\Api\OrttoProductRepositoryInterface;
 use Ortto\Connector\Helper\Data;
@@ -26,13 +26,12 @@ use Ortto\Connector\Model\Data\ListProductResponseFactory;
 use Ortto\Connector\Model\Data\OrttoDownloadLinkFactory;
 use Ortto\Connector\Model\Data\OrttoProductFactory;
 use Ortto\Connector\Model\Data\OrttoProductParentGroupFactory;
-use Ortto\Connector\Model\Data\OrttoStockFactory;
-use Ortto\Connector\Model\Data\OrttoStockItemFactory;
 
 class OrttoProductRepository implements OrttoProductRepositoryInterface
 {
     private const ENTITY_ID = 'entity_id';
-
+    private const STOCK_QUANTITY = 'qty';
+    private const STOCK_NAME = 'stock_name';
     private Data $helper;
     private OrttoLogger $logger;
     private GetSalableQuantityDataBySku $salableQty;
@@ -41,13 +40,12 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
     private Selection $bundle;
     private CheckSourceItemSupport $checkSourceItemSupport;
     private OrttoProductFactory $productFactory;
-    private OrttoStockItemFactory $stockItemFactory;
     private OrttoDownloadLinkFactory $downloadLinkFactory;
-    private OrttoStockFactory $stockFactory;
     private OrttoProductParentGroupFactory $productParentGroupFactory;
     private LinkRepositoryInterface $linkRepository;
     private ProductCollectionFactory $productCollectionFactory;
     private ListProductResponseFactory $listResponseFactory;
+    private ResourceConnection $resourceConnection;
 
     public function __construct(
         Data $helper,
@@ -59,12 +57,11 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         LinkRepositoryInterface $linkRepository,
         CheckSourceItemSupport $checkSourceItemSupport,
         OrttoProductFactory $productFactory,
-        OrttoStockItemFactory $stockItemFactory,
         OrttoDownloadLinkFactory $downloadLinkFactory,
-        OrttoStockFactory $stockFactory,
         OrttoProductParentGroupFactory $productParentGroupFactory,
         ProductCollectionFactory $productCollectionFactory,
-        ListProductResponseFactory $listResponseFactory
+        ListProductResponseFactory $listResponseFactory,
+        \Magento\Framework\App\ResourceConnection $resourceConnection
     ) {
         $this->helper = $helper;
         $this->salableQty = $salableQty;
@@ -74,13 +71,12 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $this->bundle = $bundle;
         $this->checkSourceItemSupport = $checkSourceItemSupport;
         $this->productFactory = $productFactory;
-        $this->stockItemFactory = $stockItemFactory;
         $this->downloadLinkFactory = $downloadLinkFactory;
-        $this->stockFactory = $stockFactory;
         $this->productParentGroupFactory = $productParentGroupFactory;
         $this->linkRepository = $linkRepository;
         $this->productCollectionFactory = $productCollectionFactory;
         $this->listResponseFactory = $listResponseFactory;
+        $this->resourceConnection = $resourceConnection;
     }
 
     /** @inheirtDoc */
@@ -110,9 +106,10 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         }
         $storeId = $scope->getId();
         $productList = [];
+        $websiteStockName = $this->getWebsiteStockName($scope);
         /** @var  Product $product */
         foreach ($collection->getItems() as $product) {
-            $productList[] = $this->convert($product, $storeId);
+            $productList[] = $this->convert($product, $storeId, $websiteStockName);
         }
         $result->setItems($productList);
         $result->setHasMore($page < $total / $pageSize);
@@ -145,9 +142,10 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
             $products[$productId] = null;
         }
         $storeId = $scope->getId();
+        $websiteStockName = $this->getWebsiteStockName($scope);
         /** @var  Product $product */
         foreach ($collection->getItems() as $product) {
-            $p = $this->convert($product, $storeId);
+            $p = $this->convert($product, $storeId, $websiteStockName);
             $products[To::int($p->getId())] = $p;
         }
 
@@ -162,15 +160,16 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $collection = $this->productCollectionFactory->create();
         /** @var  Product $product */
         $product = $collection->addAttributeToSelect('*')->getItemById($productId);
-        return $this->convert($product, $scope->getId());
+        return $this->convert($product, $scope->getId(), $this->getWebsiteStockName($scope));
     }
 
     /**
      * @param Product $product
      * @param int $storeID
+     * @param string $websiteStockName
      * @return \Ortto\Connector\Api\Data\OrttoProductInterface
      */
-    private function convert($product, int $storeID)
+    private function convert($product, int $storeID, string $websiteStockName)
     {
         $product->setStoreId($storeID);
         $orttoProduct = $this->productFactory->create();
@@ -192,7 +191,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $orttoProduct->setDescription($product->getDescription() ?? '');
         $orttoProduct->setIsOptionRequired(To::int($product->getData('required_options')) > 0);
         $orttoProduct->setCurrencyCode($product->getStore()->getCurrentCurrencyCode());
-
+        $orttoProduct->setStockQuantity($this->getStockQuantity($sku, $productType, $websiteStockName));
         switch ($productType) {
             case Configurable::TYPE_CODE:
             case Grouped::TYPE_CODE:
@@ -240,28 +239,6 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         }
         $orttoProduct->setCategoryIds($categoryIDs);
 
-        // Stock Data
-        $total = 0.0;
-        if ($this->checkSourceItemSupport->execute($productType)) {
-            $salableItems = $this->salableQty->execute($sku);
-            $stocks = [];
-            foreach ($salableItems as $salable) {
-                $quantity = To::float($salable['qty']);
-                $total += $quantity;
-                $stock = $this->stockFactory->create();
-                $stock->setName($salable['stock_name']);
-                $stock->setQuantity($quantity);
-                $stock->setIsManage(To::bool($salable['manage_stock']));
-                $stocks[] = $stock;
-            }
-            $orttoProduct->setStocks($stocks);
-        }
-        $stockItem = $this->stockItemFactory->create();
-        $stockItem->setQuantity($total);
-        $stockItem->setIsSalable(To::bool($product->isSalable()));
-        $stockItem->setIsInStock(To::bool($product->isInStock()));
-        $orttoProduct->setStock($stockItem);
-
         // URLs
         $orttoProduct->setImageUrl($this->helper->getProductImageURL($product));
         if ($orttoProduct->getIsVisible()) {
@@ -271,6 +248,33 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         return $orttoProduct;
     }
 
+    private function getStockQuantity(
+        string $productSKU,
+        string $productType,
+        string $websiteStockName
+    ): float {
+        if ($this->checkSourceItemSupport->execute($productType)) {
+            $stocks = $this->salableQty->execute($productSKU);
+            if (empty($stocks)) {
+                return 0;
+            }
+            if (count($stocks) == 1 && isset($stocks[0][self::STOCK_QUANTITY])) {
+                return To::float(To::float($stocks[0][self::STOCK_QUANTITY]));
+            }
+
+            if ($websiteStockName != '') {
+                foreach ($stocks as $stock) {
+                    if (isset($stock[self::STOCK_NAME])
+                        && $stock[self::STOCK_NAME] == $websiteStockName
+                        && isset($stock[self::STOCK_QUANTITY])) {
+                        return To::float($stock[self::STOCK_QUANTITY]);
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
     private function getParentIds(int $productId): OrttoProductParentGroupInterface
     {
         $parentGroup = $this->productParentGroupFactory->create();
@@ -278,5 +282,26 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $parentGroup->setGrouped($this->grouped->getParentIdsByChild($productId) ?? []);
         $parentGroup->setConfigurable($this->configurable->getParentIdsByChild($productId) ?? []);
         return $parentGroup;
+    }
+
+    private function getWebsiteStockName(ConfigScopeInterface $scope): string
+    {
+        try {
+            $connection = $this->resourceConnection->getConnection();
+            $stockTable = $connection->getTableName('inventory_stock');
+            $salesChannelTable = $connection->getTableName('inventory_stock_sales_channel');
+            $sql = sprintf(
+                "SELECT s.name
+                    FROM %s s INNER JOIN %s sc ON s.stock_id = sc.stock_id
+                    WHERE sc.code = '%s';",
+                $stockTable,
+                $salesChannelTable,
+                $scope->getWebsiteCode()
+            );
+            return (string)$connection->fetchOne($sql);
+        } catch (\Exception $e) {
+            $this->logger->error($e, sprintf("Failed to fetch %s website's stock name", $scope->getWebsiteCode()));
+            return '';
+        }
     }
 }

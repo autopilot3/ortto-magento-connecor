@@ -166,27 +166,15 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     }
 
     /** @inheirtDoc */
-    public function setStock($stock)
+    public function setStockQuantity($stockQuantity)
     {
-        return $this->setData(self::STOCK, $stock);
+        return $this->setData(self::STOCK_QUANTITY, $stockQuantity);
     }
 
     /** @inheirtDoc */
-    public function getStock()
+    public function getStockQuantity()
     {
-        return $this->getData(self::STOCK);
-    }
-
-    /** @inheirtDoc */
-    public function setStocks(array $stocks)
-    {
-        return $this->setData(self::STOCKS, $stocks);
-    }
-
-    /** @inheirtDoc */
-    public function getStocks(): array
-    {
-        return $this->getData(self::STOCKS) ?? [];
+        return To::float($this->getData(self::STOCK_QUANTITY));
     }
 
     /** @inheirtDoc */
@@ -305,12 +293,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
         $result[self::MINIMAL_PRICE] = $this->getMinimalPrice();
         $result[self::WEIGHT] = $this->getWeight();
         $result[self::IMAGE_URL] = $this->getImageUrl();
-        $stock = $this->getStock();
-        $result[self::STOCK] = $stock != null ? $stock->serializeToArray() : null;
-        $result[self::STOCKS] = [];
-        foreach ($this->getStocks() as $item) {
-            $result[self::STOCKS][] = $item->serializeToArray();
-        }
+        $result[self::STOCK_QUANTITY] = $this->getStockQuantity();
         $result[self::CATEGORY_IDS] = $this->getCategoryIds();
         $parents = $this->getParents();
         $result[self::PARENTS] = $parents != null ? $parents->serializeToArray() : null;

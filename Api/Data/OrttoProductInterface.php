@@ -18,8 +18,7 @@ interface OrttoProductInterface
     const MINIMAL_PRICE = 'minimal_price';
     const WEIGHT = 'weight';
     const IMAGE_URL = 'image_url';
-    const STOCK = 'stock';
-    const STOCKS = 'stocks';
+    const STOCK_QUANTITY = 'stock_quantity';
     const CATEGORY_IDS = 'category_ids';
     const PARENTS = 'parents';
     const CHILDREN = 'children';
@@ -225,34 +224,19 @@ interface OrttoProductInterface
     public function getImageUrl();
 
     /**
-    * Set stock
+    * Set stock quantity
     *
-    * @param \Ortto\Connector\Api\Data\OrttoStockItemInterface $stock
+    * @param float $stockQuantity
     * @return $this
     */
-    public function setStock($stock);
+    public function setStockQuantity($stockQuantity);
 
     /**
-    * Get stock
+    * Get stock quantity
     *
-    * @return \Ortto\Connector\Api\Data\OrttoStockItemInterface
+    * @return float
     */
-    public function getStock();
-
-    /**
-    * Set stocks
-    *
-    * @param \Ortto\Connector\Api\Data\OrttoStockInterface[] $stocks
-    * @return $this
-    */
-    public function setStocks(array $stocks);
-
-    /**
-    * Get stocks
-    *
-    * @return \Ortto\Connector\Api\Data\OrttoStockInterface[]
-    */
-    public function getStocks(): array;
+    public function getStockQuantity();
 
     /**
     * Set category ids

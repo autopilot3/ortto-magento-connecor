@@ -131,7 +131,9 @@ class ScopeManager implements ScopeManagerInterface
                 $scope->setWebsiteId($id);
                 $website = $this->storeManager->getWebsite($id);
                 $scope->setName($website->getName());
-                $scope->setCode($website->getCode());
+                $code = (string)$website->getCode();
+                $scope->setCode($code);
+                $scope->setWebsiteCode($code);
                 $scope->setIsExplicitlyConnected(!empty($this->configReader->getAPIKey($type, $id)));
                 $baseURL = (string)$this->urlInterface->getBaseUrl(["_secure" => true]);
                 if (empty($baseURL)) {
@@ -149,7 +151,9 @@ class ScopeManager implements ScopeManagerInterface
                 /** @var Store $store */
                 $store = $this->storeManager->getStore($id);
                 $websiteId = To::int($store->getWebsiteId());
+                $website = $this->storeManager->getWebsite($id);
                 $scope->setWebsiteId($websiteId);
+                $scope->setWebsiteCode((string)$website->getCode());
                 $websiteAPIKey = $this->configReader->getAPIKey(ScopeInterface::SCOPE_WEBSITE, $websiteId);
                 $storeAPIKey = $this->configReader->getAPIKey($type, $id);
                 $scope->setIsExplicitlyConnected(!empty($storeAPIKey));

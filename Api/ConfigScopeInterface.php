@@ -13,6 +13,8 @@ interface ConfigScopeInterface extends SerializableInterface
     const CODE = 'code';
     const IS_CONNECTED = 'is_connected';
     const WEBSITE_ID = 'website_id';
+    // REQUIRED to query products' stock quantity
+    const WEBSITE_CODE = 'website_code';
     const URL = 'url';
     const STORE_IDS = 'store_ids';
     const PARENT = 'parent';
@@ -60,6 +62,17 @@ interface ConfigScopeInterface extends SerializableInterface
      * @return $this
      */
     public function setCode(string $code);
+
+    /**
+     * @return string
+     */
+    public function getWebsiteCode(): string;
+
+    /**
+     * @param string $websiteCode
+     * @return $this
+     */
+    public function setWebsiteCode(string $websiteCode);
 
     /**
      * @return bool Returns true if the scope is explicitly connected the admins.
