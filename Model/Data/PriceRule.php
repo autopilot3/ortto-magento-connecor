@@ -21,6 +21,18 @@ class PriceRule extends DataObject implements PriceRuleInterface
     }
 
     /** @inerhitDoc */
+    public function getCode(): string
+    {
+        return (string)$this->getData(self::CODE);
+    }
+
+    /** @inerhitDoc */
+    public function setCode(string $code): void
+    {
+        $this->setData(self::CODE, $code);
+    }
+
+    /** @inerhitDoc */
     public function getId(): int
     {
         return To::int($this->getData(self::ID));

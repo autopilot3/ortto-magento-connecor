@@ -397,7 +397,14 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
             $this->setCustomerGroups($newRule);
             $priceRule = $this->ruleRepository->save($newRule);
             $response = $this->ruleResponseFactory->create();
-            $response->setId(To::int($priceRule->getRuleId()));
+            $ruleId = To::int($priceRule->getRuleId());
+            $response->setId($ruleId);
+            if (!$rule->getIsUnique() && $rule->getCode() != '') {
+                $discount = $this->discountFactory->create();
+                $discount->setRuleId($ruleId);
+                $discount->setCode($rule->getCode());
+                $this->upsertDiscount($discount);
+            }
             return $response;
         } catch (\Exception $exception) {
             $this->logger->error($exception, "Failed to create new price rule");
@@ -425,7 +432,14 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
             $this->setConditions($existing, $rule, true);
             $priceRule = $this->ruleRepository->save($existing);
             $response = $this->ruleResponseFactory->create();
-            $response->setId(To::int($priceRule->getRuleId()));
+            $ruleId = To::int($priceRule->getRuleId());
+            $response->setId($ruleId);
+            if (!$rule->getIsUnique() && $rule->getCode() != '') {
+                $discount = $this->discountFactory->create();
+                $discount->setRuleId($ruleId);
+                $discount->setCode($rule->getCode());
+                $this->upsertDiscount($discount);
+            }
             return $response;
         } catch (NoSuchEntityException $e) {
             throw $this->helper->newHTTPException(sprintf('Rule ID %d was not found', $rule->getId()), 404);
@@ -451,7 +465,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
      * @throws Exception
      * @throws LocalizedException
      */
-    public function createDiscount(DiscountInterface $discount): DiscountInterface
+    public function upsertDiscount(DiscountInterface $discount): DiscountInterface
     {
         $err = $discount->validate();
         if (!empty($err)) {
@@ -574,7 +588,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
 
         $startDate = $rule->getStartDate();
         if (!empty($startDate)) {
-            $from = $this->helper->toUTC($startDate);
+            $from = $this->helper->formatDate($startDate);
             if ($from !== Config::EMPTY_DATE_TIME) {
                 $newRule->setFromDate($from);
             }
@@ -586,7 +600,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
 
         $expiration = $rule->getExpirationDate();
         if (!empty($expiration)) {
-            $to = $this->helper->toUTC($expiration);
+            $to = $this->helper->formatDate($expiration);
             if ($to !== Config::EMPTY_DATE_TIME) {
                 $newRule->setToDate($to);
             }

@@ -185,14 +185,29 @@ class Data extends AbstractHelper
     {
         switch (true) {
             case is_string($value):
-                $date = date_create($value, $this->utcTZ);
-                if ($date) {
+                if ($date = date_create($value, $this->utcTZ)) {
                     return $date->format(Config::DATE_TIME_FORMAT);
                 }
                 $this->logger->warn("Invalid date time", ['value' => $value]);
                 return Config::EMPTY_DATE_TIME;
             case $value instanceof DateTime:
                 $value->setTimezone($this->utcTZ);
+                return $value->format(Config::DATE_TIME_FORMAT);
+            default:
+                return Config::EMPTY_DATE_TIME;
+        }
+    }
+
+    public function formatDate($value): string
+    {
+        switch (true) {
+            case is_string($value):
+                if ($date = date_create($value)) {
+                    return $date->format(Config::DATE_TIME_FORMAT);
+                }
+                $this->logger->warn("Invalid date time", ['value' => $value]);
+                return Config::EMPTY_DATE_TIME;
+            case $value instanceof DateTime:
                 return $value->format(Config::DATE_TIME_FORMAT);
             default:
                 return Config::EMPTY_DATE_TIME;

@@ -35,7 +35,7 @@ interface DiscountRepositoryInterface
      * @param DiscountInterface $discount
      * @return DiscountInterface
      */
-    public function createDiscount(DiscountInterface $discount): DiscountInterface;
+    public function upsertDiscount(DiscountInterface $discount): DiscountInterface;
 
     /**
      * @param string $scopeType

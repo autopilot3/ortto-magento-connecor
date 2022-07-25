@@ -26,7 +26,7 @@
         </resources>
     </route>
     <route url="/V1/ortto/discount/create" method="POST">
-        <service class="Ortto\Connector\Api\DiscountRepositoryInterface" method="createDiscount"/>
+        <service class="Ortto\Connector\Api\DiscountRepositoryInterface" method="upsertDiscount"/>
         <resources>
             <resource ref="Ortto_Connector::coupons"/>
         </resources>

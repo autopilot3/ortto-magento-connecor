@@ -40,6 +40,7 @@ interface PriceRuleInterface extends SerializableInterface
     const APPLY_TO_SHIPPING = "apply_to_shipping";
     const APPLY_FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY = "apply_free_shipping_to_matching_items_only";
     const DESCRIPTION = "description";
+    const CODE = 'code';
 
     /**
      * Getter for Name.
@@ -56,6 +57,22 @@ interface PriceRuleInterface extends SerializableInterface
      * @return void
      */
     public function setName(string $name): void;
+
+    /**
+     * Getter for Code.
+     *
+     * @return string
+     */
+    public function getCode(): string;
+
+    /**
+     * Setter for Code.
+     *
+     * @param string $code
+     *
+     * @return void
+     */
+    public function setCode(string $code): void;
 
     /**
      * Getter for Id.
