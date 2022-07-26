@@ -74,6 +74,8 @@
                 type="Ortto\Connector\Model\Data\OrttoProduct"/>
     <preference for="Ortto\Connector\Api\Data\OrttoProductCategoryInterface"
                 type="Ortto\Connector\Model\Data\OrttoProductCategory"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoProductReviewInterface"
+                type="Ortto\Connector\Model\Data\OrttoProductReview"/>
     <preference for="Ortto\Connector\Api\Data\OrttoCarrierInterface"
                 type="Ortto\Connector\Model\Data\OrttoCarrier"/>
     <preference for="Ortto\Connector\Api\Data\OrttoRefundInterface"
@@ -102,6 +104,8 @@
     <!-- WEB API RESPONSE MODELS   -->
     <preference for="Ortto\Connector\Api\Data\ListProductResponseInterface"
                 type="Ortto\Connector\Model\Data\ListProductResponse"/>
+    <preference for="Ortto\Connector\Api\Data\ListProductReviewResponseInterface"
+                type="Ortto\Connector\Model\Data\ListProductReviewResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListProductCategoryResponseInterface"
                 type="Ortto\Connector\Model\Data\ListProductCategoryResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListCustomerResponseInterface"
@@ -116,6 +120,8 @@
     <!-- WEB API REPOSITORIES   -->
     <preference for="Ortto\Connector\Api\OrttoProductRepositoryInterface"
                 type="Ortto\Connector\Model\Api\OrttoProductRepository"/>
+    <preference for="Ortto\Connector\Api\OrttoProductReviewRepositoryInterface"
+                type="Ortto\Connector\Model\Api\OrttoProductReviewRepository"/>
     <preference for="Ortto\Connector\Api\OrttoProductCategoryRepositoryInterface"
                 type="Ortto\Connector\Model\Api\OrttoProductCategoryRepository"/>
     <preference for="Ortto\Connector\Api\OrttoCustomerRepositoryInterface"
@@ -130,6 +136,8 @@
     <!-- WEB API HANDLERS -->
     <preference for="Ortto\Connector\Api\ProductApiInterface"
                 type="Ortto\Connector\REST\ProductApi"/>
+    <preference for="Ortto\Connector\Api\ProductReviewApiInterface"
+                type="Ortto\Connector\REST\ProductReviewApi"/>
     <preference for="Ortto\Connector\Api\ProductCategoryApiInterface"
                 type="Ortto\Connector\REST\ProductCategoryApi"/>
     <preference for="Ortto\Connector\Api\CustomerApiInterface"

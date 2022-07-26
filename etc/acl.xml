@@ -11,10 +11,11 @@
                         <resource id="Ortto_Connector::update_app_config" title="Update Configuration" sortOrder="2"/>
                         <resource id="Ortto_Connector::get_product" title="Read Products" sortOrder="3"/>
                         <resource id="Ortto_Connector::get_category" title="Read Product Categories" sortOrder="4"/>
-                        <resource id="Ortto_Connector::get_customer" title="Read Customers" sortOrder="5"/>
-                        <resource id="Ortto_Connector::get_order" title="Read Orders" sortOrder="6"/>
+                        <resource id="Ortto_Connector::get_product_review" title="Read Product Reviews" sortOrder="5"/>
+                        <resource id="Ortto_Connector::get_customer" title="Read Customers" sortOrder="6"/>
+                        <resource id="Ortto_Connector::get_order" title="Read Orders" sortOrder="7"/>
                         <resource id="Ortto_Connector::get_restock_subscription"
-                                  title="Read Product Restock Notification Subscriptions" sortOrder="7"/>
+                                  title="Read Product Restock Notification Subscriptions" sortOrder="8"/>
                     </resource>
                 </resource>
             </resource>
