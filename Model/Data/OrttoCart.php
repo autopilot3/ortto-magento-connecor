@@ -262,30 +262,6 @@ class OrttoCart extends DataObject implements OrttoCartInterface
     }
 
     /** @inheirtDoc */
-    public function setShippingInclTax($shippingInclTax)
-    {
-        return $this->setData(self::SHIPPING_INCL_TAX, $shippingInclTax);
-    }
-
-    /** @inheirtDoc */
-    public function getShippingInclTax()
-    {
-        return To::float($this->getData(self::SHIPPING_INCL_TAX));
-    }
-
-    /** @inheirtDoc */
-    public function setBaseShippingInclTax($baseShippingInclTax)
-    {
-        return $this->setData(self::BASE_SHIPPING_INCL_TAX, $baseShippingInclTax);
-    }
-
-    /** @inheirtDoc */
-    public function getBaseShippingInclTax()
-    {
-        return To::float($this->getData(self::BASE_SHIPPING_INCL_TAX));
-    }
-
-    /** @inheirtDoc */
     public function setShippingTax($shippingTax)
     {
         return $this->setData(self::SHIPPING_TAX, $shippingTax);
@@ -412,8 +388,6 @@ class OrttoCart extends DataObject implements OrttoCartInterface
         $result[self::BASE_TAX] = $this->getBaseTax();
         $result[self::SHIPPING] = $this->getShipping();
         $result[self::BASE_SHIPPING] = $this->getBaseShipping();
-        $result[self::SHIPPING_INCL_TAX] = $this->getShippingInclTax();
-        $result[self::BASE_SHIPPING_INCL_TAX] = $this->getBaseShippingInclTax();
         $result[self::SHIPPING_TAX] = $this->getShippingTax();
         $result[self::BASE_SHIPPING_TAX] = $this->getBaseShippingTax();
         $shippingAddress = $this->getShippingAddress();

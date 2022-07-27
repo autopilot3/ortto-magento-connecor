@@ -37,6 +37,7 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
     private const TAX = 'tax_amount';
     private const TAX_PERCENT = 'tax_percent';
     private const QUANTITY = 'qty';
+    private const ITEMS = 'items';
 
     private OrttoCartFactory $cartFactory;
     private OrttoLoggerInterface $logger;
@@ -93,6 +94,12 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
         $cartId = To::int($cart->getId());
         $data = $this->cartFactory->create();
         $data->setId($cartId);
+
+        $itemsData = $this->getItems($scope, $cartId);
+        $data->setItems($itemsData[self::ITEMS]);
+        $data->setTax($itemsData[self::TAX]);
+        $data->setBaseTax($itemsData[self::BASE_TAX]);
+
         $data->setIpAddress($cart->getRemoteIp());
         $data->setCreatedAt($this->helper->toUTC($cart->getCreatedAt()));
         $data->setUpdatedAt($this->helper->toUTC($cart->getUpdatedAt()));
@@ -104,7 +111,6 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
         // In case they support multiple codes in the future
         // https://support.magento.com/hc/en-us/articles/115004348454-How-many-coupons-can-a-customer-use-in-Adobe-Commerce-
         $data->setDiscountCodes([(string)$cart->getCouponCode()]);
-        $data->setItems($this->getItems($scope, $cartId));
         $data->setGrandTotal(To::float($cart->getGrandTotal()));
         $data->setBaseGrandTotal(To::float($cart->getBaseGrandTotal()));
         $data->setSubtotal($subtotal);
@@ -122,17 +128,22 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
             $data->setShippingAddress($address);
             $data->setShipping(To::float($shippingAddress->getShippingAmount()));
             $data->setBaseShipping(To::float($shippingAddress->getBaseShippingAmount()));
-            $data->setShippingInclTax(To::float($shippingAddress->getShippingInclTax()));
-            $data->setBaseShippingInclTax(To::float($shippingAddress->getBaseShippingTaxAmount()));
-            $data->setShippingTax(To::float($shippingAddress->getShippingTaxAmount()));
-            $data->setBaseShippingTax(To::float($shippingAddress->getBaseShippingInclTax()));
+            $shippingTax = To::float($shippingAddress->getShippingTaxAmount());
+            if ($shippingTax > 0) {
+                $data->setShippingTax($shippingTax);
+                $data->setTax($data->getTax() + $shippingTax);
+            }
+
+            $baseShippingTax = To::float($shippingAddress->getBaseShippingTaxAmount());
+            if ($baseShippingTax > 0) {
+                $data->setBaseTax($data->getBaseTax() + $baseShippingTax);
+                $data->setBaseShippingTax($baseShippingTax);
+            }
         }
         $billingAddress = $cart->getBillingAddress();
         if (!empty($billingAddress)) {
             $address = $this->convertQuoteAddress($billingAddress);
             $data->setBillingAddress($address);
-            $data->setTax(To::float($billingAddress->getTaxAmount()));
-            $data->setBaseTax(To::float($billingAddress->getShippingTaxAmount()));
         }
 
         return $data;
@@ -141,7 +152,7 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
     /**
      * @param ConfigScopeInterface $scope
      * @param int $cartId
-     * @return OrttoCartItemInterface[]
+     * @return array
      */
     private function getItems(ConfigScopeInterface $scope, $cartId)
     {
@@ -181,9 +192,11 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
         }
 
         $products = $this->productRepository->getByIds($scope, $productIds)->getItems();
-        $result = [];
+        $items = [];
+        $totalTax = 0;
+        $totalBaseTax = 0;
         foreach ($cartItems as $item) {
-            $data = $this->cartItemFactory->create();
+            $orttoItem = $this->cartItemFactory->create();
             $productId = To::int($item->getData(self::PRODUCT_ID));
 
             $product = $products[$productId];
@@ -192,30 +205,41 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
                 continue;
             }
 
-            $data->setProduct($product);
+            $orttoItem->setProduct($product);
 
             $itemId = To::int($item->getData(self::ITEM_ID));
             if (key_exists($itemId, $productVariations)) {
                 $variantId = $productVariations[$itemId];
-                $data->setVariant($products[$variantId]);
+                $orttoItem->setVariant($products[$variantId]);
             }
 
-            $data->setCreatedAt($this->helper->toUTC($item->getData(self::CREATED_AT)));
-            $data->setUpdatedAt($this->helper->toUTC($item->getData(self::UPDATED_AT)));
-            $data->setDiscount(To::float($item->getData(self::DISCOUNT)));
-            $data->setBaseDiscount(To::float($item->getData(self::BASE_DISCOUNT)));
-            $data->setPrice(To::float($item->getData(self::PRICE)));
-            $data->setBasePrice(To::float($item->getData(self::BASE_PRICE)));
-            $data->setRowTotal(To::float($item->getData(self::ROW_TOTAL)));
-            $data->setBaseRowTotal(To::float($item->getData(self::BASE_ROW_TOTAL)));
-            $data->setBaseTax(To::float($item->getData(self::BASE_TAX)));
-            $data->setTax(To::float($item->getData(self::TAX)));
-            $data->setTaxPercent(To::float($item->getData(self::TAX_PERCENT)));
-            $data->setQuantity(To::float($item->getData(self::QUANTITY)));
+            $orttoItem->setCreatedAt($this->helper->toUTC($item->getData(self::CREATED_AT)));
+            $orttoItem->setUpdatedAt($this->helper->toUTC($item->getData(self::UPDATED_AT)));
+            $orttoItem->setDiscount(To::float($item->getData(self::DISCOUNT)));
+            $orttoItem->setBaseDiscount(To::float($item->getData(self::BASE_DISCOUNT)));
+            $orttoItem->setPrice(To::float($item->getData(self::PRICE)));
+            $orttoItem->setBasePrice(To::float($item->getData(self::BASE_PRICE)));
+            $orttoItem->setRowTotal(To::float($item->getData(self::ROW_TOTAL)));
+            $orttoItem->setBaseRowTotal(To::float($item->getData(self::BASE_ROW_TOTAL)));
 
-            $result[] = $data;
+            $tax = To::float($item->getData(self::TAX));
+            $totalTax += $tax;
+            $orttoItem->setTax($tax);
+
+            $baseTax = To::float($item->getData(self::BASE_TAX));
+            $totalBaseTax += $baseTax;
+            $orttoItem->setBaseTax($baseTax);
+
+            $orttoItem->setTaxPercent(To::float($item->getData(self::TAX_PERCENT)));
+            $orttoItem->setQuantity(To::float($item->getData(self::QUANTITY)));
+
+            $items[] = $orttoItem;
         }
-        return $result;
+        return [
+            self::ITEMS => $items,
+            self::TAX => $totalTax,
+            self::BASE_TAX => $totalBaseTax,
+        ];
     }
 
     /**

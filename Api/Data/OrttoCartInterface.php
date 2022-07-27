@@ -26,8 +26,6 @@ interface OrttoCartInterface
     const BASE_TAX = 'base_tax';
     const SHIPPING = 'shipping';
     const BASE_SHIPPING = 'base_shipping';
-    const SHIPPING_INCL_TAX = 'shipping_incl_tax';
-    const BASE_SHIPPING_INCL_TAX = 'base_shipping_incl_tax';
     const SHIPPING_TAX = 'shipping_tax';
     const BASE_SHIPPING_TAX = 'base_shipping_tax';
     const SHIPPING_ADDRESS = 'shipping_address';
@@ -351,36 +349,6 @@ interface OrttoCartInterface
     * @return float
     */
     public function getBaseShipping();
-
-    /**
-    * Set shipping incl tax
-    *
-    * @param float $shippingInclTax
-    * @return $this
-    */
-    public function setShippingInclTax($shippingInclTax);
-
-    /**
-    * Get shipping incl tax
-    *
-    * @return float
-    */
-    public function getShippingInclTax();
-
-    /**
-    * Set base shipping incl tax
-    *
-    * @param float $baseShippingInclTax
-    * @return $this
-    */
-    public function setBaseShippingInclTax($baseShippingInclTax);
-
-    /**
-    * Get base shipping incl tax
-    *
-    * @return float
-    */
-    public function getBaseShippingInclTax();
 
     /**
     * Set shipping tax

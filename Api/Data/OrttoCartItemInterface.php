@@ -68,7 +68,7 @@ interface OrttoCartItemInterface
     /**
     * Set discount
     *
-    * @param int $discount
+    * @param float $discount
     * @return $this
     */
     public function setDiscount($discount);
@@ -76,14 +76,14 @@ interface OrttoCartItemInterface
     /**
     * Get discount
     *
-    * @return int
+    * @return float
     */
     public function getDiscount();
 
     /**
     * Set base discount
     *
-    * @param int $baseDiscount
+    * @param float $baseDiscount
     * @return $this
     */
     public function setBaseDiscount($baseDiscount);
@@ -91,14 +91,14 @@ interface OrttoCartItemInterface
     /**
     * Get base discount
     *
-    * @return int
+    * @return float
     */
     public function getBaseDiscount();
 
     /**
     * Set price
     *
-    * @param int $price
+    * @param float $price
     * @return $this
     */
     public function setPrice($price);
@@ -106,14 +106,14 @@ interface OrttoCartItemInterface
     /**
     * Get price
     *
-    * @return int
+    * @return float
     */
     public function getPrice();
 
     /**
     * Set base price
     *
-    * @param int $basePrice
+    * @param float $basePrice
     * @return $this
     */
     public function setBasePrice($basePrice);
@@ -121,14 +121,14 @@ interface OrttoCartItemInterface
     /**
     * Get base price
     *
-    * @return int
+    * @return float
     */
     public function getBasePrice();
 
     /**
     * Set row total
     *
-    * @param int $rowTotal
+    * @param float $rowTotal
     * @return $this
     */
     public function setRowTotal($rowTotal);
@@ -136,14 +136,14 @@ interface OrttoCartItemInterface
     /**
     * Get row total
     *
-    * @return int
+    * @return float
     */
     public function getRowTotal();
 
     /**
     * Set base row total
     *
-    * @param int $baseRowTotal
+    * @param float $baseRowTotal
     * @return $this
     */
     public function setBaseRowTotal($baseRowTotal);
@@ -151,14 +151,14 @@ interface OrttoCartItemInterface
     /**
     * Get base row total
     *
-    * @return int
+    * @return float
     */
     public function getBaseRowTotal();
 
     /**
     * Set tax
     *
-    * @param int $tax
+    * @param float $tax
     * @return $this
     */
     public function setTax($tax);
@@ -166,14 +166,14 @@ interface OrttoCartItemInterface
     /**
     * Get tax
     *
-    * @return int
+    * @return float
     */
     public function getTax();
 
     /**
     * Set base tax
     *
-    * @param int $baseTax
+    * @param float $baseTax
     * @return $this
     */
     public function setBaseTax($baseTax);
@@ -181,14 +181,14 @@ interface OrttoCartItemInterface
     /**
     * Get base tax
     *
-    * @return int
+    * @return float
     */
     public function getBaseTax();
 
     /**
     * Set tax percent
     *
-    * @param int $taxPercent
+    * @param float $taxPercent
     * @return $this
     */
     public function setTaxPercent($taxPercent);
@@ -196,14 +196,14 @@ interface OrttoCartItemInterface
     /**
     * Get tax percent
     *
-    * @return int
+    * @return float
     */
     public function getTaxPercent();
 
     /**
     * Set quantity
     *
-    * @param int $quantity
+    * @param float $quantity
     * @return $this
     */
     public function setQuantity($quantity);
@@ -211,7 +211,7 @@ interface OrttoCartItemInterface
     /**
     * Get quantity
     *
-    * @return int
+    * @return float
     */
     public function getQuantity();
 

@@ -54,7 +54,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getDiscount()
     {
-        return To::int($this->getData(self::DISCOUNT));
+        return To::float($this->getData(self::DISCOUNT));
     }
 
     /** @inheirtDoc */
@@ -66,7 +66,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getBaseDiscount()
     {
-        return To::int($this->getData(self::BASE_DISCOUNT));
+        return To::float($this->getData(self::BASE_DISCOUNT));
     }
 
     /** @inheirtDoc */
@@ -78,7 +78,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getPrice()
     {
-        return To::int($this->getData(self::PRICE));
+        return To::float($this->getData(self::PRICE));
     }
 
     /** @inheirtDoc */
@@ -90,7 +90,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getBasePrice()
     {
-        return To::int($this->getData(self::BASE_PRICE));
+        return To::float($this->getData(self::BASE_PRICE));
     }
 
     /** @inheirtDoc */
@@ -102,7 +102,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getRowTotal()
     {
-        return To::int($this->getData(self::ROW_TOTAL));
+        return To::float($this->getData(self::ROW_TOTAL));
     }
 
     /** @inheirtDoc */
@@ -114,7 +114,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getBaseRowTotal()
     {
-        return To::int($this->getData(self::BASE_ROW_TOTAL));
+        return To::float($this->getData(self::BASE_ROW_TOTAL));
     }
 
     /** @inheirtDoc */
@@ -126,7 +126,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getTax()
     {
-        return To::int($this->getData(self::TAX));
+        return To::float($this->getData(self::TAX));
     }
 
     /** @inheirtDoc */
@@ -138,7 +138,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getBaseTax()
     {
-        return To::int($this->getData(self::BASE_TAX));
+        return To::float($this->getData(self::BASE_TAX));
     }
 
     /** @inheirtDoc */
@@ -150,7 +150,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getTaxPercent()
     {
-        return To::int($this->getData(self::TAX_PERCENT));
+        return To::float($this->getData(self::TAX_PERCENT));
     }
 
     /** @inheirtDoc */
@@ -162,7 +162,7 @@ class OrttoCartItem extends DataObject implements OrttoCartItemInterface
     /** @inheirtDoc */
     public function getQuantity()
     {
-        return To::int($this->getData(self::QUANTITY));
+        return To::float($this->getData(self::QUANTITY));
     }
 
     /** @inheirtDoc */
