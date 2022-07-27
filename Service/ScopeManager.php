@@ -151,10 +151,10 @@ class ScopeManager implements ScopeManagerInterface
                 /** @var Store $store */
                 $store = $this->storeManager->getStore($id);
                 $websiteId = To::int($store->getWebsiteId());
-                $website = $this->storeManager->getWebsite($id);
+                $website = $this->storeManager->getWebsite($websiteId);
                 $scope->setWebsiteId($websiteId);
+                // Used for multi-stock support
                 $scope->setWebsiteCode((string)$website->getCode());
-                $websiteAPIKey = $this->configReader->getAPIKey(ScopeInterface::SCOPE_WEBSITE, $websiteId);
                 $storeAPIKey = $this->configReader->getAPIKey($type, $id);
                 $scope->setIsExplicitlyConnected(!empty($storeAPIKey));
                 $scope->setName($store->getName());
