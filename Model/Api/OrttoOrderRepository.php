@@ -347,7 +347,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         // We need to find the bundles in a separate loop because we cannot rely on the order of the items
         foreach ($items as $item) {
             if ((string)$item->getProductType() == 'bundle') {
-                $bundles[] = $item->getItemId();
+                $bundles[$item->getItemId()] = 0.0;
             }
         }
 
@@ -359,8 +359,9 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             // An item wih non-empty parent ID is variation of a configurable product
             // which should not be listed in the items
             if ($patentId = $item->getParentItemId()) {
-                if (array_contains($bundles, $patentId, false)) {
+                if (array_key_exists($patentId, $bundles)) {
                     // It's not a variant of a configurable product. It's a bundled sub-product.
+                    $bundles[$patentId] += To::float($item->getDiscountAmount());
                     continue;
                 }
                 $productVariations[To::int($patentId)] = To::int($item->getProductId());
@@ -369,7 +370,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             }
         }
 
-        $data->setItems($this->getOrderItems($orderItems, $productVariations, $products));
+        $data->setItems($this->getOrderItems($orderItems, $productVariations, $products, $bundles));
 
         if ($data->getTotalOfflineRefunded() > 0 || $data->getTotalOnlineRefunded() > 0) {
             $data->setRefunds($this->getRefunds($orderId, $products));
@@ -387,13 +388,15 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
      * @param OrderItemInterface[] $items
      * @param array $productVariations
      * @param \Ortto\Connector\Api\Data\OrttoProductInterface[] $products
+     * @param array $bundles
      * @return \Ortto\Connector\Api\Data\OrttoOrderItemInterface[]
      */
-    private function getOrderItems($items, $productVariations, $products)
+    private function getOrderItems($items, $productVariations, $products, $bundles)
     {
         $orderItems = [];
         foreach ($items as $item) {
-            $itemId = To::int($item->getItemId());
+            $id = $item->getItemId();
+            $itemId = To::int($id);
             $data = $this->orderItemFactory->create();
             $data->setId($itemId);
             $productId = To::int($item->getProductId());
@@ -417,7 +420,11 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $data->setRefunded(To::float($item->getAmountRefunded()));
             $data->setBaseRefunded(To::float($item->getBaseAmountRefunded()));
             $data->setBaseCost(To::float($item->getBaseCost()));
-            $data->setDiscount(To::float($item->getDiscountAmount()));
+            if (array_key_exists($id, $bundles)) {
+                $data->setDiscount($bundles[$id]);
+            } else {
+                $data->setDiscount(To::float($item->getDiscountAmount()));
+            }
             $data->setDiscountPercent(To::float($item->getDiscountPercent()));
             $data->setDiscountInvoiced(To::float($item->getDiscountInvoiced()));
             $data->setBaseDiscountInvoiced(To::float($item->getBaseDiscountInvoiced()));
