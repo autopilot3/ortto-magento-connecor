@@ -7,6 +7,7 @@ interface OrttoProductCategoryInterface
 {
     const ID = 'id';
     const NAME = 'name';
+    const FULL_NAME = 'full_name';
     const IMAGE_URL = 'image_url';
     const DESCRIPTION = 'description';
     const PRODUCTS_COUNT = 'products_count';
@@ -42,6 +43,21 @@ interface OrttoProductCategoryInterface
     * @return string
     */
     public function getName();
+
+    /**
+    * Set full name
+    *
+    * @param string $fullName
+    * @return $this
+    */
+    public function setFullName($fullName);
+
+    /**
+    * Get full name
+    *
+    * @return string
+    */
+    public function getFullName();
 
     /**
     * Set image url

@@ -34,6 +34,18 @@ class OrttoProductCategory extends DataObject implements OrttoProductCategoryInt
     }
 
     /** @inheirtDoc */
+    public function setFullName($fullName)
+    {
+        return $this->setData(self::FULL_NAME, $fullName);
+    }
+
+    /** @inheirtDoc */
+    public function getFullName()
+    {
+        return (string)$this->getData(self::FULL_NAME);
+    }
+
+    /** @inheirtDoc */
     public function setImageUrl($imageUrl)
     {
         return $this->setData(self::IMAGE_URL, $imageUrl);
@@ -102,6 +114,7 @@ class OrttoProductCategory extends DataObject implements OrttoProductCategoryInt
         $result=[];
         $result[self::ID] = $this->getId();
         $result[self::NAME] = $this->getName();
+        $result[self::FULL_NAME] = $this->getFullName();
         $result[self::IMAGE_URL] = $this->getImageUrl();
         $result[self::DESCRIPTION] = $this->getDescription();
         $result[self::PRODUCTS_COUNT] = $this->getProductsCount();

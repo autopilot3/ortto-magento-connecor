@@ -62,9 +62,9 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
         /** @var Category $category */
         foreach ($collection->getItems() as $category) {
             $productCount = To::int($category->getProductCount());
-            if ($productCount <= 0) {
-                continue;
-            }
+//            if ($productCount <= 0) {
+//                continue;
+//            }
             $categories[] = $this->convert($category, $productCount);
         }
         $result->setItems($categories);
@@ -86,6 +86,7 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
         $data->setProductsCount($productCount);
         $data->setCreatedAt($this->helper->toUTC($category->getCreatedAt()));
         $data->setUpdatedAt($this->helper->toUTC($category->getUpdatedAt()));
+        $data->setFullName($this->getFullName($category));
         try {
             if ($imageURL = $category->getImageUrl()) {
                 $data->setImageURL((string)$imageURL);
@@ -94,5 +95,17 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
             $this->logger->error($e, "Failed to fetch product category image");
         }
         return $data;
+    }
+
+    private function getFullName(Category $category): string
+    {
+        $names = [];
+        foreach ($category->getParentCategories() as $parent) {
+            if ($category->getEntityId() != $parent->getEntityId() && $parent->getChildrenCount() > 1) {
+                $names[] = $parent->getName();
+            }
+        }
+        $names[] = $category->getName();
+        return implode('/', $names);
     }
 }
