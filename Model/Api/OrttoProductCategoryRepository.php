@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Ortto\Connector\Model\Api;
 
 use Magento\Catalog\Api\Data\CategoryInterface;
+use Magento\Catalog\Model\Category;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Exception\LocalizedException;
 use Ortto\Connector\Api\ConfigScopeInterface;
@@ -42,6 +43,7 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
         $collection = $this->categoryCollection->create();
         $collection->setPage($page, $pageSize)
             ->addFieldToSelect("*")
+            ->addIsActiveFilter()
             ->setOrder(CategoryInterface::KEY_UPDATED_AT, SortOrder::SORT_ASC)
             ->setStoreId($scope->getId());
 
@@ -57,9 +59,13 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
         }
 
         $categories = [];
-        /** @var CategoryInterface $category */
+        /** @var Category $category */
         foreach ($collection->getItems() as $category) {
-            $categories[] = $this->convert($category);
+            $productCount = To::int($category->getProductCount());
+            if ($productCount <= 0) {
+                continue;
+            }
+            $categories[] = $this->convert($category, $productCount);
         }
         $result->setItems($categories);
         $result->setHasMore($page < $total / $pageSize);
@@ -67,16 +73,17 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
     }
 
     /**
-     * @param CategoryInterface $category
+     * @param Category $category
+     * @param int $productCount
      * @return \Ortto\Connector\Api\Data\OrttoProductCategoryInterface
      */
-    private function convert($category)
+    private function convert($category, int $productCount)
     {
         $data = $this->productCategoryFactory->create();
         $data->setId(To::int($category->getEntityId()));
         $data->setName((string)$category->getName());
-        $data->setDescription((string)$category->getDescription() ?? '');
-        $data->setProductsCount(To::int($category->getProductCount()));
+        $data->setDescription((string)$category->getData('description') ?? '');
+        $data->setProductsCount($productCount);
         $data->setCreatedAt($this->helper->toUTC($category->getCreatedAt()));
         $data->setUpdatedAt($this->helper->toUTC($category->getUpdatedAt()));
         try {
