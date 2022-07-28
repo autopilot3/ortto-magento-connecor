@@ -322,51 +322,51 @@ class OrttoOrder extends DataObject implements OrttoOrderInterface
     }
 
     /** @inheirtDoc */
-    public function setBaseTotalOfflineRefunded($baseTotalOfflineRefunded)
+    public function setTotalRefunded($totalRefunded)
     {
-        return $this->setData(self::BASE_TOTAL_OFFLINE_REFUNDED, $baseTotalOfflineRefunded);
+        return $this->setData(self::TOTAL_REFUNDED, $totalRefunded);
     }
 
     /** @inheirtDoc */
-    public function getBaseTotalOfflineRefunded()
+    public function getTotalRefunded()
     {
-        return To::float($this->getData(self::BASE_TOTAL_OFFLINE_REFUNDED));
+        return To::float($this->getData(self::TOTAL_REFUNDED));
     }
 
     /** @inheirtDoc */
-    public function setBaseTotalOnlineRefunded($baseTotalOnlineRefunded)
+    public function setBaseTotalRefunded($baseTotalRefunded)
     {
-        return $this->setData(self::BASE_TOTAL_ONLINE_REFUNDED, $baseTotalOnlineRefunded);
+        return $this->setData(self::BASE_TOTAL_REFUNDED, $baseTotalRefunded);
     }
 
     /** @inheirtDoc */
-    public function getBaseTotalOnlineRefunded()
+    public function getBaseTotalRefunded()
     {
-        return To::float($this->getData(self::BASE_TOTAL_ONLINE_REFUNDED));
+        return To::float($this->getData(self::BASE_TOTAL_REFUNDED));
     }
 
     /** @inheirtDoc */
-    public function setTotalOfflineRefunded($totalOfflineRefunded)
+    public function setSubtotalRefunded($subtotalRefunded)
     {
-        return $this->setData(self::TOTAL_OFFLINE_REFUNDED, $totalOfflineRefunded);
+        return $this->setData(self::SUBTOTAL_REFUNDED, $subtotalRefunded);
     }
 
     /** @inheirtDoc */
-    public function getTotalOfflineRefunded()
+    public function getSubtotalRefunded()
     {
-        return To::float($this->getData(self::TOTAL_OFFLINE_REFUNDED));
+        return To::float($this->getData(self::SUBTOTAL_REFUNDED));
     }
 
     /** @inheirtDoc */
-    public function setTotalOnlineRefunded($totalOnlineRefunded)
+    public function setBaseSubtotalRefunded($baseSubtotalRefunded)
     {
-        return $this->setData(self::TOTAL_ONLINE_REFUNDED, $totalOnlineRefunded);
+        return $this->setData(self::BASE_SUBTOTAL_REFUNDED, $baseSubtotalRefunded);
     }
 
     /** @inheirtDoc */
-    public function getTotalOnlineRefunded()
+    public function getBaseSubtotalRefunded()
     {
-        return To::float($this->getData(self::TOTAL_ONLINE_REFUNDED));
+        return To::float($this->getData(self::BASE_SUBTOTAL_REFUNDED));
     }
 
     /** @inheirtDoc */
@@ -942,10 +942,10 @@ class OrttoOrder extends DataObject implements OrttoOrderInterface
         $result[self::BASE_SUBTOTAL] = $this->getBaseSubtotal();
         $result[self::SUBTOTAL_INCL_TAX] = $this->getSubtotalInclTax();
         $result[self::BASE_SUBTOTAL_INCL_TAX] = $this->getBaseSubtotalInclTax();
-        $result[self::BASE_TOTAL_OFFLINE_REFUNDED] = $this->getBaseTotalOfflineRefunded();
-        $result[self::BASE_TOTAL_ONLINE_REFUNDED] = $this->getBaseTotalOnlineRefunded();
-        $result[self::TOTAL_OFFLINE_REFUNDED] = $this->getTotalOfflineRefunded();
-        $result[self::TOTAL_ONLINE_REFUNDED] = $this->getTotalOnlineRefunded();
+        $result[self::TOTAL_REFUNDED] = $this->getTotalRefunded();
+        $result[self::BASE_TOTAL_REFUNDED] = $this->getBaseTotalRefunded();
+        $result[self::SUBTOTAL_REFUNDED] = $this->getSubtotalRefunded();
+        $result[self::BASE_SUBTOTAL_REFUNDED] = $this->getBaseSubtotalRefunded();
         $result[self::TOTAL_PAID] = $this->getTotalPaid();
         $result[self::BASE_TOTAL_PAID] = $this->getBaseTotalPaid();
         $result[self::IP_ADDRESS] = $this->getIpAddress();

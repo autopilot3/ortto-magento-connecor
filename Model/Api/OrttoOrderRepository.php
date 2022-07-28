@@ -293,10 +293,10 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $data->setBaseSubtotal(To::float($order->getBaseSubtotal()));
         $data->setBaseSubtotalInclTax(To::float($order->getBaseSubtotalInclTax()));
         $data->setSubtotalInclTax(To::float($order->getSubtotalInclTax()));
-        $data->setTotalOfflineRefunded(To::float($order->getTotalOfflineRefunded()));
-        $data->setBaseTotalOfflineRefunded(To::float($order->getBaseTotalOfflineRefunded()));
-        $data->setBaseTotalOnlineRefunded(To::float($order->getBaseTotalOnlineRefunded()));
-        $data->setTotalOnlineRefunded(To::float($order->getTotalOnlineRefunded()));
+        $data->setTotalRefunded(To::float($order->getTotalRefunded()));
+        $data->setBaseTotalRefunded(To::float($order->getBaseTotalRefunded()));
+        $data->setSubtotalRefunded(To::float($order->getSubtotalRefunded()));
+        $data->setBaseSubtotalRefunded(To::float($order->getBaseSubtotalRefunded()));
         $data->setTotalPaid(To::float($order->getTotalPaid()));
         $data->setBaseTotalPaid(To::float($order->getBaseTotalPaid()));
         $data->setIpAddress((string)$order->getRemoteIp());
@@ -372,7 +372,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
 
         $data->setItems($this->getOrderItems($orderItems, $productVariations, $products, $bundles));
 
-        if ($data->getTotalOfflineRefunded() > 0 || $data->getTotalOnlineRefunded() > 0) {
+        if ($data->getTotalRefunded() > 0) {
             $data->setRefunds($this->getRefunds($orderId, $products));
         }
 
@@ -491,6 +491,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $refund->setAdjustment(To::float($memo->getAdjustment()));
             $refund->setBaseAdjustment(To::float($memo->getBaseAdjustment()));
             $refund->setRefundedAt($this->helper->toUTC($memo->getCreatedAt()));
+            $refund->setDiscount(To::float($memo->getDiscountAmount()));
             $items = [];
             foreach ($memo->getItems() as $item) {
                 $totalRefunded = To::float($item->getRowTotal());

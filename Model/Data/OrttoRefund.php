@@ -226,6 +226,18 @@ class OrttoRefund extends DataObject implements OrttoRefundInterface
     }
 
     /** @inheirtDoc */
+    public function setDiscount($discount)
+    {
+        return $this->setData(self::DISCOUNT, $discount);
+    }
+
+    /** @inheirtDoc */
+    public function getDiscount()
+    {
+        return To::float($this->getData(self::DISCOUNT));
+    }
+
+    /** @inheirtDoc */
     public function setItems(array $items)
     {
         return $this->setData(self::ITEMS, $items);
@@ -262,6 +274,7 @@ class OrttoRefund extends DataObject implements OrttoRefundInterface
         $result[self::ADJUSTMENT] = $this->getAdjustment();
         $result[self::BASE_ADJUSTMENT] = $this->getBaseAdjustment();
         $result[self::REFUNDED_AT] = $this->getRefundedAt();
+        $result[self::DISCOUNT] = $this->getDiscount();
         $result[self::ITEMS] = [];
         foreach ($this->getItems() as $item) {
             $result[self::ITEMS][] = $item->serializeToArray();

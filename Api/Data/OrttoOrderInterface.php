@@ -31,10 +31,10 @@ interface OrttoOrderInterface
     const BASE_SUBTOTAL = 'base_subtotal';
     const SUBTOTAL_INCL_TAX = 'subtotal_incl_tax';
     const BASE_SUBTOTAL_INCL_TAX = 'base_subtotal_incl_tax';
-    const BASE_TOTAL_OFFLINE_REFUNDED = 'base_total_offline_refunded';
-    const BASE_TOTAL_ONLINE_REFUNDED = 'base_total_online_refunded';
-    const TOTAL_OFFLINE_REFUNDED = 'total_offline_refunded';
-    const TOTAL_ONLINE_REFUNDED = 'total_online_refunded';
+    const TOTAL_REFUNDED = 'total_refunded';
+    const BASE_TOTAL_REFUNDED = 'base_total_refunded';
+    const SUBTOTAL_REFUNDED = 'subtotal_refunded';
+    const BASE_SUBTOTAL_REFUNDED = 'base_subtotal_refunded';
     const TOTAL_PAID = 'total_paid';
     const BASE_TOTAL_PAID = 'base_total_paid';
     const IP_ADDRESS = 'ip_address';
@@ -472,64 +472,64 @@ interface OrttoOrderInterface
     public function getBaseSubtotalInclTax();
 
     /**
-    * Set base total offline refunded
+    * Set total refunded
     *
-    * @param float $baseTotalOfflineRefunded
+    * @param float $totalRefunded
     * @return $this
     */
-    public function setBaseTotalOfflineRefunded($baseTotalOfflineRefunded);
+    public function setTotalRefunded($totalRefunded);
 
     /**
-    * Get base total offline refunded
+    * Get total refunded
     *
     * @return float
     */
-    public function getBaseTotalOfflineRefunded();
+    public function getTotalRefunded();
 
     /**
-    * Set base total online refunded
+    * Set base total refunded
     *
-    * @param float $baseTotalOnlineRefunded
+    * @param float $baseTotalRefunded
     * @return $this
     */
-    public function setBaseTotalOnlineRefunded($baseTotalOnlineRefunded);
+    public function setBaseTotalRefunded($baseTotalRefunded);
 
     /**
-    * Get base total online refunded
+    * Get base total refunded
     *
     * @return float
     */
-    public function getBaseTotalOnlineRefunded();
+    public function getBaseTotalRefunded();
 
     /**
-    * Set total offline refunded
+    * Set subtotal refunded
     *
-    * @param float $totalOfflineRefunded
+    * @param float $subtotalRefunded
     * @return $this
     */
-    public function setTotalOfflineRefunded($totalOfflineRefunded);
+    public function setSubtotalRefunded($subtotalRefunded);
 
     /**
-    * Get total offline refunded
+    * Get subtotal refunded
     *
     * @return float
     */
-    public function getTotalOfflineRefunded();
+    public function getSubtotalRefunded();
 
     /**
-    * Set total online refunded
+    * Set base subtotal refunded
     *
-    * @param float $totalOnlineRefunded
+    * @param float $baseSubtotalRefunded
     * @return $this
     */
-    public function setTotalOnlineRefunded($totalOnlineRefunded);
+    public function setBaseSubtotalRefunded($baseSubtotalRefunded);
 
     /**
-    * Get total online refunded
+    * Get base subtotal refunded
     *
     * @return float
     */
-    public function getTotalOnlineRefunded();
+    public function getBaseSubtotalRefunded();
 
     /**
     * Set total paid

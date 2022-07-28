@@ -23,6 +23,7 @@ interface OrttoRefundInterface
     const ADJUSTMENT = 'adjustment';
     const BASE_ADJUSTMENT = 'base_adjustment';
     const REFUNDED_AT = 'refunded_at';
+    const DISCOUNT = 'discount';
     const ITEMS = 'items';
 
     /**
@@ -294,6 +295,21 @@ interface OrttoRefundInterface
     * @return string
     */
     public function getRefundedAt();
+
+    /**
+    * Set discount
+    *
+    * @param float $discount
+    * @return $this
+    */
+    public function setDiscount($discount);
+
+    /**
+    * Get discount
+    *
+    * @return float
+    */
+    public function getDiscount();
 
     /**
     * Set items
