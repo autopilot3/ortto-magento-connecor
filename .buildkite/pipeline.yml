@@ -12,9 +12,9 @@ steps:
   - block: ":rocket: Deploy (PROD-MAGENTO-2.4.2)?"
 
   - label: ":php: :package: Package and Deploy to eb50a474a0.nxcli.net :mage:"
-    command: .buildkite/deploy-nexcess.sh a52f6224_1 eb50a474a0.nxcli.net eb50a474a0.nxcli.net/html
+    command: .buildkite/deploy-nexcess.sh a52f6224_1 4f875de389.nxcli.net eb50a474a0.nxcli.net/html
     agents:
-      env: prod
+      env: stg
       region: ap-southeast-2
 
 
