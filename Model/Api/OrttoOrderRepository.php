@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
+use Magento\Directory\Model\CountryFactory;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Api\SortOrderBuilder;
@@ -43,6 +44,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private const COMPLETED_AT = 'completed_at';
     private const BILLING_ADDRESS = 'billing';
 
+    private array $countryCache = [];
     private Data $helper;
     private OrttoLogger $logger;
     private ListOrderResponseFactory $listResponseFactory;
@@ -63,6 +65,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private CreditmemoRepositoryInterface $creditMemoRepository;
     private OrttoProductRepositoryInterface $productRepository;
     private OrttoRefundItemFactory $refundItemFactory;
+    private CountryFactory $countryFactory;
 
     public function __construct(
         Data $helper,
@@ -84,7 +87,8 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         \Ortto\Connector\Model\Data\OrttoGiftFactory $giftFactory,
         \Magento\Sales\Api\CreditmemoRepositoryInterface $creditMemoRepository,
         OrttoProductRepositoryInterface $productRepository,
-        \Ortto\Connector\Model\Data\OrttoRefundItemFactory $refundItemFactory
+        \Ortto\Connector\Model\Data\OrttoRefundItemFactory $refundItemFactory,
+        CountryFactory $countryFactory
     ) {
         $this->helper = $helper;
         $this->logger = $logger;
@@ -106,6 +110,8 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $this->creditMemoRepository = $creditMemoRepository;
         $this->productRepository = $productRepository;
         $this->refundItemFactory = $refundItemFactory;
+        $this->countryFactory = $countryFactory;
+        $this->countryCache = [];
     }
 
     /** @inheirtDoc
@@ -629,7 +635,23 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         if ($street = $address->getData(AddressInterface::STREET)) {
             $data->setStreetLines(explode("\n", $street));
         }
-        $data->setCountryCode((string)$address->getData(AddressInterface::COUNTRY_ID));
+        $countryId = (string)$address->getData(AddressInterface::COUNTRY_ID);
+        if (!empty($countryId)) {
+            $data->setCountryCode($countryId);
+            if (array_key_exists($countryId, $this->countryCache)) {
+                $data->setCountryName($this->countryCache[$countryId]);
+            } else {
+                $country = $this->countryFactory->create()->loadByCode($countryId);
+                if (empty($country)) {
+                    // Do not look up again if we could not find it once
+                    $this->countryCache[$countryId] = '';
+                } else {
+                    $name = (string)$country->getName();
+                    $this->countryCache[$countryId] = $name;
+                    $data->setCountryName($name);
+                }
+            }
+        }
         return $data;
     }
 

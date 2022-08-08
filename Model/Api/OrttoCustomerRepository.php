@@ -5,6 +5,7 @@ namespace Ortto\Connector\Model\Api;
 
 use Magento\Customer\Api\Data\AddressInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
+use Magento\Directory\Model\CountryFactory;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
@@ -62,6 +63,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     const CUSTOMER_GROUP_ID = 'customer_group_id';
     const CUSTOMER_IS_GUEST = 'customer_is_guest';
 
+    private array $countryCache;
     private Data $helper;
     private OrttoLogger $logger;
     private ListCustomerResponseFactory $listResponseFactory;
@@ -71,6 +73,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     private AddressCollectionFactory $addressCollection;
     private QuoteCollectionFactory $quoteCollection;
     private QuoteAddressCollectionFactory $quoteAddressCollection;
+    private CountryFactory $countryFactory;
 
     public function __construct(
         Data $helper,
@@ -81,8 +84,10 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         QuoteAddressCollectionFactory $quoteAddressCollection,
         ListCustomerResponseFactory $listResponseFactory,
         OrttoCustomerFactory $customerFactory,
-        \Ortto\Connector\Model\Data\OrttoAddressFactory $addressFactory
+        \Ortto\Connector\Model\Data\OrttoAddressFactory $addressFactory,
+        \Magento\Directory\Model\CountryFactory $countryFactory
     ) {
+        $this->countryCache = [];
         $this->helper = $helper;
         $this->logger = $logger;
         $this->listResponseFactory = $listResponseFactory;
@@ -92,6 +97,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $this->addressCollection = $addressCollection;
         $this->quoteCollection = $quoteCollection;
         $this->quoteAddressCollection = $quoteAddressCollection;
+        $this->countryFactory = $countryFactory;
     }
 
     /** @inheirtDoc
@@ -487,7 +493,25 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $data->setVat((string)$address->getData(AddressInterface::VAT_ID));
         $data->setPhone((string)$address->getData(AddressInterface::TELEPHONE));
         $data->setFax((string)$address->getData(AddressInterface::FAX));
-        $data->setCountryCode((string)$address->getData(AddressInterface::COUNTRY_ID));
+
+        $countryId = (string)$address->getData(AddressInterface::COUNTRY_ID);
+        if (!empty($countryId)) {
+            $data->setCountryCode($countryId);
+            if (array_key_exists($countryId, $this->countryCache)) {
+                $data->setCountryName($this->countryCache[$countryId]);
+            } else {
+                $country = $this->countryFactory->create()->loadByCode($countryId);
+                if (empty($country)) {
+                    // Do not look up again if we could not find it once
+                    $this->countryCache[$countryId] = '';
+                } else {
+                    $name = (string)$country->getName();
+                    $this->countryCache[$countryId] = $name;
+                    $data->setCountryName($name);
+                }
+            }
+        }
+
         if ($street = $address->getData(AddressInterface::STREET)) {
             $data->setStreetLines(explode("\n", $street));
         }
@@ -514,7 +538,25 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $data->setPhone((string)$address->getData(QuoteAddressInterface::KEY_TELEPHONE));
         $data->setType((string)$address->getData(self::ADDRESS_TYPE));
         $data->setFax((string)$address->getData(QuoteAddressInterface::KEY_FAX));
-        $data->setCountryCode((string)$address->getData(QuoteAddressInterface::KEY_COUNTRY_ID));
+
+        $countryId = (string)$address->getData(QuoteAddressInterface::KEY_COUNTRY_ID);
+        if (!empty($countryId)) {
+            $data->setCountryCode($countryId);
+            if (array_key_exists($countryId, $this->countryCache)) {
+                $data->setCountryName($this->countryCache[$countryId]);
+            } else {
+                $country = $this->countryFactory->create()->loadByCode($countryId);
+                if (empty($country)) {
+                    // Do not look up again if we could not find it once
+                    $this->countryCache[$countryId] = '';
+                } else {
+                    $name = (string)$country->getName();
+                    $this->countryCache[$countryId] = $name;
+                    $data->setCountryName($name);
+                }
+            }
+        }
+
         if ($street = $address->getData(QuoteAddressInterface::KEY_STREET)) {
             $data->setStreetLines(explode("\n", $street));
         }

@@ -57,6 +57,18 @@ class OrttoAddress extends DataObject implements OrttoAddressInterface
     }
 
     /** @inheirtDoc */
+    public function setCountryName($countryName)
+    {
+        return $this->setData(self::COUNTRY_NAME, $countryName);
+    }
+
+    /** @inheirtDoc */
+    public function getCountryName()
+    {
+        return (string)$this->getData(self::COUNTRY_NAME);
+    }
+
+    /** @inheirtDoc */
     public function setFirstName($firstName)
     {
         return $this->setData(self::FIRST_NAME, $firstName);
@@ -199,6 +211,7 @@ class OrttoAddress extends DataObject implements OrttoAddressInterface
         $result[self::CITY] = $this->getCity();
         $result[self::COMPANY] = $this->getCompany();
         $result[self::COUNTRY_CODE] = $this->getCountryCode();
+        $result[self::COUNTRY_NAME] = $this->getCountryName();
         $result[self::FIRST_NAME] = $this->getFirstName();
         $result[self::LAST_NAME] = $this->getLastName();
         $result[self::MIDDLE_NAME] = $this->getMiddleName();

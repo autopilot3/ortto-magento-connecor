@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Model\Api;
 
+use Magento\Directory\Model\CountryFactory;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\UrlInterface;
 use Magento\Quote\Api\Data\CartInterface;
@@ -48,6 +49,7 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
     private OrttoAddressFactory $addressFactory;
     private UrlInterface $url;
     private QuoteItemsCollectionFactory $quoteItemsCollectionFactory;
+    private CountryFactory $countryFactory;
 
     public function __construct(
         OrttoLoggerInterface $logger,
@@ -58,7 +60,8 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
         OrttoProductRepository $productRepository,
         \Ortto\Connector\Model\Data\OrttoAddressFactory $addressFactory,
         QuoteItemsCollectionFactory $quoteItemsCollectionFactory,
-        UrlInterface $url
+        UrlInterface $url,
+        \Magento\Directory\Model\CountryFactory $countryFactory
     ) {
         $this->cartFactory = $cartFactory;
         $this->logger = $logger;
@@ -69,6 +72,7 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
         $this->addressFactory = $addressFactory;
         $this->url = $url;
         $this->quoteItemsCollectionFactory = $quoteItemsCollectionFactory;
+        $this->countryFactory = $countryFactory;
     }
 
     /**
@@ -262,7 +266,14 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
         $data->setPhone((string)$address->getTelephone());
         $data->setType((string)$address->getAddressType());
         $data->setFax((string)$address->getFax());
-        $data->setCountryCode((string)$address->getCountry());
+        $countryId = (string)$address->getCountry();
+        if (!empty($countryId)) {
+            $data->setCountryCode($countryId);
+            $country = $this->countryFactory->create()->loadByCode($countryId);
+            if (!empty($country)) {
+                $data->setCountryName((string)$country->getName());
+            }
+        }
         if ($street = $address->getStreetFull()) {
             $data->setStreetLines(explode("\n", $street));
         }
