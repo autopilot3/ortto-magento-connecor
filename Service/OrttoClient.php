@@ -14,9 +14,6 @@ use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
 use Ortto\Connector\Model\OrttoException;
 use Ortto\Connector\Model\ImportResponse;
-use Ortto\Connector\Model\Api\ProductDataFactory;
-use Ortto\Connector\Model\Api\CategoryDataFactory;
-use Ortto\Connector\Model\Api\CustomerDataFactory;
 use Magento\Framework\HTTP\ClientInterface;
 use JsonException;
 
@@ -32,18 +29,12 @@ class OrttoClient implements OrttoClientInterface
 
     private OrttoLoggerInterface $logger;
     private ConfigurationReaderInterface $config;
-    private ProductDataFactory $productDataFactory;
-    private CustomerDataFactory $customerDataFactory;
-    private CategoryDataFactory $categoryDataFactory;
 
     public function __construct(
         ClientInterface $curl,
         Data $helper,
         OrttoLoggerInterface $logger,
-        ConfigurationReaderInterface $config,
-        ProductDataFactory $productDataFactory,
-        CategoryDataFactory $categoryDataFactory,
-        CustomerDataFactory $customerDataFactory
+        ConfigurationReaderInterface $config
     ) {
         // In Seconds
         $curl->setOption(CURLOPT_TIMEOUT, 10);
@@ -54,9 +45,6 @@ class OrttoClient implements OrttoClientInterface
         $this->helper = $helper;
         $this->logger = $logger;
         $this->config = $config;
-        $this->productDataFactory = $productDataFactory;
-        $this->customerDataFactory = $customerDataFactory;
-        $this->categoryDataFactory = $categoryDataFactory;
     }
 
     /**
@@ -64,22 +52,23 @@ class OrttoClient implements OrttoClientInterface
      */
     public function importContacts(ConfigScopeInterface $scope, array $customers, bool $storeFront = false)
     {
-        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_CONTACTS);
-
-        $payload = [];
-        foreach ($customers as $customer) {
-            $customerData = $this->customerDataFactory->create();
-            if (!$customerData->load($customer, $storeFront)) {
-                continue;
-            }
-            $payload[] = $customerData->toArray();
-        }
-        if (empty($payload)) {
-            $this->logger->debug("No customer to export");
-            return new ImportResponse();
-        }
-        $response = $this->postJSON($url, $scope, [self::CUSTOMERS => $payload]);
-        return new ImportResponse($response);
+//        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_CONTACTS);
+//
+//        $payload = [];
+//        foreach ($customers as $customer) {
+//            $customerData = $this->customerDataFactory->create();
+//            if (!$customerData->load($customer, $storeFront)) {
+//                continue;
+//            }
+//            $payload[] = $customerData->toArray();
+//        }
+//        if (empty($payload)) {
+//            $this->logger->debug("No customer to export");
+//            return new ImportResponse();
+//        }
+//        $response = $this->postJSON($url, $scope, [self::CUSTOMERS => $payload]);
+        //return new ImportResponse($response);
+        return new ImportResponse();
     }
 
     /**
@@ -95,33 +84,34 @@ class OrttoClient implements OrttoClientInterface
      */
     public function importOrder(ConfigScopeInterface $scope, OrderInterface $order)
     {
-        $isModified = false;
-        $state = $order->getState();
-        if ($state != Order::STATE_CANCELED && $state != Order::STATE_COMPLETE && $state != Order::STATE_CLOSED) {
-            if ($created = strtotime((string)$order->getCreatedAt())) {
-                if ($updated = strtotime((string)$order->getUpdatedAt())) {
-                    $isModified = abs($updated - $created) > 5; // Seconds
-                } else {
-                    $this->logger->warn("Invalid order update date", ['date' => (string)$order->getUpdatedAt()]);
-                }
-            } else {
-                $this->logger->warn("Invalid order creation date", ['date' => (string)$order->getCreatedAt()]);
-            }
-        }
-
-        return $this->importCustomerOrders($scope, [$order], $isModified);
+//        $isModified = false;
+//        $state = $order->getState();
+//        if ($state != Order::STATE_CANCELED && $state != Order::STATE_COMPLETE && $state != Order::STATE_CLOSED) {
+//            if ($created = strtotime((string)$order->getCreatedAt())) {
+//                if ($updated = strtotime((string)$order->getUpdatedAt())) {
+//                    $isModified = abs($updated - $created) > 5; // Seconds
+//                } else {
+//                    $this->logger->warn("Invalid order update date", ['date' => (string)$order->getUpdatedAt()]);
+//                }
+//            } else {
+//                $this->logger->warn("Invalid order creation date", ['date' => (string)$order->getCreatedAt()]);
+//            }
+//        }
+//
+//        return $this->importCustomerOrders($scope, [$order], $isModified);
     }
 
     private function importCustomerOrders(ConfigScopeInterface $scope, array $orders, bool $isModified)
     {
-        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_ORDERS);
-        $payload = $this->helper->getCustomerWithOrderFields($orders, $scope, $isModified);
-        if (empty($payload)) {
-            $this->logger->debug("No order to export");
-            return new ImportResponse();
-        }
-        $response = $this->postJSON($url, $scope, [self::CUSTOMERS => $payload]);
-        return new ImportResponse($response);
+//        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_ORDERS);
+//        $payload = $this->helper->getCustomerWithOrderFields($orders, $scope, $isModified);
+//        if (empty($payload)) {
+//            $this->logger->debug("No order to export");
+//            return new ImportResponse();
+//        }
+//        $response = $this->postJSON($url, $scope, [self::CUSTOMERS => $payload]);
+//        return new ImportResponse($response);
+        return new ImportResponse();
     }
 
     /**
@@ -129,61 +119,63 @@ class OrttoClient implements OrttoClientInterface
      */
     public function importProducts(ConfigScopeInterface $scope, array $products)
     {
-        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_PRODUCTS);
-        $productList = [];
-        $categoryIDs = [];
-        $uniqueCategories = [];
-        foreach ($products as $product) {
-            $productData = $this->productDataFactory->create();
-            if ($productData->load($product, $scope->getId())) {
-                $productList[] = $productData->toArray();
-            }
-            foreach ($product->getCategoryIds() as $cid) {
-                $categoryID = To::int($cid);
-                if (array_key_exists($categoryID, $categoryIDs)) {
-                    continue;
-                }
-                $categoryData = $this->categoryDataFactory->create();
-                if ($categoryData->loadById($categoryID)) {
-                    $uniqueCategories[] = $categoryData->toArray();
-                    $categoryIDs[$categoryID] = true;
-                }
-            }
-        }
-        if (empty($productList)) {
-            $this->logger->debug("No products to export");
-            return new ImportResponse();
-        }
-        $response = $this->postJSON($url, $scope, [
-            self::PRODUCTS => $productList,
-            self::CATEGORIES => $uniqueCategories,
-        ]);
-        return new ImportResponse($response);
+//        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_PRODUCTS);
+//        $productList = [];
+//        $categoryIDs = [];
+//        $uniqueCategories = [];
+//        foreach ($products as $product) {
+//            $productData = $this->productDataFactory->create();
+//            if ($productData->load($product, $scope->getId())) {
+//                $productList[] = $productData->toArray();
+//            }
+//            foreach ($product->getCategoryIds() as $cid) {
+//                $categoryID = To::int($cid);
+//                if (array_key_exists($categoryID, $categoryIDs)) {
+//                    continue;
+//                }
+//                $categoryData = $this->categoryDataFactory->create();
+//                if ($categoryData->loadById($categoryID)) {
+//                    $uniqueCategories[] = $categoryData->toArray();
+//                    $categoryIDs[$categoryID] = true;
+//                }
+//            }
+//        }
+//        if (empty($productList)) {
+//            $this->logger->debug("No products to export");
+//            return new ImportResponse();
+//        }
+//        $response = $this->postJSON($url, $scope, [
+//            self::PRODUCTS => $productList,
+//            self::CATEGORIES => $uniqueCategories,
+//        ]);
+//        return new ImportResponse($response);
+        return new ImportResponse();
     }
 
     public function importRestockSubscriptions(ConfigScopeInterface $scope, array $subscriptions)
     {
-        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_WAITING_ON_STOCK);
-        $payload = [];
-        foreach ($subscriptions as $alert) {
-            $product = $this->productDataFactory->create();
-            if (!$product->loadById(To::int($alert->getProductId()), $scope->getId())) {
-                continue;
-            }
-            $customer = $this->customerDataFactory->create();
-            $customer->loadById(To::int($alert->getCustomerId()));
-            $payload[] = [
-                'product' => $product->toArray(),
-                'customer' => $customer->toArray(),
-                'date_added' => $this->helper->toUTC($alert->getAddDate()),
-            ];
-        }
-        if (empty($payload)) {
-            $this->logger->debug("No restock subscriptions to export");
-            return new ImportResponse();
-        }
-        $response = $this->postJSON($url, $scope, [self::SUBSCRIPTIONS => $payload]);
-        return new ImportResponse($response);
+//        $url = $this->helper->getOrttoURL(RoutesInterface::ORTTO_IMPORT_WAITING_ON_STOCK);
+//        $payload = [];
+//        foreach ($subscriptions as $alert) {
+//            $product = $this->productDataFactory->create();
+//            if (!$product->loadById(To::int($alert->getProductId()), $scope->getId())) {
+//                continue;
+//            }
+//            $customer = $this->customerDataFactory->create();
+//            $customer->loadById(To::int($alert->getCustomerId()));
+//            $payload[] = [
+//                'product' => $product->toArray(),
+//                'customer' => $customer->toArray(),
+//                'date_added' => $this->helper->toUTC($alert->getAddDate()),
+//            ];
+//        }
+//        if (empty($payload)) {
+//            $this->logger->debug("No restock subscriptions to export");
+//            return new ImportResponse();
+//        }
+//        $response = $this->postJSON($url, $scope, [self::SUBSCRIPTIONS => $payload]);
+//        return new ImportResponse($response);
+        return new ImportResponse();
     }
 
     /**

@@ -9,7 +9,6 @@ use Ortto\Connector\Api\TrackDataProviderInterface;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
 use Ortto\Connector\Model\Api\OrttoProductRepository;
-use Ortto\Connector\Model\Api\ProductDataFactory;
 use Exception;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Block\Product\Context;
@@ -40,7 +39,6 @@ class ProductView extends View
         Session $customerSession,
         ProductRepositoryInterface $productRepository,
         PriceCurrencyInterface $priceCurrency,
-        ProductDataFactory $productDataFactory,
         TrackDataProviderInterface $trackDataProvider,
         OrttoLogger $logger,
         OrttoSerializerInterface $serializer,

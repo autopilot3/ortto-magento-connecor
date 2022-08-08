@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Block;
 
-use Ortto\Connector\Api\Data\TrackingDataInterface as TD;
 use Ortto\Connector\Api\OrttoOrderRepositoryInterface;
 use Ortto\Connector\Api\OrttoSerializerInterface;
 use Ortto\Connector\Api\TrackDataProviderInterface;
-use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
-use Ortto\Connector\Model\Api\OrderDataFactory;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\View\Element\Template;
 use Exception;

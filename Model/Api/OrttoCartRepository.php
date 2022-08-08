@@ -123,8 +123,8 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
         $data->setBaseSubtotalWithDiscount($baseSubtotalWithDiscount);
         $data->setCartUrl($this->url->getUrl('checkout/cart', ['_secure' => true]));
         $data->setCheckoutUrl($this->url->getUrl('checkout', ['_secure' => true]));
-        $data->setDiscount($subtotal - $subtotalWithDiscount);
-        $data->setBaseDiscount($baseSubtotal - $baseSubtotalWithDiscount);
+        $data->setDiscount(abs($subtotal - $subtotalWithDiscount));
+        $data->setBaseDiscount(abs($baseSubtotal - $baseSubtotalWithDiscount));
 
         $shippingAddress = $cart->getShippingAddress();
         if (!empty($shippingAddress)) {
@@ -219,8 +219,8 @@ class OrttoCartRepository implements \Ortto\Connector\Api\OrttoCartRepositoryInt
 
             $orttoItem->setCreatedAt($this->helper->toUTC($item->getData(self::CREATED_AT)));
             $orttoItem->setUpdatedAt($this->helper->toUTC($item->getData(self::UPDATED_AT)));
-            $orttoItem->setDiscount(To::float($item->getData(self::DISCOUNT)));
-            $orttoItem->setBaseDiscount(To::float($item->getData(self::BASE_DISCOUNT)));
+            $orttoItem->setDiscount(abs(To::float($item->getData(self::DISCOUNT))));
+            $orttoItem->setBaseDiscount(abs(To::float($item->getData(self::BASE_DISCOUNT))));
             $orttoItem->setPrice(To::float($item->getData(self::PRICE)));
             $orttoItem->setBasePrice(To::float($item->getData(self::BASE_PRICE)));
             $orttoItem->setRowTotal(To::float($item->getData(self::ROW_TOTAL)));

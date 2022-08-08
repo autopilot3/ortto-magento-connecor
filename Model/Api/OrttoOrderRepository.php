@@ -326,17 +326,17 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $data->setBaseShippingInvoiced(To::float($order->getBaseShippingInvoiced()));
         $data->setShippingRefunded(To::float($order->getShippingRefunded()));
         $data->setBaseShippingRefunded(To::float($order->getBaseShippingRefunded()));
-        $data->setDiscount(To::float($order->getDiscountAmount()));
+        $data->setDiscount(abs(To::float($order->getDiscountAmount())));
         $data->setBaseDiscount(To::float($order->getBaseDiscountAmount()));
         $data->setDiscountDescription((string)$order->getDiscountDescription());
-        $data->setDiscountRefunded(To::float($order->getDiscountRefunded()));
-        $data->setBaseDiscountRefunded(To::float($order->getBaseDiscountRefunded()));
-        $data->setDiscountInvoiced(To::float($order->getDiscountInvoiced()));
-        $data->setBaseDiscountInvoiced(To::float($order->getBaseDiscountInvoiced()));
-        $data->setDiscountCancelled(To::float($order->getDiscountCanceled()));
-        $data->setBaseDiscountCancelled(To::float($order->getBaseDiscountCanceled()));
-        $data->setShippingDiscount(To::float($order->getShippingDiscountAmount()));
-        $data->setBaseShippingDiscount(To::float($order->getBaseShippingDiscountAmount()));
+        $data->setDiscountRefunded(abs(To::float($order->getDiscountRefunded())));
+        $data->setBaseDiscountRefunded(abs(To::float($order->getBaseDiscountRefunded())));
+        $data->setDiscountInvoiced(abs(To::float($order->getDiscountInvoiced())));
+        $data->setBaseDiscountInvoiced(abs(To::float($order->getBaseDiscountInvoiced())));
+        $data->setDiscountCancelled(abs(To::float($order->getDiscountCanceled())));
+        $data->setBaseDiscountCancelled(abs(To::float($order->getBaseDiscountCanceled())));
+        $data->setShippingDiscount(abs(To::float($order->getShippingDiscountAmount())));
+        $data->setBaseShippingDiscount(abs(To::float($order->getBaseShippingDiscountAmount())));
         if ($payment = $order->getPayment()) {
             $data->setLastTransactionId((string)$payment->getLastTransId());
             $data->setPaymentMethod((string)$payment->getMethod());
@@ -367,7 +367,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             if ($patentId = $item->getParentItemId()) {
                 if (array_key_exists($patentId, $bundles)) {
                     // It's not a variant of a configurable product. It's a bundled sub-product.
-                    $bundles[$patentId] += To::float($item->getDiscountAmount());
+                    $bundles[$patentId] += abs(To::float($item->getDiscountAmount()));
                     continue;
                 }
                 $productVariations[To::int($patentId)] = To::int($item->getProductId());
@@ -429,14 +429,14 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             if (array_key_exists($id, $bundles)) {
                 $data->setDiscount($bundles[$id]);
             } else {
-                $data->setDiscount(To::float($item->getDiscountAmount()));
+                $data->setDiscount(abs(To::float($item->getDiscountAmount())));
             }
             $data->setDiscountPercent(To::float($item->getDiscountPercent()));
-            $data->setDiscountInvoiced(To::float($item->getDiscountInvoiced()));
-            $data->setBaseDiscountInvoiced(To::float($item->getBaseDiscountInvoiced()));
-            $data->setBaseDiscount(To::float($item->getBaseDiscountAmount()));
-            $data->setDiscountRefunded(To::float($item->getDiscountRefunded()));
-            $data->setBaseDiscountRefunded(To::float($item->getBaseDiscountRefunded()));
+            $data->setDiscountInvoiced(abs(To::float($item->getDiscountInvoiced())));
+            $data->setBaseDiscountInvoiced(abs(To::float($item->getBaseDiscountInvoiced())));
+            $data->setBaseDiscount(abs(To::float($item->getBaseDiscountAmount())));
+            $data->setDiscountRefunded(abs(To::float($item->getDiscountRefunded())));
+            $data->setBaseDiscountRefunded(abs(To::float($item->getBaseDiscountRefunded())));
             $data->setPrice(To::float($item->getPrice()));
             $data->setBasePrice(To::float($item->getBasePrice()));
             $data->setOriginalPrice(To::float($item->getOriginalPrice()));
@@ -497,7 +497,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $refund->setAdjustment(To::float($memo->getAdjustment()));
             $refund->setBaseAdjustment(To::float($memo->getBaseAdjustment()));
             $refund->setRefundedAt($this->helper->toUTC($memo->getCreatedAt()));
-            $refund->setDiscount(To::float($memo->getDiscountAmount()));
+            $refund->setDiscount(abs(To::float($memo->getDiscountAmount())));
             $items = [];
             foreach ($memo->getItems() as $item) {
                 $totalRefunded = To::float($item->getRowTotal());
@@ -516,8 +516,8 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                 $data->setProduct($product);
                 $data->setTotalRefunded($totalRefunded);
                 $data->setBaseTotalRefunded(To::float($item->getBaseRowTotal()));
-                $data->setDiscountRefunded(To::float($item->getDiscountAmount()));
-                $data->setBaseDiscountRefunded(To::float($item->getBaseDiscountAmount()));
+                $data->setDiscountRefunded(abs(To::float($item->getDiscountAmount())));
+                $data->setBaseDiscountRefunded(abs(To::float($item->getBaseDiscountAmount())));
                 $data->setRefundQuantity(To::float($item->getQty()));
                 $data->setOrderItemId(TO::int($item->getOrderItemId()));
                 $items[] = $data;
