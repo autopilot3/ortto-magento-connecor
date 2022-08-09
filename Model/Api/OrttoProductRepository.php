@@ -29,7 +29,7 @@ use Ortto\Connector\Model\Data\OrttoProductParentGroupFactory;
 
 class OrttoProductRepository implements OrttoProductRepositoryInterface
 {
-    private const ENTITY_ID = 'entity_id';
+    private const IS_IN_STOCK = 'is_in_stock';
     private const STOCK_QUANTITY = 'qty';
     private const STOCK_NAME = 'stock_name';
     private Data $helper;
@@ -46,6 +46,9 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
     private ProductCollectionFactory $productCollectionFactory;
     private ListProductResponseFactory $listResponseFactory;
     private ResourceConnection $resourceConnection;
+    private \Magento\CatalogInventory\Model\Stock\StockItemRepository $stockItemRepository;
+    private \Magento\CatalogInventory\Api\StockItemCriteriaInterfaceFactory $stockItemCriteria;
+
 
     public function __construct(
         Data $helper,
@@ -61,7 +64,9 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         OrttoProductParentGroupFactory $productParentGroupFactory,
         ProductCollectionFactory $productCollectionFactory,
         ListProductResponseFactory $listResponseFactory,
-        \Magento\Framework\App\ResourceConnection $resourceConnection
+        \Magento\Framework\App\ResourceConnection $resourceConnection,
+        \Magento\CatalogInventory\Model\Stock\StockItemRepository $stockItemRepository,
+        \Magento\CatalogInventory\Api\StockItemCriteriaInterfaceFactory $stockItemCriteria
     ) {
         $this->helper = $helper;
         $this->salableQty = $salableQty;
@@ -77,6 +82,8 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $this->productCollectionFactory = $productCollectionFactory;
         $this->listResponseFactory = $listResponseFactory;
         $this->resourceConnection = $resourceConnection;
+        $this->stockItemRepository = $stockItemRepository;
+        $this->stockItemCriteria = $stockItemCriteria;
     }
 
     /** @inheirtDoc */
@@ -108,7 +115,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $productList = [];
         $websiteStockName = $this->getWebsiteStockName($scope);
         /** @var  Product $product */
-        foreach ($collection->getItems() as $product) {
+        foreach ($collection as $product) {
             $productList[] = $this->convert($product, $storeId, $websiteStockName);
         }
         $result->setItems($productList);
@@ -127,7 +134,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $productIds = array_unique($productIds, SORT_NUMERIC);
         $collection = $this->productCollectionFactory->create();
         $collection->addAttributeToSelect('*')
-            ->addFieldToFilter(self::ENTITY_ID, ['in' => $productIds]);
+            ->addIdFilter($productIds);
 
         $total = To::int($collection->getSize());
         $result->setTotal($total);
@@ -187,11 +194,18 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $orttoProduct->setCreatedAt($this->helper->toUTC($product->getCreatedAt()));
         $orttoProduct->setWeight(To::float($product->getWeight()));
         $orttoProduct->setIsVisible($product->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE);
-        $orttoProduct->setShortDescription($product->getShortDescription() ?? '');
-        $orttoProduct->setDescription($product->getDescription() ?? '');
+        if (method_exists($product, 'getShortDescription')) {
+            $orttoProduct->setShortDescription($product->getShortDescription() ?? '');
+        }
+        if (method_exists($product, 'getDescription')) {
+            $orttoProduct->setDescription($product->getDescription() ?? '');
+        }
         $orttoProduct->setIsOptionRequired(To::int($product->getData('required_options')) > 0);
         $orttoProduct->setCurrencyCode($product->getStore()->getCurrentCurrencyCode());
-        $orttoProduct->setStockQuantity($this->getStockQuantity($sku, $productType, $websiteStockName));
+        $stock = $this->getStockData($productId, $sku, $productType, $websiteStockName);
+        $orttoProduct->setStockQuantity($stock[self::STOCK_QUANTITY]);
+        $orttoProduct->setIsInStock($stock[self::IS_IN_STOCK]);
+
         switch ($productType) {
             case Configurable::TYPE_CODE:
             case Grouped::TYPE_CODE:
@@ -248,31 +262,60 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         return $orttoProduct;
     }
 
-    private function getStockQuantity(
+    private function getStockData(
+        int $productId,
         string $productSKU,
         string $productType,
         string $websiteStockName
-    ): float {
+    ): array {
+        $result = [
+            self::STOCK_QUANTITY => 0.0,
+            self::IS_IN_STOCK => false,
+        ];
         if ($this->checkSourceItemSupport->execute($productType)) {
             $stocks = $this->salableQty->execute($productSKU);
             if (empty($stocks)) {
-                return 0;
+                return $result;
             }
             if (count($stocks) == 1 && isset($stocks[0][self::STOCK_QUANTITY])) {
-                return To::float(To::float($stocks[0][self::STOCK_QUANTITY]));
+                $quantity = To::float($stocks[0][self::STOCK_QUANTITY]);
+                return [
+                    self::STOCK_QUANTITY => $quantity,
+                    self::IS_IN_STOCK => $quantity > 0,
+                ];
             }
 
             if ($websiteStockName != '') {
+                $quantity = 0;
                 foreach ($stocks as $stock) {
                     if (isset($stock[self::STOCK_NAME])
                         && $stock[self::STOCK_NAME] == $websiteStockName
                         && isset($stock[self::STOCK_QUANTITY])) {
-                        return To::float($stock[self::STOCK_QUANTITY]);
+                        $quantity += To::float($stock[self::STOCK_QUANTITY]);
                     }
                 }
+                return [
+                    self::STOCK_QUANTITY => $quantity,
+                    self::IS_IN_STOCK => $quantity > 0,
+                ];
             }
+        } else {
+            $criteria = $this->stockItemCriteria->create();
+            $criteria->setProductsFilter($productId);
+            $stockItems = $this->stockItemRepository->getList($criteria)->getItems();
+            $quantity = 0;
+            $isInStock = false;
+            foreach ($stockItems as $stockItem) {
+                $quantity += To::float($stockItem->getQty());
+                if (!$isInStock) {
+                    $isInStock = To::bool($stockItem->getIsInStock());
+                }
+            }
+            return [
+                self::STOCK_QUANTITY => $quantity,
+                self::IS_IN_STOCK => $isInStock,
+            ];
         }
-        return 0;
     }
 
     private function getParentIds(int $productId): OrttoProductParentGroupInterface

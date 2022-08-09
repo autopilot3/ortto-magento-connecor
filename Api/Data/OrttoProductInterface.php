@@ -19,6 +19,7 @@ interface OrttoProductInterface
     const WEIGHT = 'weight';
     const IMAGE_URL = 'image_url';
     const STOCK_QUANTITY = 'stock_quantity';
+    const IS_IN_STOCK = 'is_in_stock';
     const CATEGORY_IDS = 'category_ids';
     const PARENTS = 'parents';
     const CHILDREN = 'children';
@@ -237,6 +238,21 @@ interface OrttoProductInterface
     * @return float
     */
     public function getStockQuantity();
+
+    /**
+    * Set is in stock
+    *
+    * @param bool $isInStock
+    * @return $this
+    */
+    public function setIsInStock($isInStock);
+
+    /**
+    * Get is in stock
+    *
+    * @return bool
+    */
+    public function getIsInStock();
 
     /**
     * Set category ids

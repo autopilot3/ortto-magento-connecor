@@ -178,6 +178,18 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
     }
 
     /** @inheirtDoc */
+    public function setIsInStock($isInStock)
+    {
+        return $this->setData(self::IS_IN_STOCK, $isInStock);
+    }
+
+    /** @inheirtDoc */
+    public function getIsInStock()
+    {
+        return To::bool($this->getData(self::IS_IN_STOCK));
+    }
+
+    /** @inheirtDoc */
     public function setCategoryIds(array $categoryIds)
     {
         return $this->setData(self::CATEGORY_IDS, $categoryIds);
@@ -294,6 +306,7 @@ class OrttoProduct extends DataObject implements OrttoProductInterface
         $result[self::WEIGHT] = $this->getWeight();
         $result[self::IMAGE_URL] = $this->getImageUrl();
         $result[self::STOCK_QUANTITY] = $this->getStockQuantity();
+        $result[self::IS_IN_STOCK] = $this->getIsInStock();
         $result[self::CATEGORY_IDS] = $this->getCategoryIds();
         $parents = $this->getParents();
         $result[self::PARENTS] = $parents != null ? $parents->serializeToArray() : null;
