@@ -10,7 +10,7 @@ interface PriceRuleInterface extends SerializableInterface
     // A fix amount will be deducted from the cart's total
     public const TYPE_FIXED_CART_TOTAL = 'fixed_cart_total';
     public const TYPE_FREE_SHIPPING = 'free_shipping';
-    public const TYPE_BUY_X_GET_Y_FREE = 'buy_x_get_y_free';
+    public const TYPE_BUY_X_GET_Y_FREE = 'buy_x_get_y';
 
     /**
      * String constants for property names
