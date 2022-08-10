@@ -157,7 +157,7 @@ class PriceRule extends DataObject implements PriceRuleInterface
     /** @inerhitDoc */
     public function getMinQuantity(): float
     {
-        return To::float($this->getData(self::MAX_QUANTITY));
+        return To::float($this->getData(self::MIN_QUANTITY));
     }
 
     /** @inerhitDoc */
