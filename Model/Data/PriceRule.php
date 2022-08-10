@@ -358,7 +358,7 @@ class PriceRule extends DataObject implements PriceRuleInterface
         $this->setData(self::DESCRIPTION, $description);
     }
 
-    private function truncateTime(string $datetime): ?string
+    private function truncateTime(?string $datetime): ?string
     {
         if (empty($datetime)) {
             return $datetime;
