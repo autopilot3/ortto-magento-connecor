@@ -587,7 +587,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
         }
 
         $startDate = $rule->getStartDate();
-        if (!empty($startDate)) {
+        if (!empty($startDate) && $startDate !== Config::EMPTY_DATE_TIME) {
             $from = $this->helper->formatDate($startDate);
             if ($from !== Config::EMPTY_DATE_TIME) {
                 $newRule->setFromDate($from);
