@@ -33,6 +33,7 @@ class Config
     const DATE_TIME_FORMAT = 'Y-m-d\TH:i:sP';
     const DB_DATE_TIME_FORMAT = 'Y-m-d H:i:s';
     const EMPTY_DATE_TIME = "0001-01-01T00:00:00Z";
+    const EMPTY_DATE = "0001-01-01";
 
     // Capture Events
     const EVENT_TYPE_WAITING_ON_STOCK = 'product_waiting_on_stock';

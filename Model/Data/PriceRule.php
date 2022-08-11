@@ -241,7 +241,7 @@ class PriceRule extends DataObject implements PriceRuleInterface
     /** @inerhitDoc */
     public function getExpirationDate(): ?string
     {
-        return $this->getData(self::EXPIRATION_DATE);
+        return $this->getDate($this->getData(self::EXPIRATION_DATE));
     }
 
     /** @inerhitDoc */
@@ -253,7 +253,7 @@ class PriceRule extends DataObject implements PriceRuleInterface
     /** @inerhitDoc */
     public function getStartDate(): ?string
     {
-        return $this->getData(self::START_DATE);
+        return $this->getDate($this->getData(self::START_DATE));
     }
 
     /** @inerhitDoc */
@@ -356,5 +356,13 @@ class PriceRule extends DataObject implements PriceRuleInterface
     public function setDescription(string $description)
     {
         $this->setData(self::DESCRIPTION, $description);
+    }
+
+    private function getDate(?string $value): ?string
+    {
+        if ($value == null || $value == Config::EMPTY_DATE) {
+            return '';
+        }
+        return $value;
     }
 }

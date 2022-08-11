@@ -577,31 +577,15 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
             ->setDiscountQty($rule->getMaxQuantity())
             ->setDiscountAmount($rule->getValue())
             ->setSimpleFreeShipping(self::NO_FREE_SHIPPING)
-            ->setCouponType(RuleInterface::COUPON_TYPE_SPECIFIC_COUPON);
+            ->setCouponType(RuleInterface::COUPON_TYPE_SPECIFIC_COUPON)
+            ->setFromDate($rule->getStartDate())
+            ->setToDate($rule->getExpirationDate());
 
         if (!$updateMode) {
             $newRule->setDescription($rule->getDescription())
                 ->setIsActive(true)
                 ->setIsAdvanced(true)
                 ->setWebsiteIds([$rule->getWebsiteId()]);
-        }
-
-        $startDate = $rule->getStartDate();
-        if (!empty($startDate)) {
-            $newRule->setFromDate($startDate);
-        } else {
-            if ($updateMode) {
-                $newRule->setFromDate('');
-            }
-        }
-
-        $expirationDate = $rule->getExpirationDate();
-        if (!empty($expirationDate)) {
-            $newRule->setToDate($expirationDate);
-        } else {
-            if ($updateMode) {
-                $newRule->setToDate('');
-            }
         }
 
         $type = $rule->getType();
