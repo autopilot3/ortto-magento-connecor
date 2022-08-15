@@ -37,6 +37,15 @@ use Ortto\Connector\Model\Data\PriceRuleResponseFactory;
 
 class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
 {
+
+    private const RULE_TYPE_COMBINE = 'Magento\SalesRule\Model\Rule\Condition\Combine';
+    private const RULE_TYPE_ADDRESS = 'Magento\SalesRule\Model\Rule\Condition\Address';
+    private const RULE_TYPE_PRODUCT = 'Magento\SalesRule\Model\Rule\Condition\Product';
+    private const RULE_TYPE_PRODUCT_FOUND = 'Magento\SalesRule\Model\Rule\Condition\Product\Found';
+
+    private const OP_GT_OR_EQ = '>=';
+    private const OP_IN = '()';
+
     const NO_FREE_SHIPPING = 0;
     const APPLY_FREE_SHIPPING_TO_MATCHING_ITEMS_ONLY = 1;
     const APPLY_FREE_SHIPPING_TO_CART_WITH_MATCHING_ITEMS = 2;
@@ -579,6 +588,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
             ->setSimpleFreeShipping(self::NO_FREE_SHIPPING)
             ->setCouponType(RuleInterface::COUPON_TYPE_SPECIFIC_COUPON)
             ->setFromDate($rule->getStartDate())
+            ->setDiscountStep(0)
             ->setToDate($rule->getExpirationDate());
 
         if (!$updateMode) {
@@ -610,6 +620,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
                     $newRule->setSimpleFreeShipping(self::APPLY_FREE_SHIPPING_TO_CART_WITH_MATCHING_ITEMS);
                 }
                 $newRule->setDiscountAmount(0);
+                $newRule->setDiscountQty(0);
                 break;
             case PriceRuleInterface::TYPE_BUY_X_GET_Y_FREE:
                 $newRule->setApplyToShipping(false);
@@ -646,79 +657,120 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
 
         $minAmount = $rule->getMinPurchaseAmount();
         if ($minAmount > 0) {
-            $minAmountCondition = $this->conditionFactory->create();
-            $minAmountCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Address');
-            $minAmountCondition->setAttributeName('base_subtotal');
-            $minAmountCondition->setOperator(">=");
-            $minAmountCondition->setValue($minAmount);
-            $ruleConditions[] = $minAmountCondition;
+            $ruleConditions[] = $this->buildCondition(
+                self::RULE_TYPE_ADDRESS,
+                $minAmount,
+                'base_subtotal',
+                self::OP_GT_OR_EQ
+            );
         }
 
         $minQuantity = $rule->getMinQuantity();
         if ($minQuantity > 0) {
-            $minQuantityCondition = $this->conditionFactory->create();
-            $minQuantityCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Address');
-            $minQuantityCondition->setAttributeName('total_qty');
-            $minQuantityCondition->setOperator(">=");
-            $minQuantityCondition->setValue($minQuantity);
-            $ruleConditions[] = $minQuantityCondition;
+            $ruleConditions[] = $this->buildCondition(
+                self::RULE_TYPE_ADDRESS,
+                $minQuantity,
+                'total_qty',
+                self::OP_GT_OR_EQ
+            );
         }
+
+        $copyRuleProducts = false;
+        switch ($rule->getType()) {
+            case PriceRuleInterface::TYPE_PERCENTAGE:
+            case PriceRuleInterface::TYPE_BUY_X_GET_Y_FREE:
+                $copyRuleProducts = true;
+                break;
+            case PriceRuleInterface::TYPE_FREE_SHIPPING:
+                $copyRuleProducts = $rule->getApplyFreeShippingToMatchingItemsOnly();
+                break;
+        }
+
+        $actionCategoryIDs = [];
+        $actionProductIDs = [];
 
         // Categories and Product rules are mutually exclusive (See $rule->validate())
         $ruleCategoryIDs = $rule->getRuleCategories();
         if (!empty($ruleCategoryIDs)) {
-            $condition = $this->getCategoryConditions($ruleCategoryIDs);
-            if (!empty($condition)) {
+            $categoriesCondition = $this->getCategoriesCondition($ruleCategoryIDs);
+            if ($categoriesCondition != null) {
+                $condition = $this->buildCondition(
+                    self::RULE_TYPE_PRODUCT_FOUND,
+                    1
+                )->setConditions([$categoriesCondition]);
                 $ruleConditions[] = $condition;
+                if ($copyRuleProducts) {
+                    $actionCategoryIDs = $ruleCategoryIDs;
+                }
             }
         }
 
         $ruleProductIDs = $rule->getRuleProducts();
         if (!empty($ruleProductIDs)) {
-            $condition = $this->getProductConditions($ruleProductIDs);
-            if (!empty($condition)) {
+            $productsCondition = $this->getProductConditions($ruleProductIDs);
+            if ($productsCondition != null) {
+                $condition = $this->buildCondition(self::RULE_TYPE_PRODUCT_FOUND, 1);
+                $condition->setConditions([$productsCondition])
+                    ->setAggregatorType(ConditionInterface::AGGREGATOR_TYPE_ALL);
                 $ruleConditions[] = $condition;
+                if ($copyRuleProducts) {
+                    $actionProductIDs = $ruleProductIDs;
+                }
             }
         }
 
         // Categories and Product rules are mutually exclusive (See $rule->validate())
-        $actionCategoryIDs = $rule->getActionCategories();
-        if (!empty($actionCategoryIDs)) {
-            $condition = $this->getCategoryConditions($actionCategoryIDs);
+        $actionCategories = array_merge($rule->getActionCategories() ?? [], $actionCategoryIDs);
+        if (!empty($actionCategories)) {
+            $condition = $this->getCategoriesCondition(array_unique($actionCategories));
             if (!empty($condition)) {
                 $actionConditions[] = $condition;
             }
         }
 
-        $actionProductIDs = $rule->getActionProducts();
-        if (!empty($actionProductIDs)) {
-            $condition = $this->getProductConditions($actionProductIDs);
+        $actionProducts = array_merge($rule->getActionProducts() ?? [], $actionProductIDs);
+        if (!empty($actionProducts)) {
+            $condition = $this->getProductConditions(array_unique($actionProducts));
             if (!empty($condition)) {
                 $actionConditions[] = $condition;
             }
         }
 
         if (!empty($ruleConditions)) {
-            $newRule->setCondition($this->initialiseCondition($ruleConditions));
+            $newRule->setCondition($this->buildConditionsGroup($ruleConditions));
         } else {
             if ($updateMode) {
-                $newRule->setCondition($this->initialiseCondition());
+                $newRule->setCondition($this->buildConditionsGroup());
             }
         }
 
         if (!empty($actionConditions)) {
-            $newRule->setActionCondition($this->initialiseCondition($actionConditions));
+            $newRule->setActionCondition($this->buildConditionsGroup($actionConditions));
         } else {
             if ($updateMode) {
-                $newRule->setActionCondition($this->initialiseCondition());
+                $newRule->setActionCondition($this->buildConditionsGroup());
             }
         }
     }
 
-    private function initialiseCondition(array $children = null): ConditionInterface
+    private function buildCondition(
+        string $type,
+        $value,
+        string $attribute = '',
+        string $operator = ''
+    ): ConditionInterface {
+        $condition = $this->conditionFactory->create();
+        $condition->setConditionType($type);
+        $condition->setAttributeName($attribute);
+        $condition->setOperator($operator);
+        $condition->setValue($value);
+        return $condition;
+    }
+
+    private function buildConditionsGroup(array $children = null): ConditionInterface
     {
         $condition = $this->conditionFactory->create();
-        $condition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Combine');
+        $condition->setConditionType(self::RULE_TYPE_COMBINE);
         $condition->setAggregatorType(ConditionInterface::AGGREGATOR_TYPE_ALL);
         $condition->setValue(true);
         $condition->setConditions($children);
@@ -729,7 +781,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
      * @param int[] $categoryIDs
      * @return ConditionInterface|null
      */
-    private function getCategoryConditions(array $categoryIDs): ?ConditionInterface
+    private function getCategoriesCondition(array $categoryIDs): ?ConditionInterface
     {
         $validIDs = [];
         foreach ($categoryIDs as $categoryId) {
@@ -742,20 +794,10 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
                 continue;
             }
         }
-        if (!empty($validIDs)) {
-            $productCondition = $this->conditionFactory->create();
-            $productCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product');
-            $productCondition->setAttributeName('category_ids');
-            $productCondition->setValue($validIDs);
-            $productCondition->setOperator("()");
-
-            $condition = $this->conditionFactory->create();
-            $condition->setValue(1);
-            $condition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product\Found');
-            $condition->setConditions([$productCondition]);
-            return $condition;
+        if (empty($validIDs)) {
+            return null;
         }
-        return null;
+        return $this->buildCondition(self::RULE_TYPE_PRODUCT, $validIDs, 'category_ids', self::OP_IN);
     }
 
     /**
@@ -778,20 +820,10 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
             );
         }
 
-        if (!empty($productSKUs)) {
-            $productCondition = $this->conditionFactory->create();
-            $productCondition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product');
-            $productCondition->setAttributeName('sku');
-            $productCondition->setValue($productSKUs);
-            $productCondition->setOperator("()");
-
-            $condition = $this->conditionFactory->create();
-            $condition->setValue(1);
-            $condition->setConditionType('Magento\SalesRule\Model\Rule\Condition\Product\Found');
-            $condition->setConditions([$productCondition]);
-            $condition->setAggregatorType(ConditionInterface::AGGREGATOR_TYPE_ALL);
-            return $condition;
+        if (empty($productSKUs)) {
+            return null;
         }
-        return null;
+
+        return $this->buildCondition(self::RULE_TYPE_PRODUCT, $productSKUs, 'sku', self::OP_IN);
     }
 }
