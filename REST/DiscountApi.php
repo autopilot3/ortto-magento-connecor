@@ -20,13 +20,11 @@ use Magento\SalesRule\Api\Data\RuleInterfaceFactory;
 use Magento\SalesRule\Api\RuleRepositoryInterface;
 use Magento\SalesRule\Model\Coupon;
 use Magento\SalesRule\Model\CouponFactory;
-use Magento\SalesRule\Model\CouponGenerator;
 use Ortto\Connector\Api\Data\DiscountInterface;
 use Ortto\Connector\Api\Data\PriceRuleInterface;
 use Ortto\Connector\Api\Data\PriceRuleResponseInterface;
 use Ortto\Connector\Api\DiscountRepositoryInterface;
 use Ortto\Connector\Api\ScopeManagerInterface;
-use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
@@ -68,7 +66,6 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
     private Data $helper;
     private DiscountFactory $discountFactory;
     private PriceRuleResponseFactory $ruleResponseFactory;
-    private CouponGenerator $couponGenerator;
     private PriceRuleFactory $priceRuleFactory;
     private ListPriceRuleResponseFactory $listPriceRuleResponseFactory;
 
@@ -85,7 +82,6 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
      * @param CouponFactory $couponFactory
      * @param DiscountFactory $discountFactory
      * @param PriceRuleResponseFactory $ruleResponseFactory
-     * @param CouponGenerator $couponGenerator
      * @param Data $helper
      * @param PriceRuleFactory $priceRuleFactory
      * @param ListPriceRuleResponseFactory $listPriceRuleResponseFactory
@@ -104,7 +100,6 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
         CouponFactory $couponFactory,
         DiscountFactory $discountFactory,
         PriceRuleResponseFactory $ruleResponseFactory,
-        CouponGenerator $couponGenerator,
         Data $helper,
         \Ortto\Connector\Model\Data\PriceRuleFactory $priceRuleFactory,
         ListPriceRuleResponseFactory $listPriceRuleResponseFactory,
@@ -124,7 +119,6 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
         $this->couponFactory = $couponFactory;
         $this->discountFactory = $discountFactory;
         $this->ruleResponseFactory = $ruleResponseFactory;
-        $this->couponGenerator = $couponGenerator;
         $this->priceRuleFactory = $priceRuleFactory;
         $this->listPriceRuleResponseFactory = $listPriceRuleResponseFactory;
     }
@@ -476,6 +470,10 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
      */
     public function upsertDiscount(DiscountInterface $discount): DiscountInterface
     {
+        $code = $discount->getCode();
+        if (empty($code)) {
+            throw $this->helper->newHTTPException('Discount code cannot be empty', 400);
+        }
         $err = $discount->validate();
         if (!empty($err)) {
             throw $this->helper->newHTTPException($err, 400);
@@ -496,34 +494,32 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
             throw $this->helper->newHTTPException(sprintf('Rule ID %d was not found', $discount->getRuleId()), 404);
         }
 
-        $code = $discount->getCode();
-        $autoGenerate = $rule->getUseAutoGeneration();
-        if (!$autoGenerate && empty($code)) {
-            throw $this->helper->newHTTPException('Coupon code cannot be empty', 400);
-        }
-
         $ruleID = To::int($rule->getRuleId());
 
         try {
-            // Auto generate (aka Unique) coupon
-            if ($autoGenerate) {
-                $data = [
-                    'rule_id' => $ruleID,
-                    'qty' => '1',
-                    'length' => '12',
-                    'format' => 'alphanum',
-                ];
-                if ($prefix = $discount->getCode()) {
-                    $data['prefix'] = $prefix;
-                }
-                $discountCodes = $this->couponGenerator->generateCodes($data);
-                if (empty($discountCodes)) {
-                    $this->logger->warn("No discount code was generated", ['rule' => $ruleID]);
-                    throw new \Exception(__('Could not generate discount codes'));
-                }
+            // Auto generate (aka Unique) coupon. Unique code is provided by Ortto.
+            if ($rule->getUseAutoGeneration()) {
                 $response = $this->discountFactory->create();
                 $response->setRuleId($ruleID);
-                $response->setCode($discountCodes[0]);
+                $response->setCode($code);
+                $this->searchCriteriaBuilder
+                    ->addFilter(Coupon::KEY_CODE, $code)
+                    ->addFilter(Coupon::KEY_RULE_ID, $ruleID);
+                $coupons = $this->couponRepository->getList($this->searchCriteriaBuilder->create())->getItems();
+                if (!empty($coupons)) {
+                    return $response;
+                }
+
+                $now = $this->helper->nowUTC();
+                $newCoupon = $this->couponFactory->create();
+                $newCoupon->setCode($code)
+                    ->setRuleId($ruleID)
+                    ->setType(CouponInterface::TYPE_GENERATED)
+                    ->setIsPrimary(false)
+                    ->setUsagePerCustomer($rule->getUsesPerCustomer())
+                    ->setCreatedAt($this->helper->toUTC($now))
+                    ->setUsageLimit($rule->getUsesPerCoupon());
+                $this->couponRepository->save($newCoupon);
                 return $response;
             }
 
