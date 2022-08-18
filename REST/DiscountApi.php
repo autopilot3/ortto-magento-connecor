@@ -675,15 +675,9 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
             );
         }
 
-        $copyRuleProducts = false;
-        switch ($rule->getType()) {
-            case PriceRuleInterface::TYPE_PERCENTAGE:
-            case PriceRuleInterface::TYPE_BUY_X_GET_Y_FREE:
-                $copyRuleProducts = true;
-                break;
-            case PriceRuleInterface::TYPE_FREE_SHIPPING:
-                $copyRuleProducts = $rule->getApplyFreeShippingToMatchingItemsOnly();
-                break;
+        $copyRuleProducts = true;
+        if ($rule->getType() == PriceRuleInterface::TYPE_FREE_SHIPPING) {
+            $copyRuleProducts = $rule->getApplyFreeShippingToMatchingItemsOnly();
         }
 
         $actionCategoryIDs = [];
