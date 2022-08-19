@@ -81,7 +81,7 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
     {
         $data = $this->productCategoryFactory->create();
         $data->setId(To::int($category->getEntityId()));
-        $data->setName((string)$category->getName());
+        $data->setName(html_entity_decode($category->getName()));
         $data->setDescription((string)$category->getData('description') ?? '');
         $data->setProductsCount($productCount);
         $data->setCreatedAt($this->helper->toUTC($category->getCreatedAt()));

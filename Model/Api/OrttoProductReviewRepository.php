@@ -165,9 +165,9 @@ class OrttoProductReviewRepository implements OrttoProductReviewRepositoryInterf
 
         $review = $collection->getItemById($reviewId);
         $data = $this->productReviewFactory->create();
-        $data->setNickname((string)$review->getData(self::NICKNAME));
-        $data->setDetails((string)$review->getData(self::DETAIL));
-        $data->setTitle((string)$review->getData(self::TITLE));
+        $data->setNickname(html_entity_decode((string)$review->getData(self::NICKNAME)));
+        $data->setDetails(html_entity_decode((string)$review->getData(self::DETAIL)));
+        $data->setTitle(html_entity_decode((string)$review->getData(self::TITLE)));
         $data->setStatus((string)$review->getData(self::STATUS));
         $product = $this->productRepository->getById($scope, To::int($review->getData(self::PRODUCT_ID)));
         $data->setProduct($product);
@@ -184,9 +184,9 @@ class OrttoProductReviewRepository implements OrttoProductReviewRepositoryInterf
     {
         $data = $this->productReviewFactory->create();
         $data->setCreatedAt($this->helper->toUTC((string)$review->getData(self::CREATED_AT)));
-        $data->setNickname((string)$review->getData(self::NICKNAME));
-        $data->setDetails((string)$review->getData(self::DETAIL));
-        $data->setTitle((string)$review->getData(self::TITLE));
+        $data->setNickname(html_entity_decode((string)$review->getData(self::NICKNAME)));
+        $data->setDetails(html_entity_decode((string)$review->getData(self::DETAIL)));
+        $data->setTitle(html_entity_decode((string)$review->getData(self::TITLE)));
         $data->setStatus((string)$review->getData(self::STATUS));
         $data->setProduct($products[To::int($review->getData(self::PRODUCT_ID))]);
         $data->setCustomer($customers[To::int($review->getData(self::CUSTOMER_ID))]);

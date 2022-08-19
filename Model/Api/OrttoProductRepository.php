@@ -185,7 +185,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $sku = $product->getSku();
         $orttoProduct->setId($productId);
         $orttoProduct->setType($productType);
-        $orttoProduct->setName($product->getName());
+        $orttoProduct->setName(html_entity_decode($product->getName()));
         $orttoProduct->setSku($sku);
         $orttoProduct->setPrice(To::float($product->getPrice()));
         $orttoProduct->setMinimalPrice(To::float($product->getMinimalPrice()));

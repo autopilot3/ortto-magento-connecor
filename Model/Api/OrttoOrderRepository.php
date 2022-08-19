@@ -420,7 +420,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $data->setSku((string)$item->getSku());
 
             $data->setDescription((string)$item->getDescription());
-            $data->setName((string)$item->getName());
+            $data->setName(html_entity_decode((string)$item->getName()));
             $data->setCreatedAt($this->helper->toUTC($item->getCreatedAt()));
             $data->setUpdatedAt($this->helper->toUTC($item->getUpdatedAt()));
             $data->setRefunded(To::float($item->getAmountRefunded()));
@@ -565,7 +565,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $data = $this->carrierFactory->create();
             $data->setId(To::int($carrier->getEntityId()));
             $data->setCode((string)$carrier->getCarrierCode());
-            $data->setTitle((string)$carrier->getTitle());
+            $data->setTitle(html_entity_decode((string)$carrier->getTitle()));
             $data->setTrackingNumber((string)$carrier->getTrackNumber());
             $data->setCreatedAt($this->helper->toUTC($carrier->getCreatedAt()));
             $result[] = $data;
