@@ -194,12 +194,8 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
         $orttoProduct->setCreatedAt($this->helper->toUTC($product->getCreatedAt()));
         $orttoProduct->setWeight(To::float($product->getWeight()));
         $orttoProduct->setIsVisible($product->getVisibility() != Visibility::VISIBILITY_NOT_VISIBLE);
-        if (method_exists($product, 'getShortDescription')) {
-            $orttoProduct->setShortDescription($product->getShortDescription() ?? '');
-        }
-        if (method_exists($product, 'getDescription')) {
-            $orttoProduct->setDescription($product->getDescription() ?? '');
-        }
+        $orttoProduct->setShortDescription((string)$product->getData('short_description'));
+        $orttoProduct->setDescription((string)$product->getData('description'));
         $orttoProduct->setIsOptionRequired(To::int($product->getData('required_options')) > 0);
         $orttoProduct->setCurrencyCode($product->getStore()->getCurrentCurrencyCode());
         $stock = $this->getStockData($productId, $sku, $productType, $websiteStockName);
