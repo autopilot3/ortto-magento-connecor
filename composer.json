@@ -1,17 +1,28 @@
 {
     "name": "ortto/connector",
-    "description": "Ortto Connector",
+    "description": "Ortto Magento Connector",
     "require": {
         "php": "~5.5.0|~5.6.0|~7.0.0",
         "magento/framework": "100.0.*",
         "ext-json": "*"
     },
     "type": "magento2-module",
-    "version": "0.0.5",
-    "license": [
-        "OSL-3.0",
-        "AFL-3.0"
+    "keywords": [
+        "ortto",
+        "connector",
+        "marketing",
+        "Saas",
+        "B2B"
     ],
+    "homepage": "https://ortto.com",
+    "readme": "README.md",
+    "license": [
+        "MIT"
+    ],
+    "support": {
+        "email": "help@ortto.com",
+        "docs": "https://help.ortto.com/user/latest/data-sources/configuring-a-new-data-source/e-commerce-integrations/magento.html"
+    },
     "autoload": {
         "files": [
             "registration.php"
