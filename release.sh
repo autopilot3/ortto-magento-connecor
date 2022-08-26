@@ -25,7 +25,7 @@ REMOTE='git@github.com:autopilot3/ortto-magento2-connector.git'
 release() {
     VERSION="v$1"
     echo "Releasing $VERSION to $REMOTE"
-    git checkout v2.4.4
+    git checkout v2.4.2
     git tag $VERSION
     git push $REMOTE --tags
     curl -XPOST -H'content-type:application/json' "https://packagist.org/api/update-package?username=ortto&apiToken=$PACKAGIST_TOKEN" -d'{"repository":{"url":"https://packagist.org/packages/ortto/magento2-connector"}}'
