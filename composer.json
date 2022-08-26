@@ -1,5 +1,5 @@
 {
-    "name": "ortto/connector",
+    "name": "ortto/magento2-connector",
     "description": "Ortto Magento Connector",
     "require": {
         "php": "~5.5.0|~5.6.0|~7.0.0",
@@ -15,7 +15,6 @@
         "B2B"
     ],
     "homepage": "https://ortto.com",
-    "readme": "README.md",
     "license": [
         "MIT"
     ],
