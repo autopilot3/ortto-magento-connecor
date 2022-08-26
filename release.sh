@@ -2,11 +2,6 @@
 
 set -eo pipefail
 
-if [ -z "$PACKAGIST_TOKEN" ]; then
-    echo "PACKAGIST_TOKEN environment variable is not set."
-    exit 1
-fi
-
 confirm() {
   VERSION=$1
   shift
@@ -28,7 +23,6 @@ release() {
     git checkout v2.4.2
     git tag $VERSION
     git push $REMOTE --tags
-    curl -XPOST -H'content-type:application/json' "https://packagist.org/api/update-package?username=ortto&apiToken=$PACKAGIST_TOKEN" -d'{"repository":{"url":"https://packagist.org/packages/ortto/magento2-connector"}}'
 }
 
 LATEST=$(git ls-remote --tags $REMOTE | cut -d'/' -f 3 | sort -V | tail -n 1)
