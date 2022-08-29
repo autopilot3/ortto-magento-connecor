@@ -24,7 +24,6 @@ release() {
     git tag $VERSION
     git push $REMOTE --tags
 }
-
 LATEST=$(git ls-remote --tags $REMOTE | cut -d'/' -f 3 | sort -V | tail -n 1)
 VERSION=''
 

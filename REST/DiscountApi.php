@@ -42,6 +42,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
     private const RULE_TYPE_PRODUCT_FOUND = 'Magento\SalesRule\Model\Rule\Condition\Product\Found';
 
     private const OP_GT_OR_EQ = '>=';
+    private const OP_GT = '>';
     private const OP_IN = '()';
 
     const NO_FREE_SHIPPING = 0;
@@ -667,7 +668,10 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
                 self::RULE_TYPE_ADDRESS,
                 $minQuantity,
                 'total_qty',
-                self::OP_GT_OR_EQ
+                // With Buy X get Y, we must go with Greater Than operand. For some reason Magento
+                // applies the cart rule to shipping, when the number of ordered items is less than X
+                // (in which no discount should be applied at all)
+                $rule->getType() == PriceRuleInterface::TYPE_BUY_X_GET_Y_FREE ? self::OP_GT : self::OP_GT_OR_EQ
             );
         }
 

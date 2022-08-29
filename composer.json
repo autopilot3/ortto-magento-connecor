@@ -18,8 +18,9 @@
     "license": [
         "MIT"
     ],
+    "readme": "./README.md",
     "support": {
-        "email": "help@ortto.com",
+        "email": "support@ortto.com",
         "docs": "https://help.ortto.com/user/latest/data-sources/configuring-a-new-data-source/e-commerce-integrations/magento.html"
     },
     "autoload": {
