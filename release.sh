@@ -23,7 +23,7 @@ confirm() {
 REMOTE='git@github.com:autopilot3/ortto-magento2-connector.git'
 
 release() {
-    VERSION="v$1"
+    VERSION="$1"
     echo "Releasing $VERSION to $REMOTE"
     git checkout v2.4.2
     git tag $VERSION
