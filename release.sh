@@ -43,8 +43,8 @@ else
 fi
 
 if [[ $LATEST == $VERSION ]]; then
-     echo "v$LATEST has already been deployed!"
+     echo "$LATEST has already been deployed!"
      exit 1
 fi
 
-confirm "v$VERSION" release $VERSION
+confirm "$VERSION" release $VERSION
