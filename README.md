@@ -3,5 +3,5 @@
 ## Installation
 
 ```shell
-composer require composer require ortto/magento2-connector:<version>
+composer require ortto/magento2-connector:<version>
 ```
