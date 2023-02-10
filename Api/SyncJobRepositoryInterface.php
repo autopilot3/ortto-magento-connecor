@@ -5,7 +5,6 @@ namespace Ortto\Connector\Api;
 
 use Exception;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Tests\NamingConvention\true\mixed;
 use Ortto\Connector\Api\Data\SyncJobInterface;
 
 /**

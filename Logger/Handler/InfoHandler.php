@@ -21,7 +21,7 @@ class InfoHandler extends Base
      */
     protected $fileName = self::FILE_NAME;
 
-    protected function write(array $record)
+    protected function write(array $record): void
     {
         if ($record['level'] > Logger::INFO) {
             return;

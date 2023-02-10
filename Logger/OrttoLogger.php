@@ -5,18 +5,17 @@ namespace Ortto\Connector\Logger;
 
 use Ortto\Connector\Model\OrttoException;
 use Exception;
-use Psr\Log\LoggerInterface;
 
 class OrttoLogger implements OrttoLoggerInterface
 {
-    private LoggerInterface $logger;
+    private \Psr\Log\LoggerInterface $logger;
 
     const LOG_LEVEL_INFO = "info";
     const LOG_LEVEL_WARNING = "warning";
     const LOG_LEVEL_ERROR = "error";
     const LOG_LEVEL_DEBUG = "debug";
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(\Psr\Log\LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
