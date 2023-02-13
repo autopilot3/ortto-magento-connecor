@@ -4,22 +4,11 @@ declare(strict_types=1);
 namespace Ortto\Connector\Helper;
 
 use Magento\Catalog\Model\Product;
-use Magento\ProductAlert\Model\Stock;
-use Ortto\Connector\Api\ConfigScopeInterface;
-use Ortto\Connector\Api\SyncCategoryInterface;
 use Ortto\Connector\Logger\OrttoLoggerInterface;
-use Ortto\Connector\Model\ResourceModel\CronCheckpoint\Collection as CheckpointCollection;
-use Ortto\Connector\Model\ResourceModel\CronCheckpoint\CollectionFactory as CheckpointCollectionFactory;
-use InvalidArgumentException;
 use Magento\Customer\Api\CustomerMetadataInterface;
-use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Newsletter\Model\Subscriber;
-use Magento\Sales\Api\Data\OrderInterface;
-use Ortto\Connector\Api\ConfigurationReaderInterface;
-use Magento\Store\Model\ScopeInterface;
 use DateTime;
 use Exception;
 
@@ -36,7 +25,6 @@ class Data extends AbstractHelper
     private OrttoLoggerInterface $logger;
     private TimezoneInterface $timezone;
     private CustomerMetadataInterface $customerMetadata;
-    private ConfigurationReaderInterface $config;
     private \DateTimeZone $utcTZ;
     private Product\Media\Config $productMedia;
 
@@ -45,7 +33,6 @@ class Data extends AbstractHelper
         TimezoneInterface $timezone,
         CustomerMetadataInterface $customerMetadata,
         OrttoLoggerInterface $logger,
-        ConfigurationReaderInterface $config,
         \Magento\Catalog\Model\Product\Media\Config $productMedia
     ) {
         parent::__construct($context);
@@ -53,7 +40,6 @@ class Data extends AbstractHelper
         $this->logger = $logger;
         $this->timezone = $timezone;
         $this->customerMetadata = $customerMetadata;
-        $this->config = $config;
 
         $this->utcTZ = timezone_open('UTC');
         $this->productMedia = $productMedia;
@@ -157,33 +143,6 @@ class Data extends AbstractHelper
     public function nowUTC(): DateTime
     {
         return date_create('now', $this->utcTZ);
-    }
-
-    public function shouldExportCustomer(ConfigScopeInterface $scope, CustomerInterface $customer): bool
-    {
-        if (!$this->config->isAutoSyncEnabled($scope->getType(), $scope->getId(), SyncCategoryInterface::CUSTOMER)) {
-            $this->logger->debug(
-                sprintf("Automatic %s synchronisation is off", SyncCategoryInterface::CUSTOMER),
-                $scope->toArray()
-            );
-            return false;
-        }
-        if ($scope->getType() == ScopeInterface::SCOPE_WEBSITE) {
-            return $customer->getWebsiteId() == $scope->getId();
-        }
-        return $customer->getStoreId() == $scope->getId() && $customer->getWebsiteId() == $scope->getWebsiteId();
-    }
-
-    public function shouldExportProduct(ConfigScopeInterface $scope, Product $product): bool
-    {
-        if (!$this->config->isAutoSyncEnabled($scope->getType(), $scope->getId(), SyncCategoryInterface::PRODUCT)) {
-            $this->logger->debug(
-                sprintf("Automatic %s synchronisation is off", SyncCategoryInterface::PRODUCT),
-                $scope->toArray()
-            );
-            return false;
-        }
-        return array_contains($product->getWebsiteIds(), $scope->getWebsiteId(), false);
     }
 
     public function newHTTPException(string $message, int $code = 500): \Magento\Framework\Webapi\Exception

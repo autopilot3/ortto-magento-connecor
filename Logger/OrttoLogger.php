@@ -64,7 +64,11 @@ class OrttoLogger implements OrttoLoggerInterface
         $this->logger->log($level, $message, ['context' => $this->encodeData($data)]);
     }
 
-    private function encodeData($data)
+    /**
+     * @param $data
+     * @return false|string
+     */
+    private function encodeData($data): bool|string
     {
         try {
             if (is_object($data)) {
