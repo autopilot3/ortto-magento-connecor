@@ -68,7 +68,7 @@ class OrttoLogger implements OrttoLoggerInterface
      * @param $data
      * @return false|string
      */
-    private function encodeData($data): bool|string
+    private function encodeData($data)
     {
         try {
             if (is_object($data)) {
