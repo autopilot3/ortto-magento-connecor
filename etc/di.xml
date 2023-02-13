@@ -9,10 +9,6 @@
         <plugin name="order_attributes_loader_plugin"
                 type="Ortto\Connector\Plugin\LoadOrderAttributesPlugin"/>
     </type>
-    <type name="Magento\ProductAlert\Model\Stock">
-        <plugin name="stock_alert_plugin"
-                type="Ortto\Connector\Plugin\RestockSubscriptionPlugin"/>
-    </type>
     <!-- END PLUGINS -->
     <virtualType name="OrttoLogger" type="Magento\Framework\Logger\Monolog">
         <arguments>
@@ -24,24 +20,12 @@
     </virtualType>
     <preference for="Ortto\Connector\Logger\OrttoLoggerInterface"
                 type="Ortto\Connector\Logger\OrttoLogger"/>
-    <type name="Ortto\Connector\Logger\OrttoLogger">
-        <arguments>
-            <argument name="logger" xsi:type="object">OrttoLogger</argument>
-        </arguments>
-    </type>
-    <type name="Ortto\Connector\Service\OrttoClient">
-        <arguments>
-            <argument name="curl" xsi:type="object">Magento\Framework\HTTP\Client\Curl</argument>
-        </arguments>
-    </type>
     <preference for="Ortto\Connector\Api\OrttoSerializerInterface"
                 type="Ortto\Connector\Service\OrttoSerializer"/>
     <preference for="Ortto\Connector\Api\ScopeManagerInterface"
                 type="Ortto\Connector\Service\ScopeManager"/>
     <preference for="Ortto\Connector\Api\ConfigScopeInterface"
                 type="Ortto\Connector\Model\Scope"/>
-    <preference for="Ortto\Connector\Api\OrttoClientInterface"
-                type="Ortto\Connector\Service\OrttoClient"/>
     <preference for="Ortto\Connector\Api\ConfigurationReaderInterface"
                 type="Ortto\Connector\Service\ConfigurationReader"/>
     <preference for="Ortto\Connector\Api\Data\SyncJobInterface"
