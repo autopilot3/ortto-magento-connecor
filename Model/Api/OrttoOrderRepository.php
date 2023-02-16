@@ -538,14 +538,18 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $data = $this->extensionFactory->create();
         $extensionAttrs = $order->getExtensionAttributes();
         if ($extensionAttrs instanceof OrderExtensionInterface) {
-            if ($amz = $extensionAttrs->getAmazonOrderReferenceId()) {
-                $data->setAmazonReferenceId(To::int($amz->getOrderId()));
+            if (method_exists($extensionAttrs, 'getAmazonOrderReferenceId')) {
+                if ($amz = $extensionAttrs->getAmazonOrderReferenceId()) {
+                    $data->setAmazonReferenceId(To::int($amz->getOrderId()));
+                }
             }
-            if ($giftMsg = $extensionAttrs->getGiftMessage()) {
-                $gift = $this->giftFactory->create();
-                $gift->setMessage((string)$giftMsg->getMessage());
-                $gift->setSender((string)$giftMsg->getSender());
-                $gift->setRecipient((string)$giftMsg->getRecipient());
+            if (method_exists($extensionAttrs, 'getGiftMessage')) {
+                if ($giftMsg = $extensionAttrs->getGiftMessage()) {
+                    $gift = $this->giftFactory->create();
+                    $gift->setMessage((string)$giftMsg->getMessage());
+                    $gift->setSender((string)$giftMsg->getSender());
+                    $gift->setRecipient((string)$giftMsg->getRecipient());
+                }
             }
         }
         return $data;
