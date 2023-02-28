@@ -62,9 +62,6 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
         /** @var Category $category */
         foreach ($collection->getItems() as $category) {
             $productCount = To::int($category->getProductCount());
-            if ($productCount <= 0) {
-                continue;
-            }
             $categories[] = $this->convert($category, $productCount);
         }
         $result->setItems($categories);
