@@ -22,4 +22,10 @@ interface CustomerApiInterface
         int $pageSize = 100,
         bool $anonymous = false
     );
+
+    /**
+     * @param int $customerId
+     * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
+     */
+    public function getById(int $customerId);
 }

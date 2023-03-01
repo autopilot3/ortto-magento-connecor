@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\REST;
 
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Webapi\Exception;
 use Ortto\Connector\Api\ProductApiInterface;
 use Ortto\Connector\Api\OrttoProductRepositoryInterface;
@@ -43,5 +44,28 @@ class ProductApi extends RestApiBase implements ProductApiInterface
             $checkpoint,
             $pageSize
         );
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception
+     */
+    public function getById(string $scopeType, int $scopeId, int $productId)
+    {
+        try {
+            $scope = $this->validateScope($scopeType, $scopeId);
+            $product = $this->productRepository->getById($scope, $productId);
+        }
+        catch (NoSuchEntityException) {
+            throw $this->notFoundError();
+        }
+        catch (\Exception $e) {
+            $this->logger->error($e);
+            throw $this->httpError($e->getMessage());
+        }
+        if (empty($product)) {
+            throw $this->notFoundError();
+        }
+        return $product;
     }
 }

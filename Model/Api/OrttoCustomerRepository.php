@@ -169,12 +169,16 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     /** @inheirtDoc
      * @throws LocalizedException
      */
-    public function getById(ConfigScopeInterface $scope, int $customerId, array $data = [])
+    public function getById(int $customerId, array $data = [])
     {
         $collection = $this->customerCollection->create();
         $collection->addAttributeToSelect($this->customerColumnsToSelect);
+        $collection->addFieldToFilter(self::ENTITY_ID, ["eq" => $customerId]);
 
         $customerData = $collection->getItemById($customerId);
+        if (empty($customerData)) {
+            return null;
+        }
         $addressIds = [];
         if ($addressId = $customerData->getData(CustomerInterface::DEFAULT_SHIPPING)) {
             $addressIds[] = To::int($addressId);

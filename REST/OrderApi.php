@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\REST;
 
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Webapi\Exception;
 use Ortto\Connector\Api\OrderApiInterface;
 use Ortto\Connector\Api\OrttoOrderRepositoryInterface;
@@ -43,5 +44,28 @@ class OrderApi extends RestApiBase implements OrderApiInterface
             $checkpoint,
             $pageSize
         );
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception
+     */
+    public function getById(string $scopeType, int $scopeId, int $orderId)
+    {
+        try {
+            $scope = $this->validateScope($scopeType, $scopeId);
+            $order = $this->orderRepository->getById($scope, $orderId);
+        }
+        catch (NoSuchEntityException) {
+            throw $this->notFoundError();
+        }
+        catch (\Exception $e) {
+            $this->logger->error($e);
+            throw $this->httpError($e->getMessage());
+        }
+        if (empty($order)) {
+            throw $this->notFoundError();
+        }
+        return $order;
     }
 }

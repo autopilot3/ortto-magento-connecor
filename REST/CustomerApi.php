@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\REST;
 
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Webapi\Exception;
 use Ortto\Connector\Api\CustomerApiInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
@@ -45,5 +46,27 @@ class CustomerApi extends RestApiBase implements CustomerApiInterface
             $pageSize,
             [OrttoCustomerRepositoryInterface::ANONYMOUS => $anonymous]
         );
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception
+     */
+    public function getById(int $customerId)
+    {
+        try {
+            $customer = $this->customerRepository->getById($customerId);
+        }
+        catch (NoSuchEntityException) {
+            throw $this->notFoundError();
+        }
+        catch (\Exception $e) {
+            $this->logger->error($e);
+            throw $this->httpError($e->getMessage());
+        }
+        if (empty($customer)) {
+            throw $this->notFoundError();
+        }
+        return $customer;
     }
 }

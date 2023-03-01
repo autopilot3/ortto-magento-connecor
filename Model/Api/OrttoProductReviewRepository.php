@@ -160,17 +160,26 @@ class OrttoProductReviewRepository implements OrttoProductReviewRepositoryInterf
                 'main_table.status_id = rs.status_id',
                 [self::STATUS => 'rs.status_code']
             )->where("re.entity_code = ?", 'product')
-            ->where("rs.status_code = ?", 'approved')
+            ->where("re.entity_id = ?", $reviewId)
             ->where("detail.store_id = ?", $scope->getId());
 
         $review = $collection->getItemById($reviewId);
+        if (empty($review)) {
+            return null;
+        }
         $data = $this->productReviewFactory->create();
         $data->setNickname(html_entity_decode((string)$review->getData(self::NICKNAME)));
         $data->setDetails(html_entity_decode((string)$review->getData(self::DETAIL)));
         $data->setTitle(html_entity_decode((string)$review->getData(self::TITLE)));
         $data->setStatus((string)$review->getData(self::STATUS));
         $product = $this->productRepository->getById($scope, To::int($review->getData(self::PRODUCT_ID)));
-        $data->setProduct($product);
+        if (!empty($product)) {
+            $data->setProduct($product);
+        }
+        $customer = $this->customerRepository->getById(To::int($review->getData(self::CUSTOMER_ID)));
+        if (!empty($customer)) {
+            $data->setCustomer($customer);
+        }
         return $data;
     }
 

@@ -80,6 +80,10 @@ class ProductView extends View
                 return false;
             }
             $product = $this->orttoProductRepository->getById($scope, $productId);
+            if (empty($product)) {
+                $this->logger->warn("Product View: Product Not Found", ["id" => $productId]);
+                return false;
+            }
             $payload = [
                 'email' => $trackingData->getEmail(),
                 'phone' => $trackingData->getPhone(),

@@ -20,4 +20,12 @@ interface OrttoProductCategoryRepositoryInterface
         int $pageSize,
         array $data = []
     );
+
+    /**
+     * Returns a product category by ID.
+     * @param int $categoryId
+     * @param array $data
+     * @return \Ortto\Connector\Api\Data\OrttoProductCategoryInterface
+     */
+    public function getById(ConfigScopeInterface $scope, int $categoryId);
 }

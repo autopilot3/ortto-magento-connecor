@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\REST;
 
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Webapi\Exception;
 use Ortto\Connector\Api\OrttoProductCategoryRepositoryInterface;
 use Ortto\Connector\Api\ProductCategoryApiInterface;
@@ -44,5 +45,28 @@ class ProductCategoryApi extends RestApiBase implements ProductCategoryApiInterf
             $pageSize,
             []
         );
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception
+     */
+    public function getById(string $scopeType, int $scopeId, int $categoryId)
+    {
+        try {
+            $scope = $this->validateScope($scopeType, $scopeId);
+            $category = $this->repository->getById($scope, $categoryId);
+        }
+        catch (NoSuchEntityException) {
+            throw $this->notFoundError();
+        }
+        catch (\Exception $e) {
+            $this->logger->error($e);
+            throw $this->httpError($e->getMessage());
+        }
+        if (empty($category)) {
+            throw $this->notFoundError();
+        }
+        return $category;
     }
 }
