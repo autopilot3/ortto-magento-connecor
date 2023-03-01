@@ -14,8 +14,5 @@ steps:
   - label: ":php: :package: Package and Deploy to eb50a474a0.nxcli.net :mage:"
     command: .buildkite/deploy-nexcess.sh a52f6224_1 4f875de389.nxcli.net eb50a474a0.nxcli.net/html
     agents:
-      env: stg
+      env: prod
       region: ap-southeast-2
-
-
-

@@ -55,11 +55,9 @@ class ProductReviewApi extends RestApiBase implements ProductReviewApiInterface
         try {
             $scope = $this->validateScope($scopeType, $scopeId);
             $review = $this->repository->getById($scope, $reviewId);
-        }
-        catch (NoSuchEntityException) {
+        } catch (NoSuchEntityException) {
             throw $this->notFoundError();
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
             throw $this->httpError($e->getMessage());
         }
