@@ -7,7 +7,7 @@ REMOTE_HOST=$2
 SITE=$3
 
 ROOT="~/${SITE}/app/code/Ortto"
-INSTALL_DIR="~/${ROOT}/Connector"
+INSTALL_DIR="${ROOT}/Connector"
 
 function ssh_command() {
   local command=$1
