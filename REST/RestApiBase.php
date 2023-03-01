@@ -46,4 +46,9 @@ class RestApiBase
     {
         return new Exception(__($message), $code, $code);
     }
+
+    protected function notFoundError(): Exception
+    {
+        return $this->httpError("Not Found", 404);
+    }
 }

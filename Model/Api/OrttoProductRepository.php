@@ -165,8 +165,12 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
     public function getById(ConfigScopeInterface $scope, int $productId, array $data = [])
     {
         $collection = $this->productCollectionFactory->create();
-        /** @var  Product $product */
-        $product = $collection->addAttributeToSelect('*')->getItemById($productId);
+        $collection->addIdFilter($productId)->addAttributeToSelect('*');
+        /** @var Product $product */
+        $product = $collection->getItemById($productId);
+        if (empty($product)) {
+            return null;
+        }
         return $this->convert($product, $scope->getId(), $this->getWebsiteStockName($scope));
     }
 

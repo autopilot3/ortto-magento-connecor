@@ -190,6 +190,9 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     public function getById(ConfigScopeInterface $scope, int $orderId, array $data = [])
     {
         $order = $this->orderRepository->get($orderId);
+        if (empty($order)) {
+            return null;
+        }
         $productIds = [];
         foreach ($order->getItems() as $item) {
             $productIds[] = To::int($item->getProductId());
@@ -201,9 +204,12 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $addresses = $this->getOrderAddresses([$orderId]);
         $data = $this->convertOrder($order, $addresses[$orderId], $products);
         if ($customerId = $order->getCustomerId()) {
-            $data->setCustomer($this->customerRepository->getById($scope, To::int($customerId)));
+            $customer = $this->customerRepository->getById(To::int($customerId));
         } else {
-            $data->setCustomer($this->getAnonymousCustomer($order, $addresses[$orderId]));
+            $customer = $this->getAnonymousCustomer($order, $addresses[$orderId]);
+        }
+        if (!empty($customer)) {
+            $data->setCustomer($customer);
         }
         return $data;
     }

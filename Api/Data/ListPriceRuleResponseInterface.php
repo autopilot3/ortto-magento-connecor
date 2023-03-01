@@ -44,7 +44,7 @@ interface ListPriceRuleResponseInterface
     public function setHasMore(bool $hasMore);
 
     /**
-     * @param \Ortto\Connector\Api\Data\OrttoCustomerInterface[] $items
+     * @param \Ortto\Connector\Api\Data\PriceRuleInterface[] $items
      * @return void
      */
     public function setItems(array $items);

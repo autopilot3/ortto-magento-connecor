@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Api;
 
+use Ortto\Connector\Api\Data\OrttoOrderInterface;
+
 interface OrderApiInterface
 {
     /**
@@ -19,5 +21,17 @@ interface OrderApiInterface
         int $page = 1,
         string $checkpoint = '',
         int $pageSize = 100
+    );
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @param int $orderId
+     * @return \Ortto\Connector\Api\Data\OrttoOrderInterface
+     */
+    public function getById(
+        string $scopeType,
+        int $scopeId,
+        int $orderId
     );
 }

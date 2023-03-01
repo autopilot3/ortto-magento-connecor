@@ -169,6 +169,31 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
         return $result;
     }
 
+    /** @inheirtDoc
+     * @throws \Exception
+     */
+    public function getById(
+        string $scopeType,
+        int $scopeId,
+        int $ruleId
+    ) {
+        try {
+            $scope = $this->validateScope($scopeType, $scopeId);
+            $rule = $this->ruleRepository->getById($ruleId);
+        }
+        catch (NoSuchEntityException) {
+            throw $this->notFoundError();
+        }
+        catch(\Exception $e) {
+            $this->logger->error($e);
+            throw $this->httpError($e->getMessage());
+        }
+        if (empty($rule)) {
+            throw $this->notFoundError();
+        }
+        return $this->convertRule($rule, $scope->getWebsiteId());
+    }
+
     /**
      * @param RuleInterface $rule
      * @param int $websiteId

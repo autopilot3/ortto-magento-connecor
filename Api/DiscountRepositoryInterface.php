@@ -52,4 +52,16 @@ interface DiscountRepositoryInterface
         int $pageSize,
         array $data = []
     );
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @param int $ruleId
+     * @return \Ortto\Connector\Api\Data\PriceRuleInterface
+     */
+    public function getById(
+        string $scopeType,
+        int $scopeId,
+        int $ruleId
+    );
 }

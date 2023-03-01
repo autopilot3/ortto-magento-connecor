@@ -20,4 +20,16 @@ interface ProductReviewApiInterface
         string $checkpoint = '',
         int $pageSize = 100
     );
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @param int $reviewId
+     * @return \Ortto\Connector\Api\Data\OrttoProductReviewInterface
+     */
+    public function getById(
+        string $scopeType,
+        int $scopeId,
+        int $reviewId
+    );
 }

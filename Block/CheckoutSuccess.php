@@ -47,7 +47,12 @@ class CheckoutSuccess extends Template
             $trackingData = $this->trackDataProvider->getData();
             $scope = $trackingData->getScope();
             if ($sessionOrder = $this->session->getLastRealOrder()) {
-                $order = $this->orderRepository->getById($scope, To::int($sessionOrder->getId()));
+                $orderId = $sessionOrder->getId();
+                $order = $this->orderRepository->getById($scope, To::int($orderId));
+                if (empty($order)) {
+                    $this->logger->warn("Checkout Succeeded:Order Not Found",["id" => $orderId]);
+                    return false;
+                }
                 $payload = [
                     'email' => $trackingData->getEmail(),
                     'phone' => $trackingData->getPhone(),

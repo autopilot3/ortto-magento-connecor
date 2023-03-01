@@ -69,6 +69,22 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
         return $result;
     }
 
+    public function getById(ConfigScopeInterface $scope, int $categoryId)
+    {
+        $collection = $this->categoryCollection->create();
+        $collection->addFieldToSelect("*")
+            ->addIdFilter([$categoryId])
+            ->setStoreId($scope->getId());
+
+
+        /** @var Category $category */
+        $category = $collection->getItemById($categoryId);
+        if (empty($category)) {
+            return null;
+        }
+        return $this->convert($category, To::int($category->getProductCount()));
+    }
+
     /**
      * @param Category $category
      * @param int $productCount
