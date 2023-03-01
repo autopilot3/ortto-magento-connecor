@@ -55,7 +55,7 @@ class ProductApi extends RestApiBase implements ProductApiInterface
         try {
             $scope = $this->validateScope($scopeType, $scopeId);
             $product = $this->productRepository->getById($scope, $productId);
-        } catch (NoSuchEntityException) {
+        } catch (NoSuchEntityException $e) {
             throw $this->notFoundError();
         } catch (\Exception $e) {
             $this->logger->error($e);

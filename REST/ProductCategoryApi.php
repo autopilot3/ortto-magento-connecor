@@ -56,7 +56,7 @@ class ProductCategoryApi extends RestApiBase implements ProductCategoryApiInterf
         try {
             $scope = $this->validateScope($scopeType, $scopeId);
             $category = $this->repository->getById($scope, $categoryId);
-        } catch (NoSuchEntityException) {
+        } catch (NoSuchEntityException $e) {
             throw $this->notFoundError();
         } catch (\Exception $e) {
             $this->logger->error($e);

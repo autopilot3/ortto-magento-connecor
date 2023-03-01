@@ -180,7 +180,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
         try {
             $scope = $this->validateScope($scopeType, $scopeId);
             $rule = $this->ruleRepository->getById($ruleId);
-        } catch (NoSuchEntityException) {
+        } catch (NoSuchEntityException $e) {
             throw $this->notFoundError();
         } catch (\Exception $e) {
             $this->logger->error($e);

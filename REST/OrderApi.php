@@ -55,7 +55,7 @@ class OrderApi extends RestApiBase implements OrderApiInterface
         try {
             $scope = $this->validateScope($scopeType, $scopeId);
             $order = $this->orderRepository->getById($scope, $orderId);
-        } catch (NoSuchEntityException) {
+        } catch (NoSuchEntityException $e) {
             throw $this->notFoundError();
         } catch (\Exception $e) {
             $this->logger->error($e);

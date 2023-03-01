@@ -55,7 +55,7 @@ class CustomerApi extends RestApiBase implements CustomerApiInterface
     {
         try {
             $customer = $this->customerRepository->getById($customerId);
-        } catch (NoSuchEntityException) {
+        } catch (NoSuchEntityException $e) {
             throw $this->notFoundError();
         } catch (\Exception $e) {
             $this->logger->error($e);
