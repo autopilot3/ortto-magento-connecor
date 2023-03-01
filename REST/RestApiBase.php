@@ -52,3 +52,4 @@ class RestApiBase
         return $this->httpError("Not Found", 404);
     }
 }
+

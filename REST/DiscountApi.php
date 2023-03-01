@@ -182,7 +182,7 @@ class DiscountApi extends RestApiBase implements DiscountRepositoryInterface
             $rule = $this->ruleRepository->getById($ruleId);
         } catch (NoSuchEntityException) {
             throw $this->notFoundError();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->error($e);
             throw $this->httpError($e->getMessage());
         }

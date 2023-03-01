@@ -6,7 +6,8 @@ REMOTE_USER=$1
 REMOTE_HOST=$2
 SITE=$3
 
-INSTALL_DIR="~/${SITE}/app/code/Ortto/Connector"
+ROOT="~/${SITE}/app/code/Ortto"
+INSTALL_DIR="~/${ROOT}/Connector"
 
 function ssh_command() {
   local command=$1
@@ -19,7 +20,7 @@ function magento_command() {
 }
 
 echo "--- Creating installation directory"
-ssh_command "mkdir -p $INSTALL_DIR"
+ssh_command "rm -rf $ROOT && mkdir -p $INSTALL_DIR"
 
 echo "--- Syncing into installation directory"
 rsync \

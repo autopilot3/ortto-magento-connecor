@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-
 namespace Ortto\Connector\REST;
 
 use Magento\Framework\Exception\NoSuchEntityException;
