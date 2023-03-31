@@ -74,6 +74,8 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     private QuoteCollectionFactory $quoteCollection;
     private QuoteAddressCollectionFactory $quoteAddressCollection;
     private CountryFactory $countryFactory;
+    private \Magento\Newsletter\Model\SubscriberFactory $subscriberFactory;
+    private \Ortto\Connector\Api\ConfigurationReaderInterface $configReader;
 
     public function __construct(
         Data $helper,
@@ -85,7 +87,9 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         ListCustomerResponseFactory $listResponseFactory,
         OrttoCustomerFactory $customerFactory,
         \Ortto\Connector\Model\Data\OrttoAddressFactory $addressFactory,
-        \Magento\Directory\Model\CountryFactory $countryFactory
+        \Magento\Directory\Model\CountryFactory $countryFactory,
+        \Magento\Newsletter\Model\SubscriberFactory $subscriberFactory,
+        \Ortto\Connector\Api\ConfigurationReaderInterface $configReader
     ) {
         $this->countryCache = [];
         $this->helper = $helper;
@@ -98,6 +102,8 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $this->quoteCollection = $quoteCollection;
         $this->quoteAddressCollection = $quoteAddressCollection;
         $this->countryFactory = $countryFactory;
+        $this->subscriberFactory = $subscriberFactory;
+        $this->configReader = $configReader;
     }
 
     /** @inheirtDoc
@@ -158,8 +164,11 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             // customer was not found!
             $customers[$customerId] = null;
         }
+        $checkSubscription = $this->configReader->checkNewsletterSubscription($scope->getType(), $scope->getId());
+        $websiteId = $scope->getWebsiteId();
+        $storeId = $scope->getId();
         foreach ($customersData as $customer) {
-            $c = $this->convertCustomer($customer, $addresses);
+            $c = $this->convertCustomer($customer, $addresses, $checkSubscription, $websiteId, $storeId);
             $customers[$c->getId()] = $c;
         }
         $result->setItems($customers);
@@ -169,7 +178,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     /** @inheirtDoc
      * @throws LocalizedException
      */
-    public function getById(int $customerId, array $data = [])
+    public function getById(ConfigScopeInterface $scope, int $customerId, array $data = [])
     {
         $collection = $this->customerCollection->create();
         $collection->addAttributeToSelect($this->customerColumnsToSelect);
@@ -187,7 +196,10 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             $addressIds[] = To::int($addressId);
         }
         $addresses = $this->getAddressesById($addressIds);
-        return $this->convertCustomer($customerData, $addresses);
+        $checkSubscription = $this->configReader->checkNewsletterSubscription($scope->getType(), $scope->getId());
+        $websiteId = $scope->getWebsiteId();
+        $storeId = $scope->getId();
+        return $this->convertCustomer($customerData, $addresses, $checkSubscription, $websiteId, $storeId);
     }
 
     /**
@@ -197,8 +209,12 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
      * @param int $pageSize
      * @return \Ortto\Connector\Api\Data\ListCustomerResponseInterface
      */
-    private function getAnonymousCustomerList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize)
-    {
+    private function getAnonymousCustomerList(
+        ConfigScopeInterface $scope,
+        int $page,
+        string $checkpoint,
+        int $pageSize
+    ) {
         $columnsToSelect = [
             self::ENTITY_ID,
             self::IP_ADDRESS,
@@ -215,6 +231,8 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             self::CUSTOMER_GROUP_ID,
         ];
 
+        $storeId = $scope->getId();
+
         $collection = $this->quoteCollection->create();
         $collection->setPageSize($pageSize)
             ->setCurPage($page)
@@ -222,7 +240,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             ->addFieldToFilter(self::CUSTOMER_IS_GUEST, ['eq' => 1])
             // A quote with is_active field set to 1 is a shopping cart (no useful information has been stored yet)
             ->addFieldToFilter(self::IS_ACTIVE, ['eq' => 0])
-            ->addFieldToFilter(self::STORE_ID, ['eq' => $scope->getId()])
+            ->addFieldToFilter(self::STORE_ID, ['eq' => $storeId])
             ->setOrder(self::UPDATED_AT, SortOrder::SORT_ASC);
 
         if (!empty($checkpoint)) {
@@ -246,8 +264,14 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
 
         $addresses = $this->getQuoteAddressesById($quoteIds);
         $customers = [];
+        $checkSubscription = $this->configReader->checkNewsletterSubscription($scope->getType(), $scope->getId());
+        $websiteId = $scope->getWebsiteId();
         foreach ($customersData as $customer) {
-            $customers[] = $this->convertAnonymousCustomer($customer, $addresses, $scope->getWebsiteId());
+            $customers[] = $this->convertAnonymousCustomer($customer,
+                $addresses,
+                $checkSubscription,
+                $websiteId,
+                $storeId);
         }
         $result->setItems($customers);
         $result->setHasMore($page < $total / $pageSize);
@@ -259,6 +283,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
      * @param int $page
      * @param string $checkpoint
      * @param int $pageSize
+     *
      * @return \Ortto\Connector\Api\Data\ListCustomerResponseInterface
      * @throws LocalizedException
      */
@@ -297,8 +322,11 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
 
         $addresses = $this->getAddressesById($addressIds);
         $customers = [];
+        $checkSubscription = $this->configReader->checkNewsletterSubscription($scope->getType(), $scope->getId());
+        $storeId = $scope->getId();
+        $websiteId = $scope->getWebsiteId();
         foreach ($customersData as $customer) {
-            $customers[] = $this->convertCustomer($customer, $addresses);
+            $customers[] = $this->convertCustomer($customer, $addresses, $checkSubscription, $websiteId, $storeId);
         }
         $result->setItems($customers);
         $result->setHasMore($page < $total / $pageSize);
@@ -390,12 +418,21 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     /**
      * @param DataObject $customer
      * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[] $addresses
+     * @param $checkSubscription
+     * @param $websiteId
+     * @param $storeId
      * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
      */
-    private function convertCustomer($customer, $addresses)
+    private function convertCustomer($customer, $addresses, $checkSubscription, $websiteId, $storeId)
     {
         $data = $this->customerFactory->create();
         $customerId = To::int($customer->getData(self::ENTITY_ID));
+        if ($checkSubscription) {
+            $subscription = $this->subscriberFactory->create()->loadByCustomer($customerId, $websiteId);
+            $data->setIsSubscribed($subscription->getStoreId() == $storeId && $subscription->isSubscribed());
+        } else {
+            $data->setIsSubscribed(true);
+        }
         $data->setId($customerId);
         $data->setFirstName((string)$customer->getData(CustomerInterface::FIRSTNAME));
         $data->setMiddleName((string)$customer->getData(CustomerInterface::MIDDLENAME));
@@ -434,13 +471,23 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     /**
      * @param DataObject $customer
      * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[][] $addresses
-     * @param int $websiteId
+     * @param bool $checkSubscription
+     * * @param int $websiteId
+     * @param int $storeId
      * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
      */
-    private function convertAnonymousCustomer($customer, $addresses, $websiteId)
+    private function convertAnonymousCustomer($customer, $addresses, $checkSubscription, $websiteId, $storeId)
     {
         $data = $this->customerFactory->create();
         $email = (string)$customer->getData(self::CUSTOMER_EMAIL);
+        if (!empty($email)) {
+            if ($checkSubscription) {
+                $subscription = $this->subscriberFactory->create()->loadBySubscriberEmail($email, $websiteId);
+                $data->setIsSubscribed($subscription->getStoreId() == $storeId && $subscription->isSubscribed());
+            } else {
+                $data->setIsSubscribed(true);
+            }
+        }
         $data->setId(self::ANONYMOUS_CUSTOMER_ID);
         $data->setPrefix((string)$customer->getData(self::CUSTOMER_PREFIX));
         $data->setFirstName((string)$customer->getData(self::CUSTOMER_FIRST_NAME));

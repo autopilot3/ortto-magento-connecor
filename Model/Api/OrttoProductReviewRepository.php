@@ -176,7 +176,7 @@ class OrttoProductReviewRepository implements OrttoProductReviewRepositoryInterf
         if (!empty($product)) {
             $data->setProduct($product);
         }
-        $customer = $this->customerRepository->getById(To::int($review->getData(self::CUSTOMER_ID)));
+        $customer = $this->customerRepository->getById($scope, To::int($review->getData(self::CUSTOMER_ID)));
         if (!empty($customer)) {
             $data->setCustomer($customer);
         }

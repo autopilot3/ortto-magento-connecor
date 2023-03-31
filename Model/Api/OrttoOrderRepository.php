@@ -204,7 +204,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $addresses = $this->getOrderAddresses([$orderId]);
         $data = $this->convertOrder($order, $addresses[$orderId], $products);
         if ($customerId = $order->getCustomerId()) {
-            $customer = $this->customerRepository->getById(To::int($customerId));
+            $customer = $this->customerRepository->getById($scope, To::int($customerId));
         } else {
             $customer = $this->getAnonymousCustomer($order, $addresses[$orderId]);
         }

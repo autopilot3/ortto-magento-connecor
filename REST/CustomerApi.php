@@ -51,10 +51,14 @@ class CustomerApi extends RestApiBase implements CustomerApiInterface
      * @inheritdoc
      * @throws Exception
      */
-    public function getById(int $customerId)
-    {
+    public function getById(
+        string $scopeType,
+        int $scopeId,
+        int $customerId
+    ) {
         try {
-            $customer = $this->customerRepository->getById($customerId);
+            $scope = $this->validateScope($scopeType, $scopeId);
+            $customer = $this->customerRepository->getById($scope, $customerId);
         } catch (NoSuchEntityException $e) {
             throw $this->notFoundError();
         } catch (\Exception $e) {

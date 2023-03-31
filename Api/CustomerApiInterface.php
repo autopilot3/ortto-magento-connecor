@@ -24,8 +24,10 @@ interface CustomerApiInterface
     );
 
     /**
+     * @param string $scopeType
+     * @param int $scopeId
      * @param int $customerId
      * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
      */
-    public function getById(int $customerId);
+    public function getById(string $scopeType, int $scopeId, int $customerId);
 }
