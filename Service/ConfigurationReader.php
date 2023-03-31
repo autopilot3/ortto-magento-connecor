@@ -11,6 +11,7 @@ use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\To;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
+use PHPUnit\Util\Exception;
 
 class ConfigurationReader implements ConfigurationReaderInterface
 {
@@ -42,6 +43,14 @@ class ConfigurationReader implements ConfigurationReaderInterface
     /**
      * @inheirtDoc
      */
+    public function checkNewsletterSubscription(string $scopeType, int $scopeId): bool
+    {
+        return To::bool($this->scopeConfig->getValue(Config::XML_PATH_NEWSLETTER_ENABLED, $scopeType, $scopeId));
+    }
+
+    /**
+     * @inheirtDoc
+     */
     public function getAPIKey(string $scopeType, int $scopeId): string
     {
         $encrypted = trim((string)$this->scopeConfig->getValue(Config::XML_PATH_API_KEY, $scopeType, $scopeId));
@@ -49,53 +58,6 @@ class ConfigurationReader implements ConfigurationReaderInterface
             return "";
         }
         return $this->encryptor->decrypt($encrypted);
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function isAutoSyncEnabled(string $scopeType, int $scopeId, string $category): bool
-    {
-        switch ($category) {
-            case SyncCategoryInterface::CUSTOMER:
-                return To::bool($this->scopeConfig->getValue(
-                    Config::XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED,
-                    $scopeType,
-                    $scopeId
-                ));
-            case SyncCategoryInterface::ORDER:
-                return To::bool($this->scopeConfig->getValue(
-                    Config::XML_PATH_SYNC_ORDER_AUTO_ENABLED,
-                    $scopeType,
-                    $scopeId
-                ));
-            case SyncCategoryInterface::PRODUCT:
-                return To::bool($this->scopeConfig->getValue(
-                    Config::XML_PATH_SYNC_PRODUCT_AUTO_ENABLED,
-                    $scopeType,
-                    $scopeId
-                ));
-            case SyncCategoryInterface::STOCK_ALERT:
-                return To::bool($this->scopeConfig->getValue(
-                    Config::XML_PATH_SYNC_STOCK_ALERT_AUTO_ENABLED,
-                    $scopeType,
-                    $scopeId
-                ));
-            default:
-                return false;
-        }
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function isAnonymousOrderSyncEnabled(string $scopeType, int $scopeId): bool
-    {
-        return To::bool($this->scopeConfig->getValue(
-            Config::XML_PATH_SYNC_ANONYMOUS_ORDERS_ENABLED,
-            $scopeType,
-            $scopeId
-        ));
     }
 
     /**
@@ -179,5 +141,21 @@ class ConfigurationReader implements ConfigurationReaderInterface
             $scopeType,
             $scopeId
         );
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function getAll(string $scopeType, int $scopeId): array
+    {
+        $result = [];
+        foreach (Config::ALL_KEYS as $key => $value) {
+            $result[$key] = $this->scopeConfig->getValue(
+                $value,
+                $scopeType,
+                $scopeId
+            );
+        }
+        return $result;
     }
 }

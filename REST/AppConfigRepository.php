@@ -32,6 +32,7 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
     private OrttoLoggerInterface $logger;
     private WriterInterface $configWriter;
     private StoreManagerInterface $storeManager;
+    private \Ortto\Connector\Api\ConfigurationReaderInterface $configReader;
     private Pool $cacheFrontendPool;
     private \Magento\Framework\Encryption\EncryptorInterface $encryptor;
 
@@ -42,6 +43,7 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
      * @param Pool $cacheFrontendPool
      * @param ScopeManagerInterface $scopeManager
      * @param \Magento\Framework\Encryption\EncryptorInterface $encryptor
+     * @param \Ortto\Connector\Api\ConfigurationReaderInterface $reader
      */
     public function __construct(
         OrttoLoggerInterface $logger,
@@ -49,7 +51,8 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
         StoreManagerInterface $storeManager,
         Pool $cacheFrontendPool,
         ScopeManagerInterface $scopeManager,
-        \Magento\Framework\Encryption\EncryptorInterface $encryptor
+        \Magento\Framework\Encryption\EncryptorInterface $encryptor,
+        \Ortto\Connector\Api\ConfigurationReaderInterface $reader,
     ) {
         parent::__construct($scopeManager);
         $this->logger = $logger;
@@ -57,6 +60,7 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
         $this->storeManager = $storeManager;
         $this->cacheFrontendPool = $cacheFrontendPool;
         $this->encryptor = $encryptor;
+        $this->configReader = $reader;
     }
 
     /**
@@ -119,5 +123,18 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
         }
 
         $this->cacheFrontendPool->get('config')->clean();
+    }
+
+    /**
+     * @inheriDoc
+     */
+    public function get(string $scopeType, int $scopeId)
+    {
+        try {
+            $this->validateScope($scopeType, $scopeId, false);
+            return [$this->configReader->getAll($scopeType, $scopeId)];
+        } catch (\Exception $e) {
+            return [["error" => $e->getMessage()]];
+        }
     }
 }
