@@ -202,12 +202,24 @@ class OrttoCustomer extends DataObject implements OrttoCustomerInterface
     }
 
     /** @inheirtDoc */
+    public function setIsSubscribed($subscribed)
+    {
+        return $this->setData(self::IS_SUBSCRIBED, $subscribed);
+    }
+
+    /** @inheirtDoc */
+    public function getIsSubscribed()
+    {
+        return To::bool($this->getData(self::IS_SUBSCRIBED));
+    }
+
+    /** @inheirtDoc */
     public function serializeToArray()
     {
         if ($this == null) {
             return null;
         }
-        $result=[];
+        $result = [];
         $result[self::ID] = $this->getId();
         $result[self::IP_ADDRESS] = $this->getIpAddress();
         $result[self::FIRST_NAME] = $this->getFirstName();
@@ -226,6 +238,7 @@ class OrttoCustomer extends DataObject implements OrttoCustomerInterface
         $result[self::SHIPPING_ADDRESS] = $shippingAddress != null ? $shippingAddress->serializeToArray() : null;
         $result[self::UPDATED_AT] = $this->getUpdatedAt();
         $result[self::PHONE] = $this->getPhone();
+        $result[self::IS_SUBSCRIBED] = $this->getIsSubscribed();
         return $result;
     }
 }

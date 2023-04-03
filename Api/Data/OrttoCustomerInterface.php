@@ -22,250 +22,267 @@ interface OrttoCustomerInterface
     const UPDATED_AT = 'updated_at';
     const PHONE = 'phone';
 
+    const IS_SUBSCRIBED = 'is_subscribed';
+
     /**
-    * Set id
-    *
-    * @param int $id
-    * @return $this
-    */
+     * Set id
+     *
+     * @param int $id
+     * @return $this
+     */
     public function setId($id);
 
     /**
-    * Get id
-    *
-    * @return int
-    */
+     * Get id
+     *
+     * @return int
+     */
     public function getId();
 
     /**
-    * Set ip address
-    *
-    * @param string $ipAddress
-    * @return $this
-    */
+     * Set Newsletter subscription state
+     *
+     * @param bool $subscribed
+     * @return $this
+     */
+    public function setIsSubscribed($subscribed);
+
+    /**
+     * Get Newsletter subscription level
+     *
+     * @return bool
+     */
+    public function getIsSubscribed();
+
+    /**
+     * Set ip address
+     *
+     * @param string $ipAddress
+     * @return $this
+     */
     public function setIpAddress($ipAddress);
 
     /**
-    * Get ip address
-    *
-    * @return string
-    */
+     * Get ip address
+     *
+     * @return string
+     */
     public function getIpAddress();
 
     /**
-    * Set first name
-    *
-    * @param string $firstName
-    * @return $this
-    */
+     * Set first name
+     *
+     * @param string $firstName
+     * @return $this
+     */
     public function setFirstName($firstName);
 
     /**
-    * Get first name
-    *
-    * @return string
-    */
+     * Get first name
+     *
+     * @return string
+     */
     public function getFirstName();
 
     /**
-    * Set middle name
-    *
-    * @param string $middleName
-    * @return $this
-    */
+     * Set middle name
+     *
+     * @param string $middleName
+     * @return $this
+     */
     public function setMiddleName($middleName);
 
     /**
-    * Get middle name
-    *
-    * @return string
-    */
+     * Get middle name
+     *
+     * @return string
+     */
     public function getMiddleName();
 
     /**
-    * Set last name
-    *
-    * @param string $lastName
-    * @return $this
-    */
+     * Set last name
+     *
+     * @param string $lastName
+     * @return $this
+     */
     public function setLastName($lastName);
 
     /**
-    * Get last name
-    *
-    * @return string
-    */
+     * Get last name
+     *
+     * @return string
+     */
     public function getLastName();
 
     /**
-    * Set suffix
-    *
-    * @param string $suffix
-    * @return $this
-    */
+     * Set suffix
+     *
+     * @param string $suffix
+     * @return $this
+     */
     public function setSuffix($suffix);
 
     /**
-    * Get suffix
-    *
-    * @return string
-    */
+     * Get suffix
+     *
+     * @return string
+     */
     public function getSuffix();
 
     /**
-    * Set prefix
-    *
-    * @param string $prefix
-    * @return $this
-    */
+     * Set prefix
+     *
+     * @param string $prefix
+     * @return $this
+     */
     public function setPrefix($prefix);
 
     /**
-    * Get prefix
-    *
-    * @return string
-    */
+     * Get prefix
+     *
+     * @return string
+     */
     public function getPrefix();
 
     /**
-    * Set gender
-    *
-    * @param string $gender
-    * @return $this
-    */
+     * Set gender
+     *
+     * @param string $gender
+     * @return $this
+     */
     public function setGender($gender);
 
     /**
-    * Get gender
-    *
-    * @return string
-    */
+     * Get gender
+     *
+     * @return string
+     */
     public function getGender();
 
     /**
-    * Set email
-    *
-    * @param string $email
-    * @return $this
-    */
+     * Set email
+     *
+     * @param string $email
+     * @return $this
+     */
     public function setEmail($email);
 
     /**
-    * Get email
-    *
-    * @return string
-    */
+     * Get email
+     *
+     * @return string
+     */
     public function getEmail();
 
     /**
-    * Set date of birth
-    *
-    * @param string $dateOfBirth
-    * @return $this
-    */
+     * Set date of birth
+     *
+     * @param string $dateOfBirth
+     * @return $this
+     */
     public function setDateOfBirth($dateOfBirth);
 
     /**
-    * Get date of birth
-    *
-    * @return string
-    */
+     * Get date of birth
+     *
+     * @return string
+     */
     public function getDateOfBirth();
 
     /**
-    * Set created at
-    *
-    * @param string $createdAt
-    * @return $this
-    */
+     * Set created at
+     *
+     * @param string $createdAt
+     * @return $this
+     */
     public function setCreatedAt($createdAt);
 
     /**
-    * Get created at
-    *
-    * @return string
-    */
+     * Get created at
+     *
+     * @return string
+     */
     public function getCreatedAt();
 
     /**
-    * Set created in
-    *
-    * @param string $createdIn
-    * @return $this
-    */
+     * Set created in
+     *
+     * @param string $createdIn
+     * @return $this
+     */
     public function setCreatedIn($createdIn);
 
     /**
-    * Get created in
-    *
-    * @return string
-    */
+     * Get created in
+     *
+     * @return string
+     */
     public function getCreatedIn();
 
     /**
-    * Set billing address
-    *
-    * @param \Ortto\Connector\Api\Data\OrttoAddressInterface $billingAddress
-    * @return $this
-    */
+     * Set billing address
+     *
+     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface $billingAddress
+     * @return $this
+     */
     public function setBillingAddress($billingAddress);
 
     /**
-    * Get billing address
-    *
-    * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
-    */
+     * Get billing address
+     *
+     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
+     */
     public function getBillingAddress();
 
     /**
-    * Set shipping address
-    *
-    * @param \Ortto\Connector\Api\Data\OrttoAddressInterface $shippingAddress
-    * @return $this
-    */
+     * Set shipping address
+     *
+     * @param \Ortto\Connector\Api\Data\OrttoAddressInterface $shippingAddress
+     * @return $this
+     */
     public function setShippingAddress($shippingAddress);
 
     /**
-    * Get shipping address
-    *
-    * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
-    */
+     * Get shipping address
+     *
+     * @return \Ortto\Connector\Api\Data\OrttoAddressInterface
+     */
     public function getShippingAddress();
 
     /**
-    * Set updated at
-    *
-    * @param string $updatedAt
-    * @return $this
-    */
+     * Set updated at
+     *
+     * @param string $updatedAt
+     * @return $this
+     */
     public function setUpdatedAt($updatedAt);
 
     /**
-    * Get updated at
-    *
-    * @return string
-    */
+     * Get updated at
+     *
+     * @return string
+     */
     public function getUpdatedAt();
 
     /**
-    * Set phone
-    *
-    * @param string $phone
-    * @return $this
-    */
+     * Set phone
+     *
+     * @param string $phone
+     * @return $this
+     */
     public function setPhone($phone);
 
     /**
-    * Get phone
-    *
-    * @return string
-    */
+     * Get phone
+     *
+     * @return string
+     */
     public function getPhone();
 
     /**
-    * Convert object data to array
-    *
-    * @return array
-    */
+     * Convert object data to array
+     *
+     * @return array
+     */
     public function serializeToArray();
 }

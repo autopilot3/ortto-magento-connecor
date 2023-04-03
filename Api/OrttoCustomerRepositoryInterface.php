@@ -36,9 +36,10 @@ interface OrttoCustomerRepositoryInterface
 
     /**
      * Returns a customer by ID.
+     * @param ConfigScopeInterface $scope
      * @param int $customerId
      * @param array $data
      * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
      */
-    public function getById(int $customerId, array $data = []);
+    public function getById(ConfigScopeInterface $scope, int $customerId, array $data = []);
 }

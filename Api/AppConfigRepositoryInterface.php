@@ -16,4 +16,11 @@ interface AppConfigRepositoryInterface
      * @return void
      */
     public function update(AppConfigInterface $config);
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @return array
+     */
+    public function get(string $scopeType, int $scopeId);
 }

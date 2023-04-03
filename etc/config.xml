@@ -7,20 +7,10 @@
                 <enabled>1</enabled>
             </tracking>
         </ortto_general>
-        <ortto_sync>
-            <customer>
-                <auto_sync_enabled>1</auto_sync_enabled>
-            </customer>
-            <order>
-                <auto_sync_enabled>1</auto_sync_enabled>
-                <anonymous_enabled>1</anonymous_enabled>
-            </order>
-            <product>
-                <auto_sync_enabled>1</auto_sync_enabled>
-            </product>
-            <stock_alert>
-                <auto_sync_enabled>1</auto_sync_enabled>
-            </stock_alert>
-        </ortto_sync>
+        <ortto_store_data>
+            <customers>
+                <newsletter>1</newsletter>
+            </customers>
+        </ortto_store_data>
     </default>
 </config>

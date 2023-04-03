@@ -17,16 +17,30 @@ class Config
     const XML_PATH_CAPTURE_API_URL = "ortto_general/tracking/capture_url";
     const XML_PATH_INSTANCE_ID = "ortto_general/general/instance_id";
     const XML_PATH_LOGGING_VERBOSE = "ortto_general/logging/verbose";
+    const XML_PATH_NEWSLETTER_ENABLED = "ortto_store_data/customers/newsletter";
 
-    const XML_PATH_SYNC_CUSTOMER_AUTO_ENABLED = "ortto_sync/customer/auto_sync_enabled";
-    const XML_PATH_SYNC_ORDER_AUTO_ENABLED = "ortto_sync/order/auto_sync_enabled";
-    const XML_PATH_SYNC_PRODUCT_AUTO_ENABLED = "ortto_sync/product/auto_sync_enabled";
-    const XML_PATH_SYNC_STOCK_ALERT_AUTO_ENABLED = "ortto_sync/stock_alert/auto_sync_enabled";
-    const XML_PATH_SYNC_ANONYMOUS_ORDERS_ENABLED = "ortto_sync/order/anonymous_enabled";
     const XML_PATH_IMAGE_PLACE_HOLDER = 'catalog/placeholder/image_placeholder';
     const XML_PATH_SMALL_IMAGE_PLACE_HOLDER = 'catalog/placeholder/small_image_placeholder';
     const XML_PATH_SWATCH_IMAGE_PLACE_HOLDER = 'catalog/placeholder/swatch_image_placeholder';
     const XML_PATH_THUMBNAIL_IMAGE_PLACE_HOLDER = 'catalog/placeholder/thumbnail_placeholder';
+
+    const ALL_KEYS = [
+        "is_active" => self::XML_PATH_ACTIVE,
+        "base_url" => self::XML_PATH_BASE_URL,
+        "client_id" => self::XML_PATH_CLIENT_ID,
+        "capture_enabled" => self::XML_PATH_TRACKING_ENABLED,
+        "tracking_code" => self::XML_PATH_TRACKING_CODE,
+        "capture_js" => self::XML_PATH_CAPTURE_JS_URL,
+        "magento_capture_js" => self::XML_PATH_MAGENTO_CAPTURE_JS_URL,
+        "capture_api" => self::XML_PATH_CAPTURE_API_URL,
+        "instance_id" => self::XML_PATH_INSTANCE_ID,
+        "verbose" => self:: XML_PATH_LOGGING_VERBOSE,
+        "newsletter_enabled" => self::XML_PATH_NEWSLETTER_ENABLED,
+        "image_place_holder" => self::XML_PATH_IMAGE_PLACE_HOLDER,
+        "small_image_place_holder" => self::XML_PATH_SMALL_IMAGE_PLACE_HOLDER,
+        "swatch_place_holder" => self::XML_PATH_SWATCH_IMAGE_PLACE_HOLDER,
+        "thumbnail_place_holder" => self::XML_PATH_THUMBNAIL_IMAGE_PLACE_HOLDER,
+    ];
 
 
     // "2006-01-02T15:04:05Z07:00"
