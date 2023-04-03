@@ -52,7 +52,7 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
         Pool $cacheFrontendPool,
         ScopeManagerInterface $scopeManager,
         \Magento\Framework\Encryption\EncryptorInterface $encryptor,
-        \Ortto\Connector\Api\ConfigurationReaderInterface $reader,
+        \Ortto\Connector\Api\ConfigurationReaderInterface $reader
     ) {
         parent::__construct($scopeManager);
         $this->logger = $logger;
