@@ -196,9 +196,9 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             $addressIds[] = To::int($addressId);
         }
         $addresses = $this->getAddressesById($addressIds);
-        $checkSubscription = $this->configReader->checkNewsletterSubscription($scope->getType(), $scope->getId());
-        $websiteId = $scope->getWebsiteId();
         $storeId = $scope->getId();
+        $checkSubscription = $this->configReader->checkNewsletterSubscription($scope->getType(), $storeId);
+        $websiteId = $scope->getWebsiteId();
         return $this->convertCustomer($customerData, $addresses, $checkSubscription, $websiteId, $storeId);
     }
 
