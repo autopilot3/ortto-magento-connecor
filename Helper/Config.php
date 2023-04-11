@@ -9,6 +9,7 @@ class Config
     const XML_PATH_BASE_URL = "ortto/general/base_url";
     const XML_PATH_CLIENT_ID = "ortto/general/client_id";
     const XML_PATH_TRACKING_ENABLED = "ortto_general/tracking/enabled";
+    const XML_PATH_TRACKING_CONSENT_REQUIRED = "ortto_general/tracking/consent_enabled";
     const XML_PATH_ACTIVE = "ortto_general/authentication/active";
     const XML_PATH_API_KEY = "ortto_general/authentication/api_key";
     const XML_PATH_TRACKING_CODE = "ortto_general/tracking/code";
@@ -29,6 +30,7 @@ class Config
         "base_url" => self::XML_PATH_BASE_URL,
         "client_id" => self::XML_PATH_CLIENT_ID,
         "capture_enabled" => self::XML_PATH_TRACKING_ENABLED,
+        "consent_to_track_required" => self::XML_PATH_TRACKING_CONSENT_REQUIRED,
         "tracking_code" => self::XML_PATH_TRACKING_CODE,
         "capture_js" => self::XML_PATH_CAPTURE_JS_URL,
         "magento_capture_js" => self::XML_PATH_MAGENTO_CAPTURE_JS_URL,

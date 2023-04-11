@@ -24,6 +24,13 @@ interface ConfigurationReaderInterface
      * @param int $scopeId
      * @return bool
      */
+    public function isConsentToTrackRequired(string $scopeType, int $scopeId): bool;
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @return bool
+     */
     public function checkNewsletterSubscription(string $scopeType, int $scopeId): bool;
 
     /**
