@@ -11,7 +11,7 @@ use Ortto\Connector\Api\ScopeManagerInterface;
 
 class RestApiBase
 {
-    private ScopeManagerInterface $scopeManager;
+    protected ScopeManagerInterface $scopeManager;
 
     public function __construct(ScopeManagerInterface $scopeManager)
     {

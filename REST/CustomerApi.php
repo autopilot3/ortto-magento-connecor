@@ -32,6 +32,8 @@ class CustomerApi extends RestApiBase implements CustomerApiInterface
     public function list(
         string $scopeType,
         int $scopeId,
+        bool $newsletter,
+        bool $crossStore,
         int $page = 1,
         string $checkpoint = '',
         int $pageSize = 100,
@@ -40,6 +42,8 @@ class CustomerApi extends RestApiBase implements CustomerApiInterface
         $scope = $this->validateScope($scopeType, $scopeId);
         return $this->customerRepository->getList(
             $scope,
+            $newsletter,
+            $crossStore,
             $page,
             $checkpoint,
             $pageSize,
@@ -54,11 +58,13 @@ class CustomerApi extends RestApiBase implements CustomerApiInterface
     public function getById(
         string $scopeType,
         int $scopeId,
+        bool $newsletter,
+        bool $crossStore,
         int $customerId
     ) {
         try {
             $scope = $this->validateScope($scopeType, $scopeId);
-            $customer = $this->customerRepository->getById($scope, $customerId);
+            $customer = $this->customerRepository->getById($scope, $newsletter, $crossStore, $customerId);
         } catch (NoSuchEntityException $e) {
             throw $this->notFoundError();
         } catch (\Exception $e) {

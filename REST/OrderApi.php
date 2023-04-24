@@ -33,6 +33,8 @@ class OrderApi extends RestApiBase implements OrderApiInterface
     public function list(
         string $scopeType,
         int $scopeId,
+        bool $newsletter,
+        bool $crossStore,
         int $page = 1,
         string $checkpoint = '',
         int $pageSize = 100
@@ -40,6 +42,8 @@ class OrderApi extends RestApiBase implements OrderApiInterface
         $scope = $this->validateScope($scopeType, $scopeId);
         return $this->orderRepository->getList(
             $scope,
+            $newsletter,
+            $crossStore,
             $page,
             $checkpoint,
             $pageSize
@@ -50,11 +54,16 @@ class OrderApi extends RestApiBase implements OrderApiInterface
      * @inheritdoc
      * @throws Exception
      */
-    public function getById(string $scopeType, int $scopeId, int $orderId)
-    {
+    public function getById(
+        string $scopeType,
+        int $scopeId,
+        bool $newsletter,
+        bool $crossStore,
+        int $orderId
+    ) {
         try {
             $scope = $this->validateScope($scopeType, $scopeId);
-            $order = $this->orderRepository->getById($scope, $orderId);
+            $order = $this->orderRepository->getById($scope, $newsletter, $crossStore, $orderId);
         } catch (NoSuchEntityException $e) {
             throw $this->notFoundError();
         } catch (\Exception $e) {

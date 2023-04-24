@@ -9,6 +9,8 @@ interface OrttoProductReviewRepositoryInterface
 {
     /**
      * @param ConfigScopeInterface $scope
+     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $page
      * @param string $checkpoint
      * @param int $pageSize
@@ -17,6 +19,8 @@ interface OrttoProductReviewRepositoryInterface
      */
     public function getList(
         ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
         int $page,
         string $checkpoint,
         int $pageSize,
@@ -25,9 +29,17 @@ interface OrttoProductReviewRepositoryInterface
 
     /**
      * @param ConfigScopeInterface $scope
+     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $reviewId
      * @param array $data
      * @return OrttoProductReviewInterface
      */
-    public function getById(ConfigScopeInterface $scope, int $reviewId, array $data = []);
+    public function getById(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        int $reviewId,
+        array $data = []
+    );
 }

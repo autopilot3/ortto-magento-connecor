@@ -76,6 +76,8 @@
                 type="Ortto\Connector\Model\Data\OrttoAddress"/>
     <preference for="Ortto\Connector\Api\Data\OrttoCustomerInterface"
                 type="Ortto\Connector\Model\Data\OrttoCustomer"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoSubscriberInterface"
+                type="Ortto\Connector\Model\Data\OrttoSubscriber"/>
     <preference for="Ortto\Connector\Api\Data\OrttoCartInterface"
                 type="Ortto\Connector\Model\Data\OrttoCart"/>
     <preference for="Ortto\Connector\Api\Data\OrttoCartItemInterface"
@@ -94,6 +96,8 @@
                 type="Ortto\Connector\Model\Data\ListProductCategoryResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListCustomerResponseInterface"
                 type="Ortto\Connector\Model\Data\ListCustomerResponse"/>
+    <preference for="Ortto\Connector\Api\Data\ListSubscriberResponseInterface"
+                type="Ortto\Connector\Model\Data\ListSubscriberResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListOrderResponseInterface"
                 type="Ortto\Connector\Model\Data\ListOrderResponse"/>
     <preference for="Ortto\Connector\Api\Data\ListRestockSubscriptionResponseInterface"
@@ -116,6 +120,8 @@
                 type="Ortto\Connector\Model\Api\OrttoRestockSubscriptionRepository"/>
     <preference for="Ortto\Connector\Api\OrttoCartRepositoryInterface"
                 type="Ortto\Connector\Model\Api\OrttoCartRepository"/>
+    <preference for="Ortto\Connector\Api\OrttoSubscriberRepositoryInterface"
+                type="Ortto\Connector\Model\Api\OrttoSubscriberRepository"/>
 
     <!-- WEB API HANDLERS -->
     <preference for="Ortto\Connector\Api\ProductApiInterface"
@@ -132,6 +138,8 @@
                 type="Ortto\Connector\REST\RestockSubscriptionApi"/>
     <preference for="Ortto\Connector\Api\DiscountRepositoryInterface"
                 type="Ortto\Connector\REST\DiscountApi"/>
+    <preference for="Ortto\Connector\Api\SubscriberApiInterface"
+                type="Ortto\Connector\REST\SubscriberApi"/>
 
     <!-- JOBS ADMIN GRID -->
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">

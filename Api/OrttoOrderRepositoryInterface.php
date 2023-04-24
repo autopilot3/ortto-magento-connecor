@@ -9,6 +9,8 @@ interface OrttoOrderRepositoryInterface
 {
     /**
      * @param ConfigScopeInterface $scope
+     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $page
      * @param string $checkpoint
      * @param int $pageSize
@@ -17,6 +19,8 @@ interface OrttoOrderRepositoryInterface
      */
     public function getList(
         ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
         int $page,
         string $checkpoint,
         int $pageSize,
@@ -25,9 +29,17 @@ interface OrttoOrderRepositoryInterface
 
     /**
      * @param ConfigScopeInterface $scope
+     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $orderId
      * @param array $data
      * @return OrttoOrderInterface
      */
-    public function getById(ConfigScopeInterface $scope, int $orderId, array $data = []);
+    public function getById(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        int $orderId,
+        array $data = []
+    );
 }

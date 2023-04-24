@@ -132,9 +132,39 @@ class AppConfigRepository extends RestApiBase implements AppConfigRepositoryInte
     {
         try {
             $this->validateScope($scopeType, $scopeId, false);
-            return [$this->configReader->getAll($scopeType, $scopeId)];
+            return [$this->configReader->getAllConfigs($scopeType, $scopeId)];
         } catch (\Exception $e) {
             return [["error" => $e->getMessage()]];
         }
+    }
+
+    /**
+     * @inheriDoc
+     */
+    public function getAllStoreConfigs(): array
+    {
+        $result = [];
+        try {
+            $scopes = $this->scopeManager->getAllScopes();
+            foreach ($scopes as $scope) {
+                $scopeType = $scope->getType();
+                $scopeId = $scope->getId();
+                $result[] = [
+                    'type' => $scopeType,
+                    'id' => $scopeId,
+                    'code' => $scope->getCode(),
+                    'website' => [
+                        'id' => $scope->getWebsiteId(),
+                        'code' => $scope->getWebsiteCode(),
+                    ],
+                    'url' => $scope->getBaseURL(),
+                    'connected' => $scope->isConnected(),
+                    'config' => $this->configReader->getAllConfigs($scopeType, $scopeId),
+                ];
+            }
+        } catch (\Exception $e) {
+            return [["error" => $e->getMessage()]];
+        }
+        return $result;
     }
 }

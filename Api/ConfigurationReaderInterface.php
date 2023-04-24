@@ -24,13 +24,6 @@ interface ConfigurationReaderInterface
      * @param int $scopeId
      * @return bool
      */
-    public function checkNewsletterSubscription(string $scopeType, int $scopeId): bool;
-
-    /**
-     * @param string $scopeType
-     * @param int $scopeId
-     * @return bool
-     */
     public function verboseLogging(string $scopeType, int $scopeId): bool;
 
     /**
@@ -87,5 +80,5 @@ interface ConfigurationReaderInterface
      * @param int $scopeId
      * @return array
      */
-    public function getAll(string $scopeType, int $scopeId): array;
+    public function getAllConfigs(string $scopeType, int $scopeId): array;
 }
