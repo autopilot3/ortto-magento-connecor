@@ -17,7 +17,6 @@ class Config
     const XML_PATH_CAPTURE_API_URL = "ortto_general/tracking/capture_url";
     const XML_PATH_INSTANCE_ID = "ortto_general/general/instance_id";
     const XML_PATH_LOGGING_VERBOSE = "ortto_general/logging/verbose";
-    const XML_PATH_NEWSLETTER_ENABLED = "ortto_store_data/customers/newsletter";
 
     const XML_PATH_IMAGE_PLACE_HOLDER = 'catalog/placeholder/image_placeholder';
     const XML_PATH_SMALL_IMAGE_PLACE_HOLDER = 'catalog/placeholder/small_image_placeholder';
@@ -35,7 +34,6 @@ class Config
         "capture_api" => self::XML_PATH_CAPTURE_API_URL,
         "instance_id" => self::XML_PATH_INSTANCE_ID,
         "verbose" => self:: XML_PATH_LOGGING_VERBOSE,
-        "newsletter_enabled" => self::XML_PATH_NEWSLETTER_ENABLED,
         "image_place_holder" => self::XML_PATH_IMAGE_PLACE_HOLDER,
         "small_image_place_holder" => self::XML_PATH_SMALL_IMAGE_PLACE_HOLDER,
         "swatch_place_holder" => self::XML_PATH_SWATCH_IMAGE_PLACE_HOLDER,
@@ -55,4 +53,7 @@ class Config
     const EVENT_TYPE_PRODUCT_VIEWED = 'product_viewed';
     const EVENT_TYPE_CHECKOUT_STARTED = 'checkout_started';
     const EVENT_TYPE_ORDER_CREATED = 'order_created';
+
+    // Default subscription status if newsletter inquiry is not enabled at data source level.
+    const DEFAULT_SUBSCRIPTION_STATUS = false;
 }

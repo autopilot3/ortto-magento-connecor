@@ -23,4 +23,9 @@ interface AppConfigRepositoryInterface
      * @return array
      */
     public function get(string $scopeType, int $scopeId);
+
+    /**
+     * @return array
+     */
+    public function getAllStoreConfigs(): array;
 }

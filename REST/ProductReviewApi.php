@@ -33,6 +33,8 @@ class ProductReviewApi extends RestApiBase implements ProductReviewApiInterface
     public function list(
         string $scopeType,
         int $scopeId,
+        bool $newsletter,
+        bool $crossStore,
         int $page = 1,
         string $checkpoint = '',
         int $pageSize = 100
@@ -40,6 +42,8 @@ class ProductReviewApi extends RestApiBase implements ProductReviewApiInterface
         $scope = $this->validateScope($scopeType, $scopeId);
         return $this->repository->getList(
             $scope,
+            $newsletter,
+            $crossStore,
             $page,
             $checkpoint,
             $pageSize
@@ -50,11 +54,16 @@ class ProductReviewApi extends RestApiBase implements ProductReviewApiInterface
      * @inheritdoc
      * @throws Exception
      */
-    public function getById(string $scopeType, int $scopeId, int $reviewId)
-    {
+    public function getById(
+        string $scopeType,
+        int $scopeId,
+        bool $newsletter,
+        bool $crossStore,
+        int $reviewId
+    ) {
         try {
             $scope = $this->validateScope($scopeType, $scopeId);
-            $review = $this->repository->getById($scope, $reviewId);
+            $review = $this->repository->getById($scope, $newsletter, $crossStore, $reviewId);
         } catch (NoSuchEntityException $e) {
             throw $this->notFoundError();
         } catch (\Exception $e) {

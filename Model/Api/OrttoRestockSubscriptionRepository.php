@@ -51,8 +51,15 @@ class OrttoRestockSubscriptionRepository implements OrttoRestockSubscriptionRepo
     }
 
     /** @inheirtDoc */
-    public function getList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize, array $data = [])
-    {
+    public function getList(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        int $page,
+        string $checkpoint,
+        int $pageSize,
+        array $data = []
+    ) {
         $collection = $this->stockCollection->create()
             ->setCurPage($page)
             ->addFieldToSelect('*')
@@ -81,7 +88,7 @@ class OrttoRestockSubscriptionRepository implements OrttoRestockSubscriptionRepo
             $customerIds[] = To::int($subscription->getCustomerId());
         }
 
-        $customers = $this->customerRepository->getByIds($scope, $customerIds)->getItems();
+        $customers = $this->customerRepository->getByIds($scope, $newsletter, $crossStore, $customerIds)->getItems();
         $products = $this->productRepository->getByIds($scope, $productIds)->getItems();
         $subscriptions = [];
         /** @var Stock $subscription */
