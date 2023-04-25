@@ -9,7 +9,7 @@ interface OrttoProductReviewRepositoryInterface
 {
     /**
      * @param ConfigScopeInterface $scope
-     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $newsletter Enables checking newsletter subscription status
      * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $page
      * @param string $checkpoint
@@ -29,7 +29,7 @@ interface OrttoProductReviewRepositoryInterface
 
     /**
      * @param ConfigScopeInterface $scope
-     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $newsletter Enables checking newsletter subscription status
      * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $reviewId
      * @param array $data

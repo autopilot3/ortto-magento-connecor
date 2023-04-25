@@ -7,7 +7,7 @@ interface OrttoRestockSubscriptionRepositoryInterface
 {
     /**
      * @param ConfigScopeInterface $scope
-     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $newsletter Enables checking newsletter subscription status
      * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $page
      * @param string $checkpoint

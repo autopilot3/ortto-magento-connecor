@@ -8,7 +8,7 @@ interface ProductReviewApiInterface
     /**
      * @param string $scopeType
      * @param int $scopeId
-     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $newsletter Enables checking newsletter subscription status
      * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $page
      * @param string $checkpoint
@@ -28,7 +28,7 @@ interface ProductReviewApiInterface
     /**
      * @param string $scopeType
      * @param int $scopeId
-     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $newsletter Enables checking newsletter subscription status
      * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $reviewId
      * @return \Ortto\Connector\Api\Data\OrttoProductReviewInterface

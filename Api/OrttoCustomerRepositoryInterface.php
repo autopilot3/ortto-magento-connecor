@@ -12,7 +12,7 @@ interface OrttoCustomerRepositoryInterface
 
     /**
      * @param ConfigScopeInterface $scope
-     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $newsletter Enables checking newsletter subscription status
      * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $page
      * @param string $checkpoint
@@ -34,7 +34,7 @@ interface OrttoCustomerRepositoryInterface
      * Returns the list of customers by IDs. The returned array is keyed by customer ID.
      * In case any customer was not found, the value for the key will be null.
      * @param ConfigScopeInterface $scope
-     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $newsletter Enables checking newsletter subscription status
      * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int[] $customerIds
      * @param array $data
@@ -51,7 +51,7 @@ interface OrttoCustomerRepositoryInterface
     /**
      * Returns a customer by ID.
      * @param ConfigScopeInterface $scope
-     * @param bool $newsletter Enabled checking newsletter subscription status
+     * @param bool $newsletter Enables checking newsletter subscription status
      * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $customerId
      * @param array $data
