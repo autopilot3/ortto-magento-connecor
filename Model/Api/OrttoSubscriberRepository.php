@@ -8,6 +8,7 @@ use Magento\Newsletter\Model\Subscriber;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\OrttoSubscriberInterface;
 use Ortto\Connector\Api\OrttoSubscriberRepositoryInterface;
+use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
@@ -165,7 +166,7 @@ class OrttoSubscriberRepository implements OrttoSubscriberRepositoryInterface
 
         foreach ($customerIds as $customerId) {
             // The make sure all the keys always exist in the result array, even if the requested
-            $subscribers[$customerId] = false;
+            $subscribers[$customerId] = Config::DEFAULT_SUBSCRIPTION_STATUS;
         }
 
         /** @var Subscriber $subscriber */
@@ -201,7 +202,7 @@ class OrttoSubscriberRepository implements OrttoSubscriberRepositoryInterface
 
         foreach ($emailAddresses as $email) {
             // The make sure all the keys always exist in the result array, even if the requested
-            $subscribers[$email] = false;
+            $subscribers[$email] = Config::DEFAULT_SUBSCRIPTION_STATUS;
         }
 
         /** @var Subscriber $subscriber */
