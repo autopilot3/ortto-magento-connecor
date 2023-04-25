@@ -15,6 +15,7 @@ use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\ListCustomerResponseInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
 use Ortto\Connector\Api\OrttoSubscriberRepositoryInterface;
+use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Ortto\Connector\Logger\OrttoLogger;
@@ -184,7 +185,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
 
         foreach ($customersData as $customer) {
             $customerId = To::int($customer->getData(self::ENTITY_ID));
-            $subscribed = false;
+            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
             if ($newsletter) {
                 $subscribed = $subscriptions[$customerId];
             }
@@ -221,7 +222,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             $addressIds[] = To::int($addressId);
         }
         $addresses = $this->getAddressesById($addressIds);
-        $subscribed = false;
+        $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
         if ($newsletter) {
             $subscribed = $this->subscriberRepository->getStateByCustomerId($scope, $crossStore, $customerId);
         }
@@ -309,7 +310,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $addresses = $this->getQuoteAddressesById($quoteIds);
         $customers = [];
         foreach ($customersData as $customer) {
-            $subscribed = false;
+            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
             if ($newsletter) {
                 $email = (string)$customer->getData(self::CUSTOMER_EMAIL);
                 if (!empty($email)) {
@@ -385,7 +386,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         }
         foreach ($customersData as $customer) {
             $customerId = To::int($customer->getData(self::ENTITY_ID));
-            $subscribed = false;
+            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
             if ($newsletter) {
                 $subscribed = $subscriptions[$customerId];
             }

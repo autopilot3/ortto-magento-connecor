@@ -53,4 +53,7 @@ class Config
     const EVENT_TYPE_PRODUCT_VIEWED = 'product_viewed';
     const EVENT_TYPE_CHECKOUT_STARTED = 'checkout_started';
     const EVENT_TYPE_ORDER_CREATED = 'order_created';
+
+    // Default subscription status if newsletter inquiry is not enabled at data source level.
+    const DEFAULT_SUBSCRIPTION_STATUS = false;
 }

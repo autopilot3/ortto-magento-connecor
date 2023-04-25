@@ -191,7 +191,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                     $orttoOrder->setCustomer($customer);
                 }
             } else {
-                $subscribed = false;
+                $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
                 if ($newsletter) {
                     $email = (string)$order->getCustomerEmail();
                     if (!empty($email)) {
@@ -231,7 +231,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         if ($customerId = $order->getCustomerId()) {
             $customer = $this->customerRepository->getById($scope, $newsletter, $crossStore, To::int($customerId));
         } else {
-            $subscribed = false;
+            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
             if ($newsletter) {
                 $email = (string)$order->getCustomerEmail();
                 if (!empty($email)) {
