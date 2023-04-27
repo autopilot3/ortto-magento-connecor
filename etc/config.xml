@@ -8,10 +8,5 @@
                 <consent_enabled>0</consent_enabled>
             </tracking>
         </ortto_general>
-        <ortto_store_data>
-            <customers>
-                <newsletter>1</newsletter>
-            </customers>
-        </ortto_store_data>
     </default>
 </config>

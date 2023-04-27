@@ -63,8 +63,15 @@ class OrttoProductReviewRepository implements OrttoProductReviewRepositoryInterf
     }
 
     /** @inheirtDoc */
-    public function getList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize, array $data = [])
-    {
+    public function getList(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        int $page,
+        string $checkpoint,
+        int $pageSize,
+        array $data = []
+    ) {
         if ($page < 1) {
             $page = 1;
         }
@@ -114,7 +121,7 @@ class OrttoProductReviewRepository implements OrttoProductReviewRepositoryInterf
             $customerIds[] = To::int($review->getData(self::CUSTOMER_ID));
         }
 
-        $customers = $this->customerRepository->getByIds($scope, $customerIds)->getItems();
+        $customers = $this->customerRepository->getByIds($scope, $newsletter, $crossStore, $customerIds)->getItems();
         $products = $this->productRepository->getByIds($scope, $productIds)->getItems();
 
         $result = $this->listResponseFactory->create();
@@ -135,8 +142,13 @@ class OrttoProductReviewRepository implements OrttoProductReviewRepositoryInterf
 
 
     /** @inheirtDoc */
-    public function getById(ConfigScopeInterface $scope, int $reviewId, array $data = [])
-    {
+    public function getById(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        int $reviewId,
+        array $data = []
+    ) {
         $collection = $this->reviewCollectionFactory->create();
         $connection = $collection->getConnection();
         $reviewEntityTable = $connection->getTableName('review_entity');
@@ -176,7 +188,8 @@ class OrttoProductReviewRepository implements OrttoProductReviewRepositoryInterf
         if (!empty($product)) {
             $data->setProduct($product);
         }
-        $customer = $this->customerRepository->getById($scope, To::int($review->getData(self::CUSTOMER_ID)));
+        $customer = $this->customerRepository->getById($scope, $newsletter, $crossStore,
+            To::int($review->getData(self::CUSTOMER_ID)));
         if (!empty($customer)) {
             $data->setCustomer($customer);
         }

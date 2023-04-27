@@ -173,4 +173,26 @@ class ScopeManager implements ScopeManagerInterface
 
         return $scope;
     }
+
+
+    /** @inheirtDoc */
+    public function getAllScopes()
+    {
+        /** @var ConfigScopeInterface[] $result */
+        $result = [];
+        $stores = $this->storeManager->getStores();
+        foreach ($stores as $store) {
+            try {
+                $scope = $this->initialiseScope(
+                    ScopeInterface::SCOPE_STORE,
+                    To::int($store->getId())
+                );
+                $result[] = $scope;
+
+            } catch (Exception $e) {
+                $this->logger->error($e, "Failed to initialise store scope");
+            }
+        }
+        return $result;
+    }
 }

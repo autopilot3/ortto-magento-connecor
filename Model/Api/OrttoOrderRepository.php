@@ -17,9 +17,12 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\Data\OrttoAddressInterface;
+use Ortto\Connector\Api\Data\OrttoCustomerInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
 use Ortto\Connector\Api\OrttoOrderRepositoryInterface;
 use Ortto\Connector\Api\OrttoProductRepositoryInterface;
+use Ortto\Connector\Api\OrttoSubscriberRepositoryInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
@@ -66,6 +69,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     private OrttoProductRepositoryInterface $productRepository;
     private OrttoRefundItemFactory $refundItemFactory;
     private CountryFactory $countryFactory;
+    private OrttoSubscriberRepositoryInterface $subscriberRepository;
 
     public function __construct(
         Data $helper,
@@ -88,6 +92,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         \Magento\Sales\Api\CreditmemoRepositoryInterface $creditMemoRepository,
         OrttoProductRepositoryInterface $productRepository,
         \Ortto\Connector\Model\Data\OrttoRefundItemFactory $refundItemFactory,
+        OrttoSubscriberRepositoryInterface $subscriberRepository,
         CountryFactory $countryFactory
     ) {
         $this->helper = $helper;
@@ -112,12 +117,20 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $this->refundItemFactory = $refundItemFactory;
         $this->countryFactory = $countryFactory;
         $this->countryCache = [];
+        $this->subscriberRepository = $subscriberRepository;
     }
 
     /** @inheirtDoc
      */
-    public function getList(ConfigScopeInterface $scope, int $page, string $checkpoint, int $pageSize, array $data = [])
-    {
+    public function getList(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        int $page,
+        string $checkpoint,
+        int $pageSize,
+        array $data = []
+    ) {
         if ($page < 1) {
             $page = 1;
         }
@@ -165,7 +178,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $products = $this->productRepository->getByIds($scope, $productIds)->getItems();
 
         // The returned array is keyed by customer ID
-        $customers = $this->customerRepository->getByIds($scope, $customerIds)->getItems();
+        $customers = $this->customerRepository->getByIds($scope, $newsletter, $crossStore, $customerIds)->getItems();
 
         // The returned array is keyed by order ID
         $addresses = $this->getOrderAddresses($orderIds);
@@ -178,7 +191,14 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                     $orttoOrder->setCustomer($customer);
                 }
             } else {
-                $orttoOrder->setCustomer($this->getAnonymousCustomer($order, $addresses[$orderId]));
+                $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
+                if ($newsletter) {
+                    $email = (string)$order->getCustomerEmail();
+                    if (!empty($email)) {
+                        $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
+                    }
+                }
+                $orttoOrder->setCustomer($this->getAnonymousCustomer($order, $addresses[$orderId], $subscribed));
             }
             $orttoOrders[] = $orttoOrder;
         }
@@ -187,8 +207,13 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         return $result;
     }
 
-    public function getById(ConfigScopeInterface $scope, int $orderId, array $data = [])
-    {
+    public function getById(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        int $orderId,
+        array $data = []
+    ) {
         $order = $this->orderRepository->get($orderId);
         if (empty($order)) {
             return null;
@@ -204,9 +229,16 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $addresses = $this->getOrderAddresses([$orderId]);
         $data = $this->convertOrder($order, $addresses[$orderId], $products);
         if ($customerId = $order->getCustomerId()) {
-            $customer = $this->customerRepository->getById($scope, To::int($customerId));
+            $customer = $this->customerRepository->getById($scope, $newsletter, $crossStore, To::int($customerId));
         } else {
-            $customer = $this->getAnonymousCustomer($order, $addresses[$orderId]);
+            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
+            if ($newsletter) {
+                $email = (string)$order->getCustomerEmail();
+                if (!empty($email)) {
+                    $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
+                }
+            }
+            $customer = $this->getAnonymousCustomer($order, $addresses[$orderId], $subscribed);
         }
         if (!empty($customer)) {
             $data->setCustomer($customer);
@@ -586,14 +618,16 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     /**
      * @param OrderInterface $order
      * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[] $orderAddresses
+     * @param bool $subscribed
      * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
      */
-    private function getAnonymousCustomer($order, $orderAddresses)
+    private function getAnonymousCustomer($order, $orderAddresses, bool $subscribed)
     {
         $data = $this->customerFactory->create();
         $email = (string)$order->getCustomerEmail();
         $data->setId(OrttoCustomerRepositoryInterface::ANONYMOUS_CUSTOMER_ID);
         $data->setPrefix((string)$order->getCustomerPrefix());
+        $data->setIsSubscribed($subscribed);
         $data->setFirstName((string)$order->getCustomerFirstname());
         $data->setMiddleName((string)$order->getCustomerMiddlename());
         $data->setLastName((string)$order->getCustomerLastname());

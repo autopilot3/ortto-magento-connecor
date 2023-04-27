@@ -10,6 +10,8 @@ interface OrderApiInterface
     /**
      * @param string $scopeType
      * @param int $scopeId
+     * @param bool $newsletter Enables checking newsletter subscription status
+     * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $page
      * @param string $checkpoint
      * @param int $pageSize
@@ -18,6 +20,8 @@ interface OrderApiInterface
     public function list(
         string $scopeType,
         int $scopeId,
+        bool $newsletter,
+        bool $crossStore,
         int $page = 1,
         string $checkpoint = '',
         int $pageSize = 100
@@ -26,12 +30,16 @@ interface OrderApiInterface
     /**
      * @param string $scopeType
      * @param int $scopeId
+     * @param bool $newsletter Enables checking newsletter subscription status
+     * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param int $orderId
      * @return \Ortto\Connector\Api\Data\OrttoOrderInterface
      */
     public function getById(
         string $scopeType,
         int $scopeId,
+        bool $newsletter,
+        bool $crossStore,
         int $orderId
     );
 }

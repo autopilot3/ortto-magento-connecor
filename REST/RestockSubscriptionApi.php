@@ -32,6 +32,8 @@ class RestockSubscriptionApi extends RestApiBase implements RestockSubscriptionA
     public function list(
         string $scopeType,
         int $scopeId,
+        bool $newsletter,
+        bool $crossStore,
         int $page = 1,
         string $checkpoint = '',
         int $pageSize = 100
@@ -39,6 +41,8 @@ class RestockSubscriptionApi extends RestApiBase implements RestockSubscriptionA
         $scope = $this->validateScope($scopeType, $scopeId);
         return $this->repository->getList(
             $scope,
+            $newsletter,
+            $crossStore,
             $page,
             $checkpoint,
             $pageSize

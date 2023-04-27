@@ -33,4 +33,9 @@ interface ScopeManagerInterface
         string $type,
         int $id
     );
+
+    /**
+     * @return  ConfigScopeInterface[]
+     */
+    public function getAllScopes();
 }

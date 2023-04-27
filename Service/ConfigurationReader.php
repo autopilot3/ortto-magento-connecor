@@ -6,12 +6,10 @@ namespace Ortto\Connector\Service;
 
 use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\ImageIdInterface;
-use Ortto\Connector\Api\SyncCategoryInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\To;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
-use PHPUnit\Util\Exception;
 
 class ConfigurationReader implements ConfigurationReaderInterface
 {
@@ -40,7 +38,7 @@ class ConfigurationReader implements ConfigurationReaderInterface
         return To::bool($this->scopeConfig->getValue(Config::XML_PATH_TRACKING_ENABLED, $scopeType, $scopeId));
     }
 
-    /**
+     /**
      * @inheirtDoc
      */
     public function isConsentToTrackRequired(string $scopeType, int $scopeId): bool
@@ -48,15 +46,7 @@ class ConfigurationReader implements ConfigurationReaderInterface
         return To::bool($this->scopeConfig->getValue(Config::XML_PATH_TRACKING_CONSENT_REQUIRED, $scopeType,
             $scopeId));
     }
-
-    /**
-     * @inheirtDoc
-     */
-    public function checkNewsletterSubscription(string $scopeType, int $scopeId): bool
-    {
-        return To::bool($this->scopeConfig->getValue(Config::XML_PATH_NEWSLETTER_ENABLED, $scopeType, $scopeId));
-    }
-
+    
     /**
      * @inheirtDoc
      */
@@ -155,7 +145,7 @@ class ConfigurationReader implements ConfigurationReaderInterface
     /**
      * @inheirtDoc
      */
-    public function getAll(string $scopeType, int $scopeId): array
+    public function getAllConfigs(string $scopeType, int $scopeId): array
     {
         $result = [];
         foreach (Config::ALL_KEYS as $key => $value) {
