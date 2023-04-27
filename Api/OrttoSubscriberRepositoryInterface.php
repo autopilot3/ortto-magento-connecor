@@ -39,16 +39,6 @@ interface OrttoSubscriberRepositoryInterface
     );
 
     /**
-     * Returns the list of subscription status by customer IDs. The returned array is keyed by customer ID.
-     * In case any subscriber was not found, the value for the key will be false.
-     * @param ConfigScopeInterface $scope
-     * @param bool $crossStore Enables checking newsletter subscription status across all stores
-     * @param int[] $customerIds
-     * @return bool[]
-     */
-    public function getStateByCustomerIds(ConfigScopeInterface $scope, bool $crossStore, array $customerIds);
-
-    /**
      * Returns the list of subscription status by email addresses. The returned array is keyed by email address.
      * In case any subscriber was not found, the value for the key will be false.
      * @param ConfigScopeInterface $scope
@@ -65,13 +55,4 @@ interface OrttoSubscriberRepositoryInterface
      * @return bool
      */
     public function getStateByEmail(ConfigScopeInterface $scope, bool $crossStore, string $email);
-
-    /**
-     * Returns subscription statuss by customer ID.
-     * @param ConfigScopeInterface $scope
-     * @param bool $crossStore Enables checking newsletter subscription status across all stores
-     * @param int $customerId
-     * @return bool
-     */
-    public function getStateByCustomerId(ConfigScopeInterface $scope, bool $crossStore, int $customerId);
 }

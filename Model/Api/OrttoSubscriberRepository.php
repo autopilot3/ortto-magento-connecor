@@ -146,39 +146,6 @@ class OrttoSubscriberRepository implements OrttoSubscriberRepositoryInterface
     }
 
     /** @inheirtDoc */
-    public function getStateByCustomerIds(ConfigScopeInterface $scope, bool $crossStore, array $customerIds)
-    {
-        /** @var bool[] $subscribers */
-        $subscribers = [];
-        if (empty($customerIds)) {
-            return $subscribers;
-        }
-
-        $collection = $this->subscriberCollectionFactory->create()
-            ->addFieldToSelect('*')
-            ->setOrder(OrttoSubscriberInterface::STORE_ID, SortOrder::SORT_ASC)
-            ->addFieldToFilter(OrttoSubscriberInterface::SUBSCRIBER_STATUS, ['eq' => Subscriber::STATUS_SUBSCRIBED])
-            ->addFieldToFilter(OrttoSubscriberInterface::CUSTOMER_ID, ['in' => $customerIds]);
-
-        if (!$crossStore) {
-            $collection->addStoreFilter($scope->getId());
-        }
-
-        foreach ($customerIds as $customerId) {
-            // The make sure all the keys always exist in the result array, even if the requested
-            $subscribers[$customerId] = Config::DEFAULT_SUBSCRIPTION_STATUS;
-        }
-
-        /** @var Subscriber $subscriber */
-        foreach ($collection->getItems() as $subscriber) {
-            $customerId = To::int($subscriber->getCustomerId());
-            $subscribers[$customerId] = To::int($subscriber->getStatus()) == Subscriber::STATUS_SUBSCRIBED;
-        }
-
-        return $subscribers;
-    }
-
-    /** @inheirtDoc */
     public function getStateByEmailAddresses(ConfigScopeInterface $scope, bool $crossStore, array $emailAddresses)
     {
         /** @var bool[] $subscribers */
@@ -219,13 +186,6 @@ class OrttoSubscriberRepository implements OrttoSubscriberRepositoryInterface
     {
         $result = $this->getStateByEmailAddresses($scope, $crossStore, [$email]);
         return $result[$email];
-    }
-
-    /** @inheirtDoc */
-    public function getStateByCustomerId(ConfigScopeInterface $scope, bool $crossStore, int $customerId)
-    {
-        $result = $this->getStateByCustomerIds($scope, $crossStore, [$customerId]);
-        return $result[$customerId];
     }
 
     /**

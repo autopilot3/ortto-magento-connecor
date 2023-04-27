@@ -86,21 +86,6 @@ class SubscriberApi extends RestApiBase implements SubscriberApiInterface
      * @inheritdoc
      * @throws Exception
      */
-    public function getStateByCustomerId(string $scopeType, int $scopeId, bool $crossStore, int $customerId)
-    {
-        try {
-            $scope = $this->validateScope($scopeType, $scopeId, false);
-            return $this->repository->getStateByCustomerId($scope, $crossStore, $customerId);
-        } catch (\Exception $e) {
-            $this->logger->error($e);
-            throw $this->httpError($e->getMessage());
-        }
-    }
-
-    /**
-     * @inheritdoc
-     * @throws Exception
-     */
     public function getStateByEmail(string $scopeType, int $scopeId, bool $crossStore, string $email)
     {
         try {
