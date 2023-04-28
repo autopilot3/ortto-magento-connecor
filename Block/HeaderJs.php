@@ -85,7 +85,6 @@ class HeaderJs extends Template
         }
 
         $consentRequired = $this->configReader->isConsentToTrackRequired(ScopeInterface::SCOPE_STORE, $storeId);
-
         return [
             self::TRACKING_CODE => $code,
             self::CAPTURE_API => $captureURL,

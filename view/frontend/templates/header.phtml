@@ -23,14 +23,16 @@ $config = $block->getConfiguration();
         var ap3c = window.ap3c;
         ap3c.cmd = ap3c.cmd || [];
         ap3c.cmdMagento = ap3c.cmdMagento || [];
-        var context = {
-            scope: {},
-            email: '<?= $config[HeaderJs::EMAIL] ?>',
-            phone: '',
-            needsConsentToTrack: <?= $config[HeaderJs::CONSENT_TO_TRACK_REQUIRED] ?>,
+        var options = {
+            context: {
+                scope: {},
+                email: '<?= $config[HeaderJs::EMAIL] ?>',
+                phone: ''
+            },
+            needsConsentToTrack: <?= $config[HeaderJs::CONSENT_TO_TRACK_REQUIRED] ?>
         };
         ap3c.cmdMagento.push(function () {
-            ap3c.initMagento('<?= $config[HeaderJs::TRACKING_CODE] ?>', '<?= $config[HeaderJs::CAPTURE_API] ?>', context);
+            ap3c.initMagento('<?= $config[HeaderJs::TRACKING_CODE] ?>', '<?= $config[HeaderJs::CAPTURE_API] ?>', options);
         });
 
         var s, t;
