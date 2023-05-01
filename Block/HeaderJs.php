@@ -21,6 +21,7 @@ class HeaderJs extends Template
     public const CAPTURE_API = 'ca';
     public const BASE_URL = 'bu';
     public const EMAIL = 'e';
+    public const CONSENT_TO_TRACK_REQUIRED = 'ct';
 
     private ConfigurationReaderInterface $configReader;
     private OrttoLogger $logger;
@@ -83,6 +84,7 @@ class HeaderJs extends Template
             return [];
         }
 
+        $consentRequired = $this->configReader->isConsentToTrackRequired(ScopeInterface::SCOPE_STORE, $storeId);
         return [
             self::TRACKING_CODE => $code,
             self::CAPTURE_API => $captureURL,
@@ -90,6 +92,7 @@ class HeaderJs extends Template
             self::MAGENTO_JS => $magentoJS,
             self::EMAIL => $email,
             self::BASE_URL => $scope->getBaseURL(),
+            self::CONSENT_TO_TRACK_REQUIRED => $consentRequired ? 'true' : 'false',
         ];
     }
 }

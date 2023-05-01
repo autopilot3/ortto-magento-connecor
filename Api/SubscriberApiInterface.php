@@ -47,20 +47,6 @@ interface SubscriberApiInterface
      * @param string $scopeType
      * @param int $scopeId
      * @param bool $crossStore Enables checking newsletter subscription status across all stores
-     * @param int $customerId
-     * @return bool
-     */
-    public function getStateByCustomerId(
-        string $scopeType,
-        int $scopeId,
-        bool $crossStore,
-        int $customerId
-    );
-
-    /**
-     * @param string $scopeType
-     * @param int $scopeId
-     * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param string $email
      * @return bool
      */

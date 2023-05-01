@@ -116,12 +116,6 @@
             <resource ref="Ortto_Connector::get_customer"/>
         </resources>
     </route>
-    <route url="/V1/ortto/subscriber/get-by-customer" method="GET">
-        <service class="Ortto\Connector\Api\SubscriberApiInterface" method="getStateByCustomerId"/>
-        <resources>
-            <resource ref="Ortto_Connector::get_customer"/>
-        </resources>
-    </route>
     <route url="/V1/ortto/subscriber/get-by-email" method="GET">
         <service class="Ortto\Connector\Api\SubscriberApiInterface" method="getStateByEmail"/>
         <resources>

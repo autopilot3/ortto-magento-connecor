@@ -38,6 +38,15 @@ class ConfigurationReader implements ConfigurationReaderInterface
         return To::bool($this->scopeConfig->getValue(Config::XML_PATH_TRACKING_ENABLED, $scopeType, $scopeId));
     }
 
+     /**
+     * @inheirtDoc
+     */
+    public function isConsentToTrackRequired(string $scopeType, int $scopeId): bool
+    {
+        return To::bool($this->scopeConfig->getValue(Config::XML_PATH_TRACKING_CONSENT_REQUIRED, $scopeType,
+            $scopeId));
+    }
+    
     /**
      * @inheirtDoc
      */

@@ -5,6 +5,7 @@
         <ortto_general>
             <tracking>
                 <enabled>1</enabled>
+                <consent_enabled>0</consent_enabled>
             </tracking>
         </ortto_general>
     </default>

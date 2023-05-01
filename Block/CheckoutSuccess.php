@@ -48,9 +48,10 @@ class CheckoutSuccess extends Template
             $scope = $trackingData->getScope();
             if ($sessionOrder = $this->session->getLastRealOrder()) {
                 $orderId = $sessionOrder->getId();
-                $order = $this->orderRepository->getById($scope, To::int($orderId));
+                // Contact is not merged on Capture events. No need to load subscription state even if it's enabled.
+                $order = $this->orderRepository->getById($scope, false, false, To::int($orderId));
                 if (empty($order)) {
-                    $this->logger->warn("Checkout Succeeded:Order Not Found",["id" => $orderId]);
+                    $this->logger->warn("Checkout Succeeded:Order Not Found", ["id" => $orderId]);
                     return false;
                 }
                 $payload = [

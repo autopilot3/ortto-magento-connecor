@@ -24,6 +24,13 @@ interface ConfigurationReaderInterface
      * @param int $scopeId
      * @return bool
      */
+    public function isConsentToTrackRequired(string $scopeType, int $scopeId): bool;
+    
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @return bool
+     */
     public function verboseLogging(string $scopeType, int $scopeId): bool;
 
     /**

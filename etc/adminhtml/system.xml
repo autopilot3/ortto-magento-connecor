@@ -43,6 +43,11 @@
                     <label>Enabled</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="consent_enabled" translate="label" type="select" showInDefault="0" showInWebsite="0"
+                       showInStore="1">
+                    <label>Customer consent required</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
                 <field id="code" translate="label" type="text" showInDefault="0" showInWebsite="0"
                        showInStore="1">
                     <label>Code</label>

@@ -159,6 +159,8 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $addressIds = [];
         /** @var DataObject[] $customersData */
         $customersData = [];
+        /** @var string[] $emails */
+        $emails = [];
         foreach ($customerCollection->getItems() as $customer) {
             $customersData[] = $customer;
             if ($addressId = $customer->getData(CustomerInterface::DEFAULT_SHIPPING)) {
@@ -166,6 +168,13 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             }
             if ($addressId = $customer->getData(CustomerInterface::DEFAULT_BILLING)) {
                 $addressIds[] = To::int($addressId);
+            }
+            if ($newsletter) {
+                $email = (string)$customer->getData(CustomerInterface::EMAIL);
+                if (!empty($email)) {
+                    $customerId = To::int($customer->getData(self::ENTITY_ID));
+                    $emails[$customerId] = $email;
+                }
             }
         }
 
@@ -180,14 +189,14 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         /** @var bool[] $subscriptions */
         $subscriptions = [];
         if ($newsletter) {
-            $subscriptions = $this->subscriberRepository->getStateByCustomerIds($scope, $crossStore, $customerIds);
+            $subscriptions = $this->subscriberRepository->getStateByEmailAddresses($scope, $crossStore, $emails);
         }
 
         foreach ($customersData as $customer) {
             $customerId = To::int($customer->getData(self::ENTITY_ID));
             $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
-            if ($newsletter) {
-                $subscribed = $subscriptions[$customerId];
+            if ($newsletter && array_key_exists($customerId, $emails)) {
+                $subscribed = $subscriptions[$emails[$customerId]];
             }
             $c = $this->convertCustomer($customer, $addresses, $subscribed);
             $customers[$customerId] = $c;
@@ -224,7 +233,10 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $addresses = $this->getAddressesById($addressIds);
         $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
         if ($newsletter) {
-            $subscribed = $this->subscriberRepository->getStateByCustomerId($scope, $crossStore, $customerId);
+            $email = (string)$customerData->getData(CustomerInterface::EMAIL);
+            if (!empty($email)) {
+                $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
+            }
         }
         return $this->convertCustomer($customerData, $addresses, $subscribed);
     }
@@ -363,16 +375,22 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $addressIds = [];
         /** @var DataObject[] $customersData */
         $customersData = [];
-        /** @var int[] $customerIds */
-        $customerIds = [];
+        /** @var string[] $emails */
+        $emails = [];
         foreach ($customerCollection->getItems() as $customer) {
             $customersData[] = $customer;
-            $customerIds[] = To::int($customer->getData(self::ENTITY_ID));
             if ($addressId = $customer->getData(CustomerInterface::DEFAULT_SHIPPING)) {
                 $addressIds[] = To::int($addressId);
             }
             if ($addressId = $customer->getData(CustomerInterface::DEFAULT_BILLING)) {
                 $addressIds[] = To::int($addressId);
+            }
+            if ($newsletter) {
+                $email = (string)$customer->getData(CustomerInterface::EMAIL);
+                if (!empty($email)) {
+                    $customerId = To::int($customer->getData(self::ENTITY_ID));
+                    $emails[$customerId] = $email;
+                }
             }
         }
 
@@ -382,13 +400,13 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         /** @var bool[] $subscriptions */
         $subscriptions = [];
         if ($newsletter) {
-            $subscriptions = $this->subscriberRepository->getStateByCustomerIds($scope, $crossStore, $customerIds);
+            $subscriptions = $this->subscriberRepository->getStateByEmailAddresses($scope, $crossStore, $emails);
         }
         foreach ($customersData as $customer) {
             $customerId = To::int($customer->getData(self::ENTITY_ID));
             $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
-            if ($newsletter) {
-                $subscribed = $subscriptions[$customerId];
+            if ($newsletter && array_key_exists($customerId, $emails)) {
+                $subscribed = $subscriptions[$emails[$customerId]];
             }
             $customers[] = $this->convertCustomer($customer, $addresses, $subscribed);
         }
