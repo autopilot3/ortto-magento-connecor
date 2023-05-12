@@ -510,6 +510,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $data->setIsSubscribed($subscribed);
         $data->setId($customerId);
         $data->setFirstName((string)$customer->getData(CustomerInterface::FIRSTNAME));
+        $data->setCreatedIn((string)$customer->getData(CustomerInterface::CREATED_IN));
         $data->setMiddleName((string)$customer->getData(CustomerInterface::MIDDLENAME));
         $data->setLastName((string)$customer->getData(CustomerInterface::LASTNAME));
         $data->setSuffix((string)$customer->getData(CustomerInterface::SUFFIX));
