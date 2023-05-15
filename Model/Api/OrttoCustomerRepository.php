@@ -13,7 +13,9 @@ use Magento\Quote\Model\ResourceModel\Quote\Address\CollectionFactory as QuoteAd
 use Magento\Quote\Model\ResourceModel\Quote\CollectionFactory as QuoteCollectionFactory;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\ListCustomerResponseInterface;
+use Ortto\Connector\Api\Data\OrttoStoreInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
+use Ortto\Connector\Api\OrttoStoreRepositoryInterface;
 use Ortto\Connector\Api\OrttoSubscriberRepositoryInterface;
 use Ortto\Connector\Helper\Config;
 use Ortto\Connector\Helper\Data;
@@ -78,6 +80,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     private QuoteAddressCollectionFactory $quoteAddressCollection;
     private CountryFactory $countryFactory;
     private OrttoSubscriberRepositoryInterface $subscriberRepository;
+    private OrttoStoreRepositoryInterface $storeRepository;
 
     public function __construct(
         Data $helper,
@@ -90,7 +93,8 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         OrttoCustomerFactory $customerFactory,
         \Ortto\Connector\Model\Data\OrttoAddressFactory $addressFactory,
         \Magento\Directory\Model\CountryFactory $countryFactory,
-        OrttoSubscriberRepositoryInterface $subscriberRepository
+        OrttoSubscriberRepositoryInterface $subscriberRepository,
+        OrttoStoreRepositoryInterface $storeRepository
     ) {
         $this->countryCache = [];
         $this->helper = $helper;
@@ -104,6 +108,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $this->quoteAddressCollection = $quoteAddressCollection;
         $this->countryFactory = $countryFactory;
         $this->subscriberRepository = $subscriberRepository;
+        $this->storeRepository = $storeRepository;
     }
 
     /** @inheirtDoc
@@ -161,6 +166,13 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $customersData = [];
         /** @var string[] $emails */
         $emails = [];
+
+        // The same customer can log in into different stores and send data (place orders for example).
+        // We need to make sure store details do not change between customer's interaction with
+        // different stores. The array is keyed by store ID.
+        /** @var OrttoStoreInterface[] $stores */
+        $stores = [];
+
         foreach ($customerCollection->getItems() as $customer) {
             $customersData[] = $customer;
             if ($addressId = $customer->getData(CustomerInterface::DEFAULT_SHIPPING)) {
@@ -175,6 +187,10 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
                     $customerId = To::int($customer->getData(self::ENTITY_ID));
                     $emails[$customerId] = $email;
                 }
+            }
+            $storeId = To::int($customer->getData(CustomerInterface::STORE_ID));
+            if (!array_key_exists($storeId, $stores)) {
+                $stores[$storeId] = $this->storeRepository->getById($scope, $storeId);
             }
         }
 
@@ -198,8 +214,8 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             if ($newsletter && array_key_exists($customerId, $emails)) {
                 $subscribed = $subscriptions[$emails[$customerId]];
             }
-            $c = $this->convertCustomer($customer, $addresses, $subscribed);
-            $customers[$customerId] = $c;
+            $storeId = To::int($customer->getData(CustomerInterface::STORE_ID));
+            $customers[$customerId] = $this->convertCustomer($customer, $addresses, $subscribed, $stores[$storeId]);
         }
         $result->setItems($customers);
         return $result;
@@ -238,7 +254,9 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
                 $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
             }
         }
-        return $this->convertCustomer($customerData, $addresses, $subscribed);
+        $storeId = To::int($customerData->getData(CustomerInterface::STORE_ID));
+        return $this->convertCustomer($customerData, $addresses, $subscribed,
+            $this->storeRepository->getById($scope, $storeId));
     }
 
     /**
@@ -329,7 +347,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
                     $subscribed = $subscriptions[$email];
                 }
             }
-            $customers[] = $this->convertAnonymousCustomer($customer, $addresses, $subscribed);
+            $customers[] = $this->convertAnonymousCustomer($customer, $addresses, $subscribed, null);
         }
         $result->setItems($customers);
         $result->setHasMore($page < $total / $pageSize);
@@ -377,6 +395,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $customersData = [];
         /** @var string[] $emails */
         $emails = [];
+
         foreach ($customerCollection->getItems() as $customer) {
             $customersData[] = $customer;
             if ($addressId = $customer->getData(CustomerInterface::DEFAULT_SHIPPING)) {
@@ -402,13 +421,14 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         if ($newsletter) {
             $subscriptions = $this->subscriberRepository->getStateByEmailAddresses($scope, $crossStore, $emails);
         }
+
         foreach ($customersData as $customer) {
             $customerId = To::int($customer->getData(self::ENTITY_ID));
             $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
             if ($newsletter && array_key_exists($customerId, $emails)) {
                 $subscribed = $subscriptions[$emails[$customerId]];
             }
-            $customers[] = $this->convertCustomer($customer, $addresses, $subscribed);
+            $customers[] = $this->convertCustomer($customer, $addresses, $subscribed, null);
         }
         $result->setItems($customers);
         $result->setHasMore($page < $total / $pageSize);
@@ -501,14 +521,16 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
      * @param DataObject $customer
      * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[] $addresses
      * @param bool $subscribed
+     * @param OrttoStoreInterface|null $store
      * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
      */
-    private function convertCustomer($customer, $addresses, $subscribed)
+    private function convertCustomer($customer, $addresses, $subscribed, $store)
     {
         $data = $this->customerFactory->create();
         $customerId = To::int($customer->getData(self::ENTITY_ID));
         $data->setIsSubscribed($subscribed);
         $data->setId($customerId);
+        $data->setStore($store);
         $data->setFirstName((string)$customer->getData(CustomerInterface::FIRSTNAME));
         $data->setCreatedIn((string)$customer->getData(CustomerInterface::CREATED_IN));
         $data->setMiddleName((string)$customer->getData(CustomerInterface::MIDDLENAME));
@@ -548,14 +570,16 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
      * @param DataObject $customer
      * @param \Ortto\Connector\Api\Data\OrttoAddressInterface[][] $addresses
      * @param bool $subscribed
+     * @param OrttoStoreInterface|null $store
      * @return \Ortto\Connector\Api\Data\OrttoCustomerInterface
      */
-    private function convertAnonymousCustomer($customer, $addresses, $subscribed)
+    private function convertAnonymousCustomer($customer, $addresses, $subscribed, $store)
     {
         $data = $this->customerFactory->create();
         $email = (string)$customer->getData(self::CUSTOMER_EMAIL);
         $data->setIsSubscribed($subscribed);
         $data->setId(self::ANONYMOUS_CUSTOMER_ID);
+        $data->setStore($store);
         $data->setPrefix((string)$customer->getData(self::CUSTOMER_PREFIX));
         $data->setFirstName((string)$customer->getData(self::CUSTOMER_FIRST_NAME));
         $data->setMiddleName((string)$customer->getData(self::CUSTOMER_MIDDLE_NAME));

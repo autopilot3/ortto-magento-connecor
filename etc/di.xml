@@ -76,6 +76,8 @@
                 type="Ortto\Connector\Model\Data\OrttoAddress"/>
     <preference for="Ortto\Connector\Api\Data\OrttoCustomerInterface"
                 type="Ortto\Connector\Model\Data\OrttoCustomer"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoStoreInterface"
+                type="Ortto\Connector\Model\Data\OrttoStore"/>
     <preference for="Ortto\Connector\Api\Data\OrttoSubscriberInterface"
                 type="Ortto\Connector\Model\Data\OrttoSubscriber"/>
     <preference for="Ortto\Connector\Api\Data\OrttoCartInterface"
@@ -122,6 +124,8 @@
                 type="Ortto\Connector\Model\Api\OrttoCartRepository"/>
     <preference for="Ortto\Connector\Api\OrttoSubscriberRepositoryInterface"
                 type="Ortto\Connector\Model\Api\OrttoSubscriberRepository"/>
+    <preference for="Ortto\Connector\Api\OrttoStoreRepositoryInterface"
+                type="Ortto\Connector\Model\Api\OrttoStoreRepository"/>
 
     <!-- WEB API HANDLERS -->
     <preference for="Ortto\Connector\Api\ProductApiInterface"

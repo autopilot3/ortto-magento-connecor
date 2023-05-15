@@ -23,6 +23,7 @@ interface OrttoCustomerInterface
     const PHONE = 'phone';
 
     const IS_SUBSCRIBED = 'is_subscribed';
+    const STORE = 'store';
 
     /**
      * Set id
@@ -278,6 +279,21 @@ interface OrttoCustomerInterface
      * @return string
      */
     public function getPhone();
+
+    /**
+     * Set store
+     *
+     * @param \Ortto\Connector\Api\Data\OrttoStoreInterface $store
+     * @return $this
+     */
+    public function setStore($store);
+
+    /**
+     * Get store
+     *
+     * @return \Ortto\Connector\Api\Data\OrttoStoreInterface|null
+     */
+    public function getStore();
 
     /**
      * Convert object data to array

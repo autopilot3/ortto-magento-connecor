@@ -5,6 +5,7 @@ namespace Ortto\Connector\Model\Data;
 
 use Magento\Framework\DataObject;
 use Ortto\Connector\Api\Data\OrttoCustomerInterface;
+use Ortto\Connector\Api\Data\OrttoStoreInterface;
 use Ortto\Connector\Helper\To;
 
 class OrttoCustomer extends DataObject implements OrttoCustomerInterface
@@ -213,6 +214,22 @@ class OrttoCustomer extends DataObject implements OrttoCustomerInterface
         return To::bool($this->getData(self::IS_SUBSCRIBED));
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function setStore($store)
+    {
+        return $this->setData(self::STORE, $store);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getStore()
+    {
+        return $this->getData(self::STORE);
+    }
+
     /** @inheirtDoc */
     public function serializeToArray()
     {
@@ -239,6 +256,7 @@ class OrttoCustomer extends DataObject implements OrttoCustomerInterface
         $result[self::UPDATED_AT] = $this->getUpdatedAt();
         $result[self::PHONE] = $this->getPhone();
         $result[self::IS_SUBSCRIBED] = $this->getIsSubscribed();
+        $result[self::STORE] = $this->getStore();
         return $result;
     }
 }
