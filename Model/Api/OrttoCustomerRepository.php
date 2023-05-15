@@ -287,7 +287,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             ->setOrder(self::UPDATED_AT, SortOrder::SORT_ASC);
 
         if (!empty($checkpoint)) {
-            $collection->addFieldToFilter(self::UPDATED_AT, ['gteq' => $checkpoint]);
+            $collection->addFieldToFilter(self::UPDATED_AT, ['gteq' => To::sqlDate($checkpoint)]);
         }
 
         $result = $this->listResponseFactory->create();
@@ -362,7 +362,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             ->setOrder(CustomerInterface::UPDATED_AT, 'ASC');
 
         if (!empty($checkpoint)) {
-            $customerCollection->addFieldToFilter(CustomerInterface::UPDATED_AT, ['gteq' => $checkpoint]);
+            $customerCollection->addFieldToFilter(CustomerInterface::UPDATED_AT, ['gteq' => To::sqlDate($checkpoint)]);
         }
 
         $result = $this->listResponseFactory->create();

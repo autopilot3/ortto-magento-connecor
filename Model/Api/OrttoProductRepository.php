@@ -103,7 +103,7 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
             ->addWebsiteFilter($scope->getWebsiteId());
 
         if (!empty($checkpoint)) {
-            $collection->addFieldToFilter(ProductInterface::UPDATED_AT, ['gteq' => $checkpoint]);
+            $collection->addFieldToFilter(ProductInterface::UPDATED_AT, ['gteq' => To::sqlDate($checkpoint)]);
         }
         $result = $this->listResponseFactory->create();
         $total = To::int($collection->getSize());

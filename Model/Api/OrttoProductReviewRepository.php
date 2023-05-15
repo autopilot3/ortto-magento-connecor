@@ -109,7 +109,7 @@ class OrttoProductReviewRepository implements OrttoProductReviewRepositoryInterf
             ->where("detail.customer_id IS NOT NULL");
 
         if (!empty($checkpoint)) {
-            $query->where('main_table.' . self::CREATED_AT . ' >= ?', $checkpoint);
+            $query->where('main_table.' . self::CREATED_AT . ' >= ?', To::sqlDate($checkpoint));
         }
 
         $items = $collection->getItems();

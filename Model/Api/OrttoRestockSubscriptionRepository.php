@@ -69,7 +69,7 @@ class OrttoRestockSubscriptionRepository implements OrttoRestockSubscriptionRepo
             ->addFieldToFilter(self::STORE_ID, ['eq' => $scope->getId()]);
 
         if (!empty($checkpoint)) {
-            $collection->addFieldToFilter(self::ADD_DATE, ['gteq' => $checkpoint]);
+            $collection->addFieldToFilter(self::ADD_DATE, ['gteq' => To::sqlDate($checkpoint)]);
         }
 
         $result = $this->listRestockSubscriptionResponseFactory->create();

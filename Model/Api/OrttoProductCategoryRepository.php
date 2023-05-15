@@ -48,7 +48,7 @@ class OrttoProductCategoryRepository implements OrttoProductCategoryRepositoryIn
             ->setStoreId($scope->getId());
 
         if (!empty($checkpoint)) {
-            $collection->addFieldToFilter(CategoryInterface::KEY_UPDATED_AT, ['gteq' => $checkpoint]);
+            $collection->addFieldToFilter(CategoryInterface::KEY_UPDATED_AT, ['gteq' => To::sqlDate($checkpoint)]);
         }
 
         $result = $this->listProductCategoryResponseFactory->create();

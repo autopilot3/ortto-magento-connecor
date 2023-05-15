@@ -124,7 +124,8 @@ class OrttoSubscriberRepository implements OrttoSubscriberRepositoryInterface
         }
 
         if (!empty($checkpoint)) {
-            $collection->addFieldToFilter(OrttoSubscriberInterface::CHANGE_STATUS_AT, ['gteq' => $checkpoint]);
+            $collection->addFieldToFilter(OrttoSubscriberInterface::CHANGE_STATUS_AT,
+                ['gteq' => To::sqlDate($checkpoint)]);
         }
 
         $result = $this->listResponseFactory->create();

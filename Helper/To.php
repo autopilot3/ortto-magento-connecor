@@ -25,4 +25,9 @@ class To
     {
         return (string)filter_var($mixed, FILTER_SANITIZE_EMAIL);
     }
+
+    public static function sqlDate(string $date): string
+    {
+        return date('Y-m-d H:i:s', strtotime($date));
+    }
 }

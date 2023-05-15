@@ -146,7 +146,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             ->addFilter(OrderInterface::STORE_ID, $scope->getId());
 
         if (!empty($checkpoint)) {
-            $this->searchCriteriaBuilder->addFilter(OrderInterface::UPDATED_AT, $checkpoint, 'gteq');
+            $this->searchCriteriaBuilder->addFilter(OrderInterface::UPDATED_AT, To::sqlDate($checkpoint), 'gteq');
         }
 
         $ordersList = $this->orderRepository->getList($this->searchCriteriaBuilder->create());
