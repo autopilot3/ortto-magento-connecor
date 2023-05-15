@@ -8,6 +8,7 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Api\SortOrder;
 use Magento\Framework\Api\SortOrderBuilder;
 use Magento\Framework\DataObject;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\Data\CreditmemoInterface;
 use Magento\Sales\Api\Data\OrderExtensionInterface;
@@ -17,6 +18,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\Data\OrttoStoreInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
 use Ortto\Connector\Api\OrttoOrderRepositoryInterface;
 use Ortto\Connector\Api\OrttoProductRepositoryInterface;
@@ -119,6 +121,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
     }
 
     /** @inheirtDoc
+     * @throws NoSuchEntityException
      */
     public function getList(
         ConfigScopeInterface $scope,
@@ -205,6 +208,9 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         return $result;
     }
 
+    /**
+     * @throws NoSuchEntityException
+     */
     public function getById(
         ConfigScopeInterface $scope,
         bool $newsletter,
@@ -236,7 +242,8 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                     $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
                 }
             }
-            $customer = $this->getAnonymousCustomer($order, $addresses[$orderId], $subscribed);
+            $store = $this->customerRepository->getCustomerStore($scope->getId());
+            $customer = $this->getAnonymousCustomer($order, $addresses[$orderId], $subscribed, $store);
         }
         if (!empty($customer)) {
             $data->setCustomer($customer);

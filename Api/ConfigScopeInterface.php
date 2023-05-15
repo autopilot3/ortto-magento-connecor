@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Api;
 
+use Ortto\Connector\Api\Data\OrttoStoreInterface;
 use Ortto\Connector\Api\Data\SerializableInterface;
 
 interface ConfigScopeInterface extends SerializableInterface
