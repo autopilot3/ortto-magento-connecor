@@ -92,6 +92,12 @@
             <resource ref="Ortto_Connector::get_customer"/>
         </resources>
     </route>
+    <route url="/V1/ortto/customer/get-by-email" method="GET">
+        <service class="Ortto\Connector\Api\CustomerApiInterface" method="getByEmail"/>
+        <resources>
+            <resource ref="Ortto_Connector::get_customer"/>
+        </resources>
+    </route>
     <route url="/V1/ortto/subscriber/list" method="GET">
         <service class="Ortto\Connector\Api\SubscriberApiInterface" method="list"/>
         <resources>
@@ -100,18 +106,6 @@
     </route>
     <route url="/V1/ortto/subscriber/get-all" method="GET">
         <service class="Ortto\Connector\Api\SubscriberApiInterface" method="getAll"/>
-        <resources>
-            <resource ref="Ortto_Connector::get_customer"/>
-        </resources>
-    </route>
-    <route url="/V1/ortto/subscriber/get-all-by-email" method="GET">
-        <service class="Ortto\Connector\Api\SubscriberApiInterface" method="getAllByEmail"/>
-        <resources>
-            <resource ref="Ortto_Connector::get_customer"/>
-        </resources>
-    </route>
-    <route url="/V1/ortto/subscriber/get-all-by-customer" method="GET">
-        <service class="Ortto\Connector\Api\SubscriberApiInterface" method="getAllByCustomerId"/>
         <resources>
             <resource ref="Ortto_Connector::get_customer"/>
         </resources>

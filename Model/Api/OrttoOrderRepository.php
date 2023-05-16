@@ -17,7 +17,6 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Ortto\Connector\Api\ConfigScopeInterface;
-use Ortto\Connector\Api\Data\OrttoCustomerInterface;
 use Ortto\Connector\Api\Data\OrttoOrderInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
 use Ortto\Connector\Api\OrttoOrderRepositoryInterface;
@@ -177,16 +176,9 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $customerIds = [];
         $orderIds = [];
         $productIds = [];
-        /** @var string[] $anonymousOrderEmails */
-        $anonymousOrderEmails = [];
         foreach ($orders as $order) {
             if ($customerId = $order->getCustomerId()) {
                 $customerIds[] = To::int($customerId);
-            } else {
-                $email = $order->getCustomerEmail();
-                if (!empty($email)) {
-                    $anonymousOrderEmails[] = $email;
-                }
             }
             $orderIds[] = To::int($order->getEntityId());
             foreach ($order->getItems() as $item) {
@@ -200,13 +192,6 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         // The returned array is keyed by customer ID
         $customers = $this->customerRepository->getByIds($scope, $newsletter, $crossStore, $customerIds)->getItems();
 
-        // The returned array is keyed by customer email address
-        $customersWithAnonymousOrders = [];
-        if (!empty($anonymousOrderEmails)) {
-            $customersWithAnonymousOrders = $this->customerRepository->getByEmails($scope, $newsletter, $crossStore,
-                $anonymousOrderEmails)->getItems();
-        }
-
         // The returned array is keyed by order ID
         $addresses = $this->getOrderAddresses($orderIds);
         $orttoOrders = [];
@@ -219,16 +204,11 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                 }
             } else {
                 $email = (string)$order->getCustomerEmail();
-                $hasEmail = !empty($email);
-                if ($hasEmail && array_key_exists($email, $customersWithAnonymousOrders)) {
-                    $orttoOrder->setCustomer($customersWithAnonymousOrders[$email]);
-                } else {
-                    $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
-                    if ($newsletter && $hasEmail) {
-                        $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
-                    }
-                    $orttoOrder->setCustomer($this->getAnonymousCustomer($order, $addresses[$orderId], $subscribed));
+                $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
+                if ($newsletter && !empty($email)) {
+                    $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
                 }
+                $orttoOrder->setCustomer($this->getAnonymousCustomer($order, $addresses[$orderId], $subscribed));
             }
             $orttoOrders[] = $orttoOrder;
         }
@@ -262,16 +242,8 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $customer = $this->customerRepository->getById($scope, $newsletter, $crossStore, To::int($customerId));
         } else {
             $email = (string)$order->getCustomerEmail();
-            $hasEmail = !empty($email);
-            if ($hasEmail) {
-                $customer = $this->customerRepository->getByEmail($scope, $newsletter, $crossStore, $email);
-                if (!empty($customer)) {
-                    $data->setCustomer($customer);
-                    return $data;
-                }
-            }
             $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
-            if ($newsletter && $hasEmail) {
+            if ($newsletter && !empty($email)) {
                 $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
             }
             $customer = $this->getAnonymousCustomer($order, $addresses[$orderId], $subscribed);

@@ -39,4 +39,20 @@ interface CustomerApiInterface
      * @return OrttoCustomerInterface
      */
     public function getById(string $scopeType, int $scopeId, bool $newsletter, bool $crossStore, int $customerId);
+
+    /**
+     * @param string $scopeType
+     * @param int $scopeId
+     * @param bool $newsletter
+     * @param bool $crossStore
+     * @param string $email
+     * @return ListCustomerResponseInterface
+     */
+    public function getByEmail(
+        string $scopeType,
+        int $scopeId,
+        bool $newsletter,
+        bool $crossStore,
+        string $email
+    );
 }

@@ -63,7 +63,7 @@ class CustomerApi extends RestApiBase implements CustomerApiInterface
         int $customerId
     ) {
         try {
-            $scope = $this->validateScope($scopeType, $scopeId);
+            $scope = $this->validateScope($scopeType, $scopeId, false);
             $customer = $this->customerRepository->getById($scope, $newsletter, $crossStore, $customerId);
         } catch (NoSuchEntityException $e) {
             throw $this->notFoundError();
@@ -75,5 +75,25 @@ class CustomerApi extends RestApiBase implements CustomerApiInterface
             throw $this->notFoundError();
         }
         return $customer;
+    }
+
+
+    /** @ingeritdoc
+     * @throws Exception
+     */
+    public function getByEmail(
+        string $scopeType,
+        int $scopeId,
+        bool $newsletter,
+        bool $crossStore,
+        string $email
+    ) {
+        try {
+            $scope = $this->validateScope($scopeType, $scopeId, false);
+            return $this->customerRepository->getByEmail($scope, $newsletter, $crossStore, $email);
+        } catch (\Exception $e) {
+            $this->logger->error($e);
+            throw $this->httpError($e->getMessage());
+        }
     }
 }
