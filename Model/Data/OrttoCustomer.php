@@ -5,7 +5,6 @@ namespace Ortto\Connector\Model\Data;
 
 use Magento\Framework\DataObject;
 use Ortto\Connector\Api\Data\OrttoCustomerInterface;
-use Ortto\Connector\Api\Data\OrttoStoreInterface;
 use Ortto\Connector\Helper\To;
 
 class OrttoCustomer extends DataObject implements OrttoCustomerInterface
