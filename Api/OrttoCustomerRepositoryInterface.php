@@ -49,6 +49,22 @@ interface OrttoCustomerRepositoryInterface
     );
 
     /**
+     * @param ConfigScopeInterface $scope
+     * @param bool $newsletter
+     * @param bool $crossStore
+     * @param string[] $emails
+     * @param array $data
+     * @return \Ortto\Connector\Api\Data\ListCustomerResponseInterface
+     */
+    public function getByEmails(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        array $emails,
+        array $data = []
+    );
+
+    /**
      * Returns a customer by ID.
      * @param ConfigScopeInterface $scope
      * @param bool $newsletter Enables checking newsletter subscription status

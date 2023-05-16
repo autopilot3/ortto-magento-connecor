@@ -44,7 +44,7 @@ interface OrttoSubscriberRepositoryInterface
      * @param ConfigScopeInterface $scope
      * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param string[] $emailAddresses
-     * @return OrttoSubscriberInterface
+     * @return bool[]
      */
     public function getStateByEmailAddresses(ConfigScopeInterface $scope, bool $crossStore, array $emailAddresses);
 

@@ -221,6 +221,79 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         return $result;
     }
 
+    /** @ingeritdoc
+     * @throws LocalizedException
+     */
+    public function getByEmails(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        array $emails,
+        array $data = []
+    ) {
+        $result = $this->listResponseFactory->create();
+        $emails = array_unique($emails, SORT_STRING);
+        if (empty($emails)) {
+            return $result;
+        }
+        $customerCollection = $this->customerCollection->create();
+        $customerCollection->addAttributeToSelect($this->customerColumnsToSelect)
+            // WebsiteID+Email => Unique DB Index
+            ->addFieldToFilter(CustomerInterface::WEBSITE_ID, $scope->getWebsiteId())
+            ->addFieldToFilter(CustomerInterface::EMAIL, ['in' => $emails]);
+
+        $total = To::int($customerCollection->getSize());
+        $result->setTotal($total);
+        if ($total == 0) {
+            return $result;
+        }
+
+        $addressIds = [];
+        /** @var DataObject[] $customersData */
+        $customersData = [];
+
+        // The same customer can log in into different stores and send data (place orders for example).
+        // We need to make sure store details do not change between customer's interaction with
+        // different stores. The array is keyed by store ID.
+        /** @var OrttoStoreInterface[] $stores */
+        $stores = [];
+
+        foreach ($customerCollection->getItems() as $customer) {
+            $customersData[] = $customer;
+            if ($addressId = $customer->getData(CustomerInterface::DEFAULT_SHIPPING)) {
+                $addressIds[] = To::int($addressId);
+            }
+            if ($addressId = $customer->getData(CustomerInterface::DEFAULT_BILLING)) {
+                $addressIds[] = To::int($addressId);
+            }
+            $storeId = To::int($customer->getData(CustomerInterface::STORE_ID));
+            if (!array_key_exists($storeId, $stores)) {
+                $stores[$storeId] = $this->storeRepository->getById($scope, $storeId);
+            }
+        }
+
+        $addresses = $this->getAddressesById($addressIds);
+        $customers = [];
+
+        /** @var bool[] $subscriptions */
+        $subscriptions = [];
+        if ($newsletter) {
+            $subscriptions = $this->subscriberRepository->getStateByEmailAddresses($scope, $crossStore, $emails);
+        }
+
+        foreach ($customersData as $customer) {
+            $email = (string)($customer->getData(CustomerInterface::EMAIL));
+            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
+            if ($newsletter) {
+                $subscribed = $subscriptions[$email];
+            }
+            $storeId = To::int($customer->getData(CustomerInterface::STORE_ID));
+            $customers[$email] = $this->convertCustomer($customer, $addresses, $subscribed, $stores[$storeId]);
+        }
+        $result->setItems($customers);
+        return $result;
+    }
+
     /** @inheirtDoc
      * @throws LocalizedException
      */
