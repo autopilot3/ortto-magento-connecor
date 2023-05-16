@@ -155,7 +155,7 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         } else {
             if (array_key_exists(OrttoOrderInterface::CUSTOMER_ID, $data)) {
                 $this->searchCriteriaBuilder->addFilter(OrderInterface::CUSTOMER_ID,
-                    To::int($data[OrderInterface::CUSTOMER_ID]));
+                    $data[OrderInterface::CUSTOMER_ID]);
             }
         }
 
