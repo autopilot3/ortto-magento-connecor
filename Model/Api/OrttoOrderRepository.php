@@ -261,12 +261,18 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         if ($customerId = $order->getCustomerId()) {
             $customer = $this->customerRepository->getById($scope, $newsletter, $crossStore, To::int($customerId));
         } else {
-            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
-            if ($newsletter) {
-                $email = (string)$order->getCustomerEmail();
-                if (!empty($email)) {
-                    $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
+            $email = (string)$order->getCustomerEmail();
+            $hasEmail = !empty($email);
+            if ($hasEmail) {
+                $customer = $this->customerRepository->getByEmail($scope, $newsletter, $crossStore, $email);
+                if (!empty($customer)) {
+                    $data->setCustomer($customer);
+                    return $data;
                 }
+            }
+            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
+            if ($newsletter && $hasEmail) {
+                $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
             }
             $customer = $this->getAnonymousCustomer($order, $addresses[$orderId], $subscribed);
         }
