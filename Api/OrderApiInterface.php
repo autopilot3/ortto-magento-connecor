@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Ortto\Connector\Api;
 
+use Ortto\Connector\Api\Data\ListOrderResponseInterface;
 use Ortto\Connector\Api\Data\OrttoOrderInterface;
 
 interface OrderApiInterface
@@ -15,7 +16,10 @@ interface OrderApiInterface
      * @param int $page
      * @param string $checkpoint
      * @param int $pageSize
-     * @return \Ortto\Connector\Api\Data\ListOrderResponseInterface
+     * @param int $customerId
+     * @param string $customerEmail
+     * @param bool $anonymous
+     * @return ListOrderResponseInterface
      */
     public function list(
         string $scopeType,
@@ -24,7 +28,10 @@ interface OrderApiInterface
         bool $crossStore,
         int $page = 1,
         string $checkpoint = '',
-        int $pageSize = 100
+        int $pageSize = 100,
+        int $customerId = -1,
+        string $customerEmail = '',
+        bool $anonymous = false
     );
 
     /**

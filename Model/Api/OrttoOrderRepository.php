@@ -17,6 +17,8 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Ortto\Connector\Api\ConfigScopeInterface;
+use Ortto\Connector\Api\Data\OrttoCustomerInterface;
+use Ortto\Connector\Api\Data\OrttoOrderInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
 use Ortto\Connector\Api\OrttoOrderRepositoryInterface;
 use Ortto\Connector\Api\OrttoProductRepositoryInterface;
@@ -148,6 +150,20 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
             $this->searchCriteriaBuilder->addFilter(OrderInterface::UPDATED_AT, To::sqlDate($checkpoint), 'gteq');
         }
 
+        if (array_key_exists(OrttoOrderInterface::ANONYMOUS_CUSTOMERS, $data)) {
+            $this->searchCriteriaBuilder->addFilter(OrderInterface::CUSTOMER_ID, null, 'null');
+        } else {
+            if (array_key_exists(OrttoOrderInterface::CUSTOMER_ID, $data)) {
+                $this->searchCriteriaBuilder->addFilter(OrderInterface::CUSTOMER_ID,
+                    $data[OrderInterface::CUSTOMER_ID]);
+            }
+        }
+
+        if (array_key_exists(OrttoOrderInterface::CUSTOMER_EMAIL, $data)) {
+            $this->searchCriteriaBuilder->addFilter(OrderInterface::CUSTOMER_EMAIL,
+                $data[OrderInterface::CUSTOMER_EMAIL]);
+        }
+
         $ordersList = $this->orderRepository->getList($this->searchCriteriaBuilder->create());
 
         $result = $this->listResponseFactory->create();
@@ -161,9 +177,16 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         $customerIds = [];
         $orderIds = [];
         $productIds = [];
+        /** @var string[] $anonymousOrderEmails */
+        $anonymousOrderEmails = [];
         foreach ($orders as $order) {
             if ($customerId = $order->getCustomerId()) {
                 $customerIds[] = To::int($customerId);
+            } else {
+                $email = $order->getCustomerEmail();
+                if (!empty($email)) {
+                    $anonymousOrderEmails[] = $email;
+                }
             }
             $orderIds[] = To::int($order->getEntityId());
             foreach ($order->getItems() as $item) {
@@ -177,6 +200,13 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         // The returned array is keyed by customer ID
         $customers = $this->customerRepository->getByIds($scope, $newsletter, $crossStore, $customerIds)->getItems();
 
+        // The returned array is keyed by customer email address
+        $customersWithAnonymousOrders = [];
+        if (!empty($anonymousOrderEmails)) {
+            $customersWithAnonymousOrders = $this->customerRepository->getByEmails($scope, $newsletter, $crossStore,
+                $anonymousOrderEmails)->getItems();
+        }
+
         // The returned array is keyed by order ID
         $addresses = $this->getOrderAddresses($orderIds);
         $orttoOrders = [];
@@ -188,14 +218,17 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
                     $orttoOrder->setCustomer($customer);
                 }
             } else {
-                $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
-                if ($newsletter) {
-                    $email = (string)$order->getCustomerEmail();
-                    if (!empty($email)) {
+                $email = (string)$order->getCustomerEmail();
+                $hasEmail = !empty($email);
+                if ($hasEmail && array_key_exists($email, $customersWithAnonymousOrders)) {
+                    $orttoOrder->setCustomer($customersWithAnonymousOrders[$email]);
+                } else {
+                    $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
+                    if ($newsletter && $hasEmail) {
                         $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
                     }
+                    $orttoOrder->setCustomer($this->getAnonymousCustomer($order, $addresses[$orderId], $subscribed));
                 }
-                $orttoOrder->setCustomer($this->getAnonymousCustomer($order, $addresses[$orderId], $subscribed));
             }
             $orttoOrders[] = $orttoOrder;
         }
@@ -228,12 +261,18 @@ class OrttoOrderRepository implements OrttoOrderRepositoryInterface
         if ($customerId = $order->getCustomerId()) {
             $customer = $this->customerRepository->getById($scope, $newsletter, $crossStore, To::int($customerId));
         } else {
-            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
-            if ($newsletter) {
-                $email = (string)$order->getCustomerEmail();
-                if (!empty($email)) {
-                    $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
+            $email = (string)$order->getCustomerEmail();
+            $hasEmail = !empty($email);
+            if ($hasEmail) {
+                $customer = $this->customerRepository->getByEmail($scope, $newsletter, $crossStore, $email);
+                if (!empty($customer)) {
+                    $data->setCustomer($customer);
+                    return $data;
                 }
+            }
+            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
+            if ($newsletter && $hasEmail) {
+                $subscribed = $this->subscriberRepository->getStateByEmail($scope, $crossStore, $email);
             }
             $customer = $this->getAnonymousCustomer($order, $addresses[$orderId], $subscribed);
         }

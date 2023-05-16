@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Ortto\Connector\Api;
 
 use Ortto\Connector\Api\Data\ListCustomerResponseInterface;
+use Ortto\Connector\Api\Data\OrttoCustomerInterface;
 
 interface OrttoCustomerRepositoryInterface
 {
@@ -49,6 +50,22 @@ interface OrttoCustomerRepositoryInterface
     );
 
     /**
+     * @param ConfigScopeInterface $scope
+     * @param bool $newsletter
+     * @param bool $crossStore
+     * @param string[] $emails
+     * @param array $data
+     * @return \Ortto\Connector\Api\Data\ListCustomerResponseInterface
+     */
+    public function getByEmails(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        array $emails,
+        array $data = []
+    );
+
+    /**
      * Returns a customer by ID.
      * @param ConfigScopeInterface $scope
      * @param bool $newsletter Enables checking newsletter subscription status
@@ -62,6 +79,23 @@ interface OrttoCustomerRepositoryInterface
         bool $newsletter,
         bool $crossStore,
         int $customerId,
+        array $data = []
+    );
+
+    /**
+     * Returns a customer by ID.
+     * @param ConfigScopeInterface $scope
+     * @param bool $newsletter Enables checking newsletter subscription status
+     * @param bool $crossStore Enables checking newsletter subscription status across all stores
+     * @param string $email
+     * @param array $data
+     * @return OrttoCustomerInterface|null
+     */
+    public function getByEmail(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        string $email,
         array $data = []
     );
 }
