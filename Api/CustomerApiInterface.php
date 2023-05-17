@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Ortto\Connector\Api;
 
 use Ortto\Connector\Api\Data\ListCustomerResponseInterface;
+use Ortto\Connector\Api\Data\OrttoCustomerGroupInterface;
 use Ortto\Connector\Api\Data\OrttoCustomerInterface;
 
 interface CustomerApiInterface
@@ -46,7 +47,7 @@ interface CustomerApiInterface
      * @param bool $newsletter
      * @param bool $crossStore
      * @param string $email
-     * @return ListCustomerResponseInterface
+     * @return OrttoCustomerGroupInterface
      */
     public function getByEmail(
         string $scopeType,

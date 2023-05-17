@@ -73,7 +73,7 @@ interface OrttoCustomerRepositoryInterface
      * @param bool $crossStore Enables checking newsletter subscription status across all stores
      * @param string $email
      * @param array $data
-     * @return \Ortto\Connector\Api\Data\ListCustomerResponseInterface
+     * @return \Ortto\Connector\Api\Data\OrttoCustomerGroupInterface
      */
     public function getByEmail(
         ConfigScopeInterface $scope,

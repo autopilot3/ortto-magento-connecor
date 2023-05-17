@@ -76,6 +76,8 @@
                 type="Ortto\Connector\Model\Data\OrttoAddress"/>
     <preference for="Ortto\Connector\Api\Data\OrttoCustomerInterface"
                 type="Ortto\Connector\Model\Data\OrttoCustomer"/>
+    <preference for="Ortto\Connector\Api\Data\OrttoCustomerGroupInterface"
+                type="Ortto\Connector\Model\Data\OrttoCustomerGroup"/>
     <preference for="Ortto\Connector\Api\Data\OrttoStoreInterface"
                 type="Ortto\Connector\Model\Data\OrttoStore"/>
     <preference for="Ortto\Connector\Api\Data\OrttoSubscriberInterface"
