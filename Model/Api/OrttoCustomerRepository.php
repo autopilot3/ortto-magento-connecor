@@ -13,6 +13,7 @@ use Magento\Quote\Model\ResourceModel\Quote\Address\CollectionFactory as QuoteAd
 use Magento\Quote\Model\ResourceModel\Quote\CollectionFactory as QuoteCollectionFactory;
 use Ortto\Connector\Api\ConfigScopeInterface;
 use Ortto\Connector\Api\Data\ListCustomerResponseInterface;
+use Ortto\Connector\Api\Data\OrttoCustomerInterface;
 use Ortto\Connector\Api\Data\OrttoStoreInterface;
 use Ortto\Connector\Api\OrttoCustomerRepositoryInterface;
 use Ortto\Connector\Api\OrttoStoreRepositoryInterface;
@@ -26,12 +27,13 @@ use \Magento\Customer\Model\ResourceModel\Address\CollectionFactory as AddressCo
 use Ortto\Connector\Model\Data\OrttoCustomerFactory;
 use Ortto\Connector\Model\Data\ListCustomerResponseFactory;
 use Ortto\Connector\Model\Data\OrttoAddressFactory;
+use Ortto\Connector\Model\Data\OrttoCustomerGroupFactory;
 use Magento\Quote\Api\Data\AddressInterface as QuoteAddressInterface;
 use Ortto\Connector\Model\Scope;
 
 class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
 {
-    private array $customerColumnsToSelect = [
+    private array $registeredCustomerColumns = [
         self::ENTITY_ID,
         CustomerInterface::PREFIX,
         CustomerInterface::FIRSTNAME,
@@ -47,7 +49,26 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         CustomerInterface::GROUP_ID,
         CustomerInterface::DEFAULT_BILLING,
         CustomerInterface::DEFAULT_SHIPPING,
+        CustomerInterface::STORE_ID,
     ];
+
+    private array $anonymousCustomerColumns = [
+        self::ENTITY_ID,
+        self::IP_ADDRESS,
+        self::CUSTOMER_PREFIX,
+        self::CUSTOMER_FIRST_NAME,
+        self::CUSTOMER_MIDDLE_NAME,
+        self::CUSTOMER_LAST_NAME,
+        self::CUSTOMER_SUFFIX,
+        self::CUSTOMER_EMAIL,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::CUSTOMER_DOB,
+        self::CUSTOMER_GENDER,
+        self::CUSTOMER_GROUP_ID,
+        self::STORE_ID,
+    ];
+
     const ENTITY_ID = 'entity_id';
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
@@ -82,6 +103,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
     private CountryFactory $countryFactory;
     private OrttoSubscriberRepositoryInterface $subscriberRepository;
     private OrttoStoreRepositoryInterface $storeRepository;
+    private OrttoCustomerGroupFactory $customerGroupFactory;
 
     public function __construct(
         Data $helper,
@@ -95,7 +117,8 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         \Ortto\Connector\Model\Data\OrttoAddressFactory $addressFactory,
         \Magento\Directory\Model\CountryFactory $countryFactory,
         OrttoSubscriberRepositoryInterface $subscriberRepository,
-        OrttoStoreRepositoryInterface $storeRepository
+        OrttoStoreRepositoryInterface $storeRepository,
+        OrttoCustomerGroupFactory $customerGroupFactory
     ) {
         $this->countryCache = [];
         $this->helper = $helper;
@@ -110,6 +133,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $this->countryFactory = $countryFactory;
         $this->subscriberRepository = $subscriberRepository;
         $this->storeRepository = $storeRepository;
+        $this->customerGroupFactory = $customerGroupFactory;
     }
 
     /** @inheirtDoc
@@ -134,7 +158,167 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         if (array_key_exists(self::ANONYMOUS, $data) && To::bool($data[self::ANONYMOUS])) {
             return $this->getAnonymousCustomerList($scope, $newsletter, $crossStore, $page, $checkpoint, $pageSize);
         }
-        return $this->getCustomersList($scope, $newsletter, $crossStore, $page, $checkpoint, $pageSize);
+        return $this->getRegisteredCustomersList($scope, $newsletter, $crossStore, $page, $checkpoint, $pageSize);
+    }
+
+    /**
+     * @param ConfigScopeInterface $scope
+     * @param bool $newsletter
+     * @param bool $crossStore
+     * @param int $page
+     * @param string $checkpoint
+     * @param int $pageSize
+     * @return ListCustomerResponseInterface
+     */
+    private function getAnonymousCustomerList(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        int $page,
+        string $checkpoint,
+        int $pageSize
+    ) {
+        $storeId = $scope->getId();
+
+        $collection = $this->quoteCollection->create();
+        $collection->setPageSize($pageSize)
+            ->setCurPage($page)
+            ->addFieldToSelect($this->anonymousCustomerColumns)
+            ->addFieldToFilter(self::CUSTOMER_IS_GUEST, ['eq' => 1])
+            // A quote with is_active field set to 1 is a shopping cart (no useful information has been stored yet)
+            ->addFieldToFilter(self::IS_ACTIVE, ['eq' => 0])
+            ->addFieldToFilter(self::STORE_ID, ['eq' => $storeId])
+            ->setOrder(self::UPDATED_AT, SortOrder::SORT_ASC);
+
+        if (!empty($checkpoint)) {
+            $collection->addFieldToFilter(self::UPDATED_AT, ['gteq' => To::sqlDate($checkpoint)]);
+        }
+
+        $result = $this->listResponseFactory->create();
+        $total = To::int($collection->getSize());
+        $result->setTotal($total);
+        if ($total == 0) {
+            return $result;
+        }
+
+        $quoteIds = [];
+        /** @var DataObject[] $customersData */
+        $customersData = [];
+        /** @var string[] $emails */
+        $emails = [];
+        foreach ($collection->getItems() as $customer) {
+            if ($newsletter) {
+                $email = (string)$customer->getData(self::CUSTOMER_EMAIL);
+                if (!empty($email)) {
+                    $emails[] = $email;
+                }
+            }
+            $customersData[] = $customer;
+            $quoteIds[] = To::int($customer->getData(self::ENTITY_ID));
+        }
+
+        /** @var bool[] $subscriptions */
+        $subscriptions = [];
+        if ($newsletter) {
+            $subscriptions = $this->subscriberRepository->getStateByEmailAddresses($scope, $crossStore, $emails);
+        }
+
+        $addresses = $this->getQuoteAddressesById($quoteIds);
+        $customers = [];
+        foreach ($customersData as $customer) {
+            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
+            if ($newsletter) {
+                $email = (string)$customer->getData(self::CUSTOMER_EMAIL);
+                if (!empty($email)) {
+                    $subscribed = $subscriptions[$email];
+                }
+            }
+            $customers[] = $this->convertAnonymousCustomer($customer, $addresses, $subscribed, null);
+        }
+        $result->setItems($customers);
+        $result->setHasMore($page < $total / $pageSize);
+        return $result;
+    }
+
+    /**
+     * @param ConfigScopeInterface $scope
+     * @param bool $newsletter
+     * @param bool $crossStore
+     * @param int $page
+     * @param string $checkpoint
+     * @param int $pageSize
+     * @return ListCustomerResponseInterface
+     * @throws LocalizedException
+     */
+    private function getRegisteredCustomersList(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        int $page,
+        string $checkpoint,
+        int $pageSize
+    ) {
+        $customerCollection = $this->customerCollection->create();
+        $customerCollection->setPage($page, $pageSize)
+            ->addAttributeToSelect($this->registeredCustomerColumns)
+            ->addFieldToFilter(CustomerInterface::WEBSITE_ID, ['eq' => $scope->getWebsiteId()])
+            ->addFieldToFilter(CustomerInterface::STORE_ID, ['eq' => $scope->getId()])
+            ->setOrder(CustomerInterface::UPDATED_AT, 'ASC');
+
+        if (!empty($checkpoint)) {
+            $customerCollection->addFieldToFilter(CustomerInterface::UPDATED_AT, ['gteq' => To::sqlDate($checkpoint)]);
+        }
+
+        $result = $this->listResponseFactory->create();
+        $total = To::int($customerCollection->getSize());
+        $result->setTotal($total);
+        if ($total == 0) {
+            return $result;
+        }
+
+        $addressIds = [];
+        /** @var DataObject[] $customersData */
+        $customersData = [];
+        /** @var string[] $emails */
+        $emails = [];
+
+        foreach ($customerCollection->getItems() as $customer) {
+            $customersData[] = $customer;
+            if ($addressId = $customer->getData(CustomerInterface::DEFAULT_SHIPPING)) {
+                $addressIds[] = To::int($addressId);
+            }
+            if ($addressId = $customer->getData(CustomerInterface::DEFAULT_BILLING)) {
+                $addressIds[] = To::int($addressId);
+            }
+            if ($newsletter) {
+                $email = (string)$customer->getData(CustomerInterface::EMAIL);
+                if (!empty($email)) {
+                    $customerId = To::int($customer->getData(self::ENTITY_ID));
+                    $emails[$customerId] = $email;
+                }
+            }
+        }
+
+        $addresses = $this->getAddressesById($addressIds);
+        $customers = [];
+
+        /** @var bool[] $subscriptions */
+        $subscriptions = [];
+        if ($newsletter) {
+            $subscriptions = $this->subscriberRepository->getStateByEmailAddresses($scope, $crossStore, $emails);
+        }
+
+        foreach ($customersData as $customer) {
+            $customerId = To::int($customer->getData(self::ENTITY_ID));
+            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
+            if ($newsletter && array_key_exists($customerId, $emails)) {
+                $subscribed = $subscriptions[$emails[$customerId]];
+            }
+            $customers[] = $this->convertCustomer($customer, $addresses, $subscribed, null);
+        }
+        $result->setItems($customers);
+        $result->setHasMore($page < $total / $pageSize);
+        return $result;
     }
 
     /** @inheirtDoc
@@ -153,7 +337,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             return $result;
         }
         $customerCollection = $this->customerCollection->create();
-        $customerCollection->addAttributeToSelect($this->customerColumnsToSelect)
+        $customerCollection->addAttributeToSelect($this->registeredCustomerColumns)
             ->addFieldToFilter(self::ENTITY_ID, ['in' => $customerIds]);
 
         $total = To::int($customerCollection->getSize());
@@ -233,7 +417,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         array $data = []
     ) {
         $collection = $this->customerCollection->create();
-        $collection->addAttributeToSelect($this->customerColumnsToSelect);
+        $collection->addAttributeToSelect($this->registeredCustomerColumns);
         $collection->addFieldToFilter(self::ENTITY_ID, ["eq" => $customerId]);
 
         $customerData = $collection->getItemById($customerId);
@@ -260,9 +444,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             $this->storeRepository->getById($scope, $storeId));
     }
 
-    /** @inheirtDoc
-     * @throws LocalizedException
-     */
+    /** @inheirtDoc */
     public function getByEmail(
         ConfigScopeInterface $scope,
         bool $newsletter,
@@ -270,15 +452,33 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         string $email,
         array $data = []
     ) {
+        $result = $this->customerGroupFactory->create();
+        $result->setRegistered($this->getAllRegisteredCustomersByEmail($scope, $newsletter, $crossStore, $email));
+        $result->setAnonymous($this->getAllAnonymousCustomersByEmail($scope, $newsletter, $crossStore, $email));
+        return $result;
+    }
+
+    /**
+     * Returns all the registered customers by email address regardless of the store.
+     * @param ConfigScopeInterface $scope
+     * @param bool $newsletter
+     * @param bool $crossStore
+     * @param string $email
+     * @return array|OrttoCustomerInterface[]
+     * @throws LocalizedException
+     */
+    private function getAllRegisteredCustomersByEmail(
+        ConfigScopeInterface $scope,
+        bool $newsletter,
+        bool $crossStore,
+        string $email,
+    ) {
         $collection = $this->customerCollection->create();
-        $collection->addAttributeToSelect($this->customerColumnsToSelect)
+        $collection->addAttributeToSelect($this->registeredCustomerColumns)
             ->addFieldToFilter(CustomerInterface::EMAIL, ["eq" => $email]);
 
-        $result = $this->listResponseFactory->create();
-        $total = To::int($collection->getSize());
-        $result->setTotal($total);
-        if ($total == 0) {
-            return $result;
+        if (To::int($collection->getSize()) == 0) {
+            return [];
         }
 
         $addressIds = [];
@@ -319,13 +519,15 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         }
 
         $addresses = $this->getAddressesById($addressIds);
-        $customers = [];
 
         /** @var bool[] $subscriptions */
         $subscriptions = [];
         if ($newsletter) {
             $subscriptions = $this->subscriberRepository->getStateByEmailAddresses($scope, $crossStore, $emails);
         }
+
+        /** @var OrttoCustomerInterface[] $result */
+        $result = [];
 
         foreach ($customersData as $customer) {
             $customerId = To::int($customer->getData(self::ENTITY_ID));
@@ -334,66 +536,35 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
                 $subscribed = $subscriptions[$emails[$customerId]];
             }
             $storeId = To::int($customer->getData(CustomerInterface::STORE_ID));
-            $customers[$customerId] = $this->convertCustomer($customer, $addresses, $subscribed, $stores[$storeId]);
+            $result[] = $this->convertCustomer($customer, $addresses, $subscribed, $stores[$storeId]);
         }
-        $result->setItems($customers);
         return $result;
     }
 
     /**
+     * Returns all the anonymous customers by email address regardless of the store.
      * @param ConfigScopeInterface $scope
      * @param bool $newsletter
      * @param bool $crossStore
-     * @param int $page
-     * @param string $checkpoint
-     * @param int $pageSize
-     * @return ListCustomerResponseInterface
+     * @param string $email
+     * @return array|OrttoCustomerInterface[]
      */
-    private function getAnonymousCustomerList(
+    private function getAllAnonymousCustomersByEmail(
         ConfigScopeInterface $scope,
         bool $newsletter,
         bool $crossStore,
-        int $page,
-        string $checkpoint,
-        int $pageSize
+        string $email,
     ) {
-        $columnsToSelect = [
-            self::ENTITY_ID,
-            self::IP_ADDRESS,
-            self::CUSTOMER_PREFIX,
-            self::CUSTOMER_FIRST_NAME,
-            self::CUSTOMER_MIDDLE_NAME,
-            self::CUSTOMER_LAST_NAME,
-            self::CUSTOMER_SUFFIX,
-            self::CUSTOMER_EMAIL,
-            self::CREATED_AT,
-            self::UPDATED_AT,
-            self::CUSTOMER_DOB,
-            self::CUSTOMER_GENDER,
-            self::CUSTOMER_GROUP_ID,
-        ];
-
-        $storeId = $scope->getId();
-
         $collection = $this->quoteCollection->create();
-        $collection->setPageSize($pageSize)
-            ->setCurPage($page)
-            ->addFieldToSelect($columnsToSelect)
+        $collection->addFieldToSelect($this->anonymousCustomerColumns)
             ->addFieldToFilter(self::CUSTOMER_IS_GUEST, ['eq' => 1])
             // A quote with is_active field set to 1 is a shopping cart (no useful information has been stored yet)
             ->addFieldToFilter(self::IS_ACTIVE, ['eq' => 0])
-            ->addFieldToFilter(self::STORE_ID, ['eq' => $storeId])
+            ->addFieldToFilter(self::CUSTOMER_EMAIL, ['eq' => $email])
             ->setOrder(self::UPDATED_AT, SortOrder::SORT_ASC);
 
-        if (!empty($checkpoint)) {
-            $collection->addFieldToFilter(self::UPDATED_AT, ['gteq' => To::sqlDate($checkpoint)]);
-        }
-
-        $result = $this->listResponseFactory->create();
-        $total = To::int($collection->getSize());
-        $result->setTotal($total);
-        if ($total == 0) {
-            return $result;
+        if (To::int($collection->getSize()) == 0) {
+            return [];
         }
 
         $quoteIds = [];
@@ -401,6 +572,16 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         $customersData = [];
         /** @var string[] $emails */
         $emails = [];
+
+        // The same customer can log in into different stores and send data (place orders for example).
+        // We need to make sure store details do not change between customer's interaction with
+        // different stores. The array is keyed by store ID.
+        /** @var OrttoStoreInterface[] $stores */
+        $stores = [];
+
+        $allScopes = new Scope();
+        $allScopes->setId(-1);
+
         foreach ($collection->getItems() as $customer) {
             if ($newsletter) {
                 $email = (string)$customer->getData(self::CUSTOMER_EMAIL);
@@ -410,6 +591,10 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
             }
             $customersData[] = $customer;
             $quoteIds[] = To::int($customer->getData(self::ENTITY_ID));
+            $storeId = To::int($customer->getData(self::STORE_ID));
+            if (!array_key_exists($storeId, $stores)) {
+                $stores[$storeId] = $this->storeRepository->getById($allScopes, $storeId);
+            }
         }
 
         /** @var bool[] $subscriptions */
@@ -419,7 +604,8 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         }
 
         $addresses = $this->getQuoteAddressesById($quoteIds);
-        $customers = [];
+        /** @var OrttoCustomerInterface[] $result */
+        $result = [];
         foreach ($customersData as $customer) {
             $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
             if ($newsletter) {
@@ -428,91 +614,9 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
                     $subscribed = $subscriptions[$email];
                 }
             }
-            $customers[] = $this->convertAnonymousCustomer($customer, $addresses, $subscribed, null);
+            $storeId = To::int($customer->getData(self::STORE_ID));
+            $result[] = $this->convertAnonymousCustomer($customer, $addresses, $subscribed, $stores[$storeId]);
         }
-        $result->setItems($customers);
-        $result->setHasMore($page < $total / $pageSize);
-        return $result;
-    }
-
-    /**
-     * @param ConfigScopeInterface $scope
-     * @param bool $newsletter
-     * @param bool $crossStore
-     * @param int $page
-     * @param string $checkpoint
-     * @param int $pageSize
-     * @return ListCustomerResponseInterface
-     * @throws LocalizedException
-     */
-    private function getCustomersList(
-        ConfigScopeInterface $scope,
-        bool $newsletter,
-        bool $crossStore,
-        int $page,
-        string $checkpoint,
-        int $pageSize
-    ) {
-        $customerCollection = $this->customerCollection->create();
-        $customerCollection->setPage($page, $pageSize)
-            ->addAttributeToSelect($this->customerColumnsToSelect)
-            ->addFieldToFilter(CustomerInterface::WEBSITE_ID, ['eq' => $scope->getWebsiteId()])
-            ->addFieldToFilter(CustomerInterface::STORE_ID, ['eq' => $scope->getId()])
-            ->setOrder(CustomerInterface::UPDATED_AT, 'ASC');
-
-        if (!empty($checkpoint)) {
-            $customerCollection->addFieldToFilter(CustomerInterface::UPDATED_AT, ['gteq' => To::sqlDate($checkpoint)]);
-        }
-
-        $result = $this->listResponseFactory->create();
-        $total = To::int($customerCollection->getSize());
-        $result->setTotal($total);
-        if ($total == 0) {
-            return $result;
-        }
-
-        $addressIds = [];
-        /** @var DataObject[] $customersData */
-        $customersData = [];
-        /** @var string[] $emails */
-        $emails = [];
-
-        foreach ($customerCollection->getItems() as $customer) {
-            $customersData[] = $customer;
-            if ($addressId = $customer->getData(CustomerInterface::DEFAULT_SHIPPING)) {
-                $addressIds[] = To::int($addressId);
-            }
-            if ($addressId = $customer->getData(CustomerInterface::DEFAULT_BILLING)) {
-                $addressIds[] = To::int($addressId);
-            }
-            if ($newsletter) {
-                $email = (string)$customer->getData(CustomerInterface::EMAIL);
-                if (!empty($email)) {
-                    $customerId = To::int($customer->getData(self::ENTITY_ID));
-                    $emails[$customerId] = $email;
-                }
-            }
-        }
-
-        $addresses = $this->getAddressesById($addressIds);
-        $customers = [];
-
-        /** @var bool[] $subscriptions */
-        $subscriptions = [];
-        if ($newsletter) {
-            $subscriptions = $this->subscriberRepository->getStateByEmailAddresses($scope, $crossStore, $emails);
-        }
-
-        foreach ($customersData as $customer) {
-            $customerId = To::int($customer->getData(self::ENTITY_ID));
-            $subscribed = Config::DEFAULT_SUBSCRIPTION_STATUS;
-            if ($newsletter && array_key_exists($customerId, $emails)) {
-                $subscribed = $subscriptions[$emails[$customerId]];
-            }
-            $customers[] = $this->convertCustomer($customer, $addresses, $subscribed, null);
-        }
-        $result->setItems($customers);
-        $result->setHasMore($page < $total / $pageSize);
         return $result;
     }
 
