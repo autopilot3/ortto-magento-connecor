@@ -471,7 +471,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         ConfigScopeInterface $scope,
         bool $newsletter,
         bool $crossStore,
-        string $email,
+        string $email
     ) {
         $collection = $this->customerCollection->create();
         $collection->addAttributeToSelect($this->registeredCustomerColumns)
@@ -553,7 +553,7 @@ class OrttoCustomerRepository implements OrttoCustomerRepositoryInterface
         ConfigScopeInterface $scope,
         bool $newsletter,
         bool $crossStore,
-        string $email,
+        string $email
     ) {
         $collection = $this->quoteCollection->create();
         $collection->addFieldToSelect($this->anonymousCustomerColumns)
