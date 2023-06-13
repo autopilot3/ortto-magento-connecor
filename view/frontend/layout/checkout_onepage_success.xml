@@ -4,7 +4,6 @@
     <body>
         <referenceContainer name="content">
             <block name="ortto_checkout_success"
-                   cacheable="false"
                    class="Ortto\Connector\Block\CheckoutSuccess"
                    after="checkout.success"
                    template="Ortto_Connector::checkout_success.phtml"/>

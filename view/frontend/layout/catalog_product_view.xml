@@ -4,7 +4,6 @@
     <body>
         <referenceContainer name="content">
             <block name="ortto_product_view"
-                   cacheable="false"
                    class="Ortto\Connector\Block\ProductView"
                    template="Ortto_Connector::product_view.phtml"/>
         </referenceContainer>
