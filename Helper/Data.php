@@ -19,7 +19,7 @@ class Data extends AbstractHelper
     public const PHONE = "phone";
     private const ORDERS = "orders";
 
-    private string $baseURL = "https://magento-integration-api.autopilotapp.com";
+    private string $baseURL = "https://magento-integration-api.ortto.app";
     private string $clientID = "mgqQkvCJWDFnxJTgQwfVuYEdQRWVAywE";
 
     private OrttoLoggerInterface $logger;
