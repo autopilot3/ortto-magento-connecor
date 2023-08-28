@@ -7,6 +7,7 @@ namespace Ortto\Connector\Service;
 use Ortto\Connector\Api\ConfigurationReaderInterface;
 use Ortto\Connector\Api\ImageIdInterface;
 use Ortto\Connector\Helper\Config;
+use Ortto\Connector\Helper\Data;
 use Ortto\Connector\Helper\To;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
@@ -15,11 +16,13 @@ class ConfigurationReader implements ConfigurationReaderInterface
 {
     private EncryptorInterface $encryptor;
     private ScopeConfigInterface $scopeConfig;
+    private Data $helper;
 
-    public function __construct(EncryptorInterface $encryptor, ScopeConfigInterface $scopeConfig)
+    public function __construct(EncryptorInterface $encryptor, ScopeConfigInterface $scopeConfig, Data $helper)
     {
         $this->encryptor = $encryptor;
         $this->scopeConfig = $scopeConfig;
+        $this->helper = $helper;
     }
 
     /**
@@ -38,7 +41,7 @@ class ConfigurationReader implements ConfigurationReaderInterface
         return To::bool($this->scopeConfig->getValue(Config::XML_PATH_TRACKING_ENABLED, $scopeType, $scopeId));
     }
 
-     /**
+    /**
      * @inheirtDoc
      */
     public function isConsentToTrackRequired(string $scopeType, int $scopeId): bool
@@ -46,7 +49,7 @@ class ConfigurationReader implements ConfigurationReaderInterface
         return To::bool($this->scopeConfig->getValue(Config::XML_PATH_TRACKING_CONSENT_REQUIRED, $scopeType,
             $scopeId));
     }
-    
+
     /**
      * @inheirtDoc
      */
@@ -147,7 +150,10 @@ class ConfigurationReader implements ConfigurationReaderInterface
      */
     public function getAllConfigs(string $scopeType, int $scopeId): array
     {
-        $result = [];
+        $result = [
+            "base_url" => $this->helper->getOrttoURL(""),
+            "client_id" => $this->helper->getClientId(),
+        ];
         foreach (Config::ALL_KEYS as $key => $value) {
             $result[$key] = $this->scopeConfig->getValue(
                 $value,

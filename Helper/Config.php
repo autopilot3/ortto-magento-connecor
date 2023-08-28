@@ -26,8 +26,6 @@ class Config
 
     const ALL_KEYS = [
         "is_active" => self::XML_PATH_ACTIVE,
-        "base_url" => self::XML_PATH_BASE_URL,
-        "client_id" => self::XML_PATH_CLIENT_ID,
         "capture_enabled" => self::XML_PATH_TRACKING_ENABLED,
         "consent_to_track_required" => self::XML_PATH_TRACKING_CONSENT_REQUIRED,
         "tracking_code" => self::XML_PATH_TRACKING_CODE,
@@ -36,10 +34,6 @@ class Config
         "capture_api" => self::XML_PATH_CAPTURE_API_URL,
         "instance_id" => self::XML_PATH_INSTANCE_ID,
         "verbose" => self:: XML_PATH_LOGGING_VERBOSE,
-        "image_place_holder" => self::XML_PATH_IMAGE_PLACE_HOLDER,
-        "small_image_place_holder" => self::XML_PATH_SMALL_IMAGE_PLACE_HOLDER,
-        "swatch_place_holder" => self::XML_PATH_SWATCH_IMAGE_PLACE_HOLDER,
-        "thumbnail_place_holder" => self::XML_PATH_THUMBNAIL_IMAGE_PLACE_HOLDER,
     ];
 
 

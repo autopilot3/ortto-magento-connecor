@@ -10,14 +10,18 @@
         </policy>
         <policy id="connect-src">
             <values>
-                <value id="ortto-stg" type="host">*.stgautopilotapp.com</value>
-                <value id="ortto" type="host">*.autopilotapp.com</value>
+                <value id="ortto-stg-legacy" type="host">*.stgautopilotapp.com</value>
+                <value id="ortto-legacy" type="host">*.autopilotapp.com</value>
+                <value id="ortto-stg" type="host">*.ortto-stg.app</value>
+                <value id="ortto" type="host">*.ortto.app</value>
             </values>
         </policy>
         <policy id="img-src">
             <values>
-                <value id="ortto-stg" type="host">*.stgautopilotapp.com</value>
-                <value id="ortto" type="host">*.autopilotapp.com</value>
+                <value id="ortto-stg-legacy" type="host">*.stgautopilotapp.com</value>
+                <value id="ortto-legacy" type="host">*.autopilotapp.com</value>
+                <value id="ortto-stg" type="host">*.ortto-stg.app</value>
+                <value id="ortto" type="host">*.ortto.app</value>
             </values>
         </policy>
     </policies>
