@@ -14,6 +14,10 @@
                 <value id="ortto-legacy" type="host">*.autopilotapp.com</value>
                 <value id="ortto-stg" type="host">*.ortto-stg.app</value>
                 <value id="ortto" type="host">*.ortto.app</value>
+                <value id="ortto-tlk-legacy" type="host">wss://*.autopilotapp.com</value>
+                <value id="ortto-tlk-stg-legacy" type="host">wss://*.stgautopilotapp.com</value>
+                <value id="ortto-tlk-stg" type="host">wss://*.ortto-stg.app</value>
+                <value id="ortto-tlk" type="host">wss://*.ortto.app</value>
             </values>
         </policy>
         <policy id="img-src">
