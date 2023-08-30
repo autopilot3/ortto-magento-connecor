@@ -45,7 +45,7 @@ class StockAlerts extends AbstractBackendJsonController
         $this->logger->debug("Request received: " . $this->getUrl(RoutesInterface::MG_SYNC_STOCK_ALERTS), $params);
         $scope = $this->scopeManager->getCurrentConfigurationScope($params['scope_type'], To::int($params['scope_id']));
 
-        if (!$scope->isExplicitlyConnected()) {
+        if (!$scope->isConnected()) {
             return $this->error(sprintf(
                 '%s %s is not connected to Ortto.',
                 $scope->getName(),

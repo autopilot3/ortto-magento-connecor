@@ -108,22 +108,6 @@ class Scope extends DataObject implements ConfigScopeInterface
     /**
      * @inheirtDoc
      */
-    public function isExplicitlyConnected(): bool
-    {
-        return To::bool($this->getData(self::IS_CONNECTED));
-    }
-
-    /**
-     * @inheirtDoc
-     */
-    public function setIsExplicitlyConnected(bool $connected)
-    {
-        return $this->setData(self::IS_CONNECTED, $connected);
-    }
-
-    /**
-     * @inheirtDoc
-     */
     public function getWebsiteId(): int
     {
         return To::int($this->getData(self::WEBSITE_ID));
@@ -196,11 +180,15 @@ class Scope extends DataObject implements ConfigScopeInterface
      */
     public function isConnected(): bool
     {
-        if ($this->isExplicitlyConnected()) {
-            return true;
-        }
-        $parent = $this->getParent();
-        return !empty($parent) && $parent->isExplicitlyConnected();
+        return To::bool($this->getData(self::IS_CONNECTED));
+    }
+
+    /**
+     * @inheirtDoc
+     */
+    public function setIsConnected(bool $connected)
+    {
+        return $this->setData(self::IS_CONNECTED, $connected);
     }
 
     /**

@@ -76,15 +76,10 @@ interface ConfigScopeInterface extends SerializableInterface
     public function setWebsiteCode(string $websiteCode);
 
     /**
-     * @return bool Returns true if the scope is explicitly connected the admins.
-     */
-    public function isExplicitlyConnected(): bool;
-
-    /**
      * @param bool $connected
      * @return $this
      */
-    public function setIsExplicitlyConnected(bool $connected);
+    public function setIsConnected(bool $connected);
 
     /**
      * @return bool Returns true if the scope or its parent website (if applicable) is explicitly connected by admins.
