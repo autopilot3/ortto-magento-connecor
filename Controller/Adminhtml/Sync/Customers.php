@@ -48,7 +48,7 @@ class Customers extends AbstractBackendJsonController implements HttpPostActionI
         $this->logger->debug("Request received: " . $this->getUrl(RoutesInterface::MG_SYNC_CUSTOMERS), $params);
         $scope = $this->scopeManager->getCurrentConfigurationScope($params['scope_type'], To::int($params['scope_id']));
 
-        if (!$scope->isExplicitlyConnected()) {
+        if (!$scope->isConnected()) {
             return $this->error(sprintf('%s %s is not connected to Ortto.', $scope->getName(), $scope->getType()));
         }
 

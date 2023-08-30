@@ -7,7 +7,8 @@ use Ortto\Connector\Block\HeaderJs;
 
 $config = $block->getConfiguration();
 ?>
-
+<script type="text/javascript" id="ortto-cap"></script>
+<script type="text/javascript" id="ortto-mg"></script>
 <?php if (!empty($config)) { ?>
     <script type="text/javascript">
         /**
@@ -35,19 +36,11 @@ $config = $block->getConfiguration();
             ap3c.initMagento('<?= $config[HeaderJs::TRACKING_CODE] ?>', '<?= $config[HeaderJs::CAPTURE_API] ?>', options);
         });
 
-        var s, t;
-        s = document.createElement('script');
-        s.type = 'text/javascript';
-        s.src = '<?= $config[HeaderJs::CAPTURE_JS] ?>';
-        t = document.getElementsByTagName('script')[0];
-        t.parentNode.insertBefore(s, t);
-        s.addEventListener('load', function () {
-            var bs, bt;
-            bs = document.createElement('script');
-            bs.type = 'text/javascript';
-            bs.src = '<?= $config[HeaderJs::MAGENTO_JS] ?>';
-            bt = document.getElementsByTagName('script')[0];
-            bt.parentNode.insertBefore(bs, bt);
+        var t = document.getElementById('ortto-cap');
+        t.setAttribute('src', '<?= $config[HeaderJs::CAPTURE_JS] ?>');
+        t.addEventListener('load', function () {
+            var mg = document.getElementById('ortto-mg');
+            mg.setAttribute('src', '<?= $config[HeaderJs::MAGENTO_JS] ?>');
         });
     </script>
 <?php } ?>

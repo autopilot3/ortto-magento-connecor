@@ -53,7 +53,7 @@ class ScopeManager implements ScopeManagerInterface
 //        foreach ($websites as $website) {
 //            try {
 //                $scope = $this->initialiseScope(ScopeInterface::SCOPE_WEBSITE, To::int($website->getId()), $websites);
-//                if ($scope->isExplicitlyConnected()) {
+//                if ($scope->isConnected()) {
 //                    $result[] = $scope;
 //                }
 //            } catch (Exception $e) {
@@ -68,7 +68,7 @@ class ScopeManager implements ScopeManagerInterface
                     ScopeInterface::SCOPE_STORE,
                     To::int($store->getId())
                 );
-                if ($scope->isExplicitlyConnected()) {
+                if ($scope->isConnected()) {
                     $result[] = $scope;
                 }
             } catch (Exception $e) {
@@ -134,7 +134,7 @@ class ScopeManager implements ScopeManagerInterface
                 $code = (string)$website->getCode();
                 $scope->setCode($code);
                 $scope->setWebsiteCode($code);
-                $scope->setIsExplicitlyConnected(!empty($this->configReader->getAPIKey($type, $id)));
+                $scope->setIsConnected(false);
                 $baseURL = (string)$this->urlInterface->getBaseUrl(["_secure" => true]);
                 if (empty($baseURL)) {
                     throw new InvalidArgumentException(__("Website base URL cannot be empty"));
@@ -155,8 +155,7 @@ class ScopeManager implements ScopeManagerInterface
                 $scope->setWebsiteId($websiteId);
                 // Used for multi-stock support
                 $scope->setWebsiteCode((string)$website->getCode());
-                $storeAPIKey = $this->configReader->getAPIKey($type, $id);
-                $scope->setIsExplicitlyConnected(!empty($storeAPIKey));
+                $scope->setIsConnected($this->configReader->isActive($type, $id));
                 $scope->setName($store->getName());
                 $baseURL = (string)$store->getBaseUrl(UrlInterface::URL_TYPE_LINK, true);
                 if (empty($baseURL)) {
