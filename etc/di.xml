@@ -18,6 +18,8 @@
             </argument>
         </arguments>
     </virtualType>
+    <preference for="Ortto\Connector\Api\Data\TrackingOptionsInterface"
+                type="Ortto\Connector\Model\Data\TrackingOptions"/>
     <preference for="Ortto\Connector\Logger\OrttoLoggerInterface"
                 type="Ortto\Connector\Logger\OrttoLogger"/>
     <preference for="Ortto\Connector\Api\OrttoSerializerInterface"

@@ -5,7 +5,8 @@
         <policy id="script-src">
             <values>
                 <value id="ortto-stg" type="host">*.ap3stg.com</value>
-                <value id="ortto" type="host">*.ink</value>
+                <value id="ortto-cdn2l" type="host">*.cdn2l.ink</value>
+                <value id="ortto-tlk-blob" type="host">blob:</value>
             </values>
         </policy>
         <policy id="connect-src">
@@ -18,14 +19,46 @@
                 <value id="ortto-tlk-stg-legacy" type="host">wss://*.stgautopilotapp.com</value>
                 <value id="ortto-tlk-stg" type="host">wss://*.ortto-stg.app</value>
                 <value id="ortto-tlk" type="host">wss://*.ortto.app</value>
+                <value id="ortto-twilio" type="host">wss://*.twilio.com</value>
+                <value id="ortto-google" type="host">*.youtube.com</value>
             </values>
         </policy>
-        <policy id="img-src">
+        <policy id="font-src">
             <values>
+                <value id="ortto-fonts" type="host">*.gstatic.com</value>
                 <value id="ortto-stg-legacy" type="host">*.stgautopilotapp.com</value>
                 <value id="ortto-legacy" type="host">*.autopilotapp.com</value>
                 <value id="ortto-stg" type="host">*.ortto-stg.app</value>
                 <value id="ortto" type="host">*.ortto.app</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="ortto-gyazo" type="host">*.gyazo.com</value>
+                <value id="ortto-ytimg" type="host">*.ytimg.com</value>
+                <value id="ortto-stg-legacy" type="host">*.stgautopilotapp.com</value>
+                <value id="ortto-legacy" type="host">*.autopilotapp.com</value>
+                <value id="ortto-stg" type="host">*.ortto-stg.app</value>
+                <value id="ortto" type="host">*.ortto.app</value>
+                <value id="ortto-cloudfront" type="host">*.cloudfront.net</value>
+            </values>
+        </policy>
+        <policy id="media-src">
+            <values>
+                <value id="ortto-mediastream" type="host">mediastream:</value>
+                <value id="ortto-cdn2l" type="host">*.cdn2l.ink</value>
+            </values>
+        </policy>
+        <policy id="style-src">
+            <values>
+                <value id="ortto-google" type="host">*.googleapis.com</value>
+                <value id="ortto-ap3" type="host">*.ap3prod.com</value>
+            </values>
+        </policy>
+        <policy id="frame-src">
+            <values>
+                <value id="ortto-youtube" type="host">*.youtube.com</value>
+                <value id="ortto-spotify" type="host">*.spotify.com</value>
             </values>
         </policy>
     </policies>

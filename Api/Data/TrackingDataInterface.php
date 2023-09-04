@@ -10,7 +10,6 @@ interface TrackingDataInterface
      * String constants for property names
      */
     public const SCOPE = "scope";
-    public const PAYLOAD = 'payload';
     public const EMAIL = "email";
     public const PHONE = "phone";
 
@@ -40,7 +39,7 @@ interface TrackingDataInterface
     /**
      * Setter for Email.
      *
-     * @param string|null $email
+     * @param string $email
      *
      * @return $this
      */
