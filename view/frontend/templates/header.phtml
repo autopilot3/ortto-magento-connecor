@@ -3,12 +3,8 @@
  * @var $block Ortto\Connector\Block\HeaderJs
  */
 
-use Ortto\Connector\Block\HeaderJs;
-
 $config = $block->getConfiguration();
 ?>
-<script type="text/javascript" id="ortto-cap"></script>
-<script type="text/javascript" id="ortto-mg"></script>
 <?php if (!empty($config)) { ?>
     <script type="text/javascript">
         /**
@@ -17,7 +13,7 @@ $config = $block->getConfiguration();
          * @param {Object} window
          */
         window.ortto = {
-            'base_url': '<?= $config[HeaderJs::BASE_URL] ?>'
+            'base_url': '<?= $config->getScope()->getBaseURL() ?>'
         };
 
         window.ap3c = window.ap3c || {};
@@ -27,20 +23,15 @@ $config = $block->getConfiguration();
         var options = {
             context: {
                 scope: {},
-                email: '<?= $config[HeaderJs::EMAIL] ?>',
-                phone: ''
+                email: '<?= $config->getEmail() ?>',
+                phone: '<?= $config->getPhone() ?>'
             },
-            needsConsentToTrack: <?= $config[HeaderJs::CONSENT_TO_TRACK_REQUIRED] ?>
+            needsConsentToTrack: <?= $config->getNeedsConsent() ? 'true' : 'false' ?>
         };
         ap3c.cmdMagento.push(function () {
-            ap3c.initMagento('<?= $config[HeaderJs::TRACKING_CODE] ?>', '<?= $config[HeaderJs::CAPTURE_API] ?>', options);
-        });
-
-        var t = document.getElementById('ortto-cap');
-        t.setAttribute('src', '<?= $config[HeaderJs::CAPTURE_JS] ?>');
-        t.addEventListener('load', function () {
-            var mg = document.getElementById('ortto-mg');
-            mg.setAttribute('src', '<?= $config[HeaderJs::MAGENTO_JS] ?>');
+            ap3c.initMagento('<?= $config->getTrackingCode() ?>', '<?= $config->getCaptureAPI() ?>', options);
         });
     </script>
+    <script type="text/javascript" src='<?= $config->getCaptureJS() ?>'></script>
+    <script type="text/javascript" src='<?= $config->getMagentoJS() ?>'></script>
 <?php } ?>
