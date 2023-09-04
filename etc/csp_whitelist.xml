@@ -20,7 +20,7 @@
                 <value id="ortto-tlk-stg" type="host">wss://*.ortto-stg.app</value>
                 <value id="ortto-tlk" type="host">wss://*.ortto.app</value>
                 <value id="ortto-twilio" type="host">wss://*.twilio.com</value>
-                <value id="ortto-google" type="host">*.youtube.com</value>
+                <value id="ortto-youtube" type="host">*.youtube.com</value>
                 <value id="ortto-ap3" type="host">*.ap3prod.com</value>
             </values>
         </policy>
@@ -52,7 +52,7 @@
         </policy>
         <policy id="style-src">
             <values>
-                <value id="ortto-google" type="host">*.googleapis.com</value>
+                <value id="ortto-google-api" type="host">*.googleapis.com</value>
                 <value id="ortto-ap3" type="host">*.ap3prod.com</value>
             </values>
         </policy>
