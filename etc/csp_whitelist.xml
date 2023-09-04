@@ -5,7 +5,7 @@
         <policy id="script-src">
             <values>
                 <value id="ortto-stg" type="host">*.ap3stg.com</value>
-                <value id="ortto-cdn2l" type="host">*.cdn2l.ink</value>
+                <value id="ortto-cdn2l" type="host">cdn2l.ink</value>
                 <value id="ortto-tlk-blob" type="host">blob:</value>
             </values>
         </policy>
@@ -21,6 +21,7 @@
                 <value id="ortto-tlk" type="host">wss://*.ortto.app</value>
                 <value id="ortto-twilio" type="host">wss://*.twilio.com</value>
                 <value id="ortto-google" type="host">*.youtube.com</value>
+                <value id="ortto-ap3" type="host">*.ap3prod.com</value>
             </values>
         </policy>
         <policy id="font-src">
@@ -46,7 +47,7 @@
         <policy id="media-src">
             <values>
                 <value id="ortto-mediastream" type="host">mediastream:</value>
-                <value id="ortto-cdn2l" type="host">*.cdn2l.ink</value>
+                <value id="ortto-cdn2l" type="host">cdn2l.ink</value>
             </values>
         </policy>
         <policy id="style-src">

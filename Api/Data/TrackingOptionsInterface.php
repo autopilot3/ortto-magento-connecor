@@ -10,12 +10,11 @@ interface TrackingOptionsInterface
     const SCOPE = 'scope';
     const EMAIL = 'email';
     const PHONE = 'phone';
-    const BASE_URL = 'baseURL';
-    const CAPTURE_API = 'captureAPI';
-    const CAPTURE_JS = 'captureJS';
-    const MAGENTO_JS = 'magentoJS';
-    const NEEDS_CONSENT = 'needsConsentToTrack';
-    const TRACKING_CODE = 'trackingCode';
+    const CAPTURE_API = 'capture_api';
+    const CAPTURE_JS = 'capture_js';
+    const MAGENTO_JS = 'magento_js';
+    const NEEDS_CONSENT_TO_TRACK = 'needs_consent_to_track';
+    const TRACKING_CODE = 'tracking_code';
     const ACTIVE = 'active';
 
     /**

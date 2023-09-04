@@ -128,7 +128,7 @@ class TrackingOptions extends DataObject implements TrackingOptionsInterface
      */
     public function setNeedsConsent(bool $required)
     {
-        return $this->setData(self::NEEDS_CONSENT, $required);
+        return $this->setData(self::NEEDS_CONSENT_TO_TRACK, $required);
     }
 
     /**
@@ -136,6 +136,6 @@ class TrackingOptions extends DataObject implements TrackingOptionsInterface
      */
     public function getNeedsConsent(): bool
     {
-        return To::bool($this->getData(self::NEEDS_CONSENT));
+        return To::bool($this->getData(self::NEEDS_CONSENT_TO_TRACK));
     }
 }
