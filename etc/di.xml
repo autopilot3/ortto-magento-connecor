@@ -9,6 +9,10 @@
         <plugin name="order_attributes_loader_plugin"
                 type="Ortto\Connector\Plugin\LoadOrderAttributesPlugin"/>
     </type>
+    <type name="Magento\Framework\App\Action\AbstractAction">
+        <plugin name="customer_session_data"
+                type="Ortto\Connector\Plugin\CustomerSessionContext"/>
+    </type>
     <!-- END PLUGINS -->
     <virtualType name="OrttoLogger" type="Magento\Framework\Logger\Monolog">
         <arguments>

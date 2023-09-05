@@ -41,11 +41,11 @@ class HeaderJs extends Template
 
         try {
             $trackingData = $this->trackDataProvider->getData();
-            $scope = $trackingData->getScope();
-
-            if (!$scope->isConnected() || !$this->configReader->isTrackingEnabled($scope->getType(), $scope->getId())) {
+            if (!$trackingData->isTrackingEnabled()) {
                 return false;
             }
+
+            $scope = $trackingData->getScope();
             $options = $this->optionsFactory->create();
             $options->setScope($scope);
             $scopeType = $scope->getType();

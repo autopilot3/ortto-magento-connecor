@@ -49,6 +49,9 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
             }
 
             $trackingData = $this->trackDataProvider->getData();
+            if (!$trackingData->isTrackingEnabled()) {
+                return $this->error("Tracking is not enabled");
+            }
             $scope = $trackingData->getScope();
             if ($quoteId = $this->session->getQuoteId()) {
                 $cart = $this->cartRepository->getById($scope, To::int($quoteId));
@@ -59,6 +62,8 @@ class Get extends AbstractJsonController implements HttpGetActionInterface
                         'cart' => $cart->serializeToArray(),
                         'sku' => $sku,
                     ],
+                    'email' => $trackingData->getEmail(),
+                    'phone' => $trackingData->getPhone(),
                 ];
                 return $this->success($payload);
             }

@@ -30,6 +30,7 @@ class ProductView extends View
 
     public function __construct(
         Context $context,
+        \Magento\Framework\App\Http\Context $httpContext,
         EncoderInterface $urlEncoder,
         \Magento\Framework\Json\EncoderInterface $jsonEncoder,
         StringUtils $string,
@@ -72,6 +73,9 @@ class ProductView extends View
     {
         try {
             $trackingData = $this->trackDataProvider->getData();
+            if (!$trackingData->isTrackingEnabled()) {
+                return false;
+            }
             $scope = $trackingData->getScope();
             if ($p = $this->getProduct()) {
                 $productId = To::int($p->getId());

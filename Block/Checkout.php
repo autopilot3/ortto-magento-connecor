@@ -46,6 +46,9 @@ class Checkout extends Template
     {
         try {
             $trackingData = $this->trackDataProvider->getData();
+            if (!$trackingData->isTrackingEnabled()) {
+                return false;
+            }
             $scope = $trackingData->getScope();
             $cart = $this->cartRepository->getById($scope, To::int($this->session->getQuoteId()));
             $payload = [
