@@ -18,6 +18,7 @@ use Ortto\Connector\Logger\OrttoLogger;
 use Magento\Customer\Model\Session;
 use Magento\Customer\Model\Address;
 use Magento\Customer\Model\Customer;
+use Magento\Customer\Model\SessionFactory;
 
 class TrackDataProvider implements TrackDataProviderInterface
 {
@@ -29,6 +30,7 @@ class TrackDataProvider implements TrackDataProviderInterface
 
     private Session $session;
     private ConfigurationReaderInterface $configReader;
+    private SessionFactory $sessionFactory;
 
     public function __construct(
         StoreManagerInterface $storeManager,
@@ -37,7 +39,8 @@ class TrackDataProvider implements TrackDataProviderInterface
         ConfigurationReaderInterface $configReader,
         Context $httpContext,
         OrttoLogger $logger,
-        Session $session
+        Session $session,
+        SessionFactory $sessionFactory
     ) {
         $this->storeManager = $storeManager;
         $this->factory = $factory;
@@ -46,6 +49,7 @@ class TrackDataProvider implements TrackDataProviderInterface
         $this->logger = $logger;
         $this->configReader = $configReader;
         $this->session = $session;
+        $this->sessionFactory = $sessionFactory;
     }
 
     /**
@@ -54,6 +58,11 @@ class TrackDataProvider implements TrackDataProviderInterface
      */
     public function getData(): TrackingDataInterface
     {
+        $customerSession = $this->sessionFactory->create();
+        if ($customerSession->isLoggedIn()) {
+            // it works now
+            $this->logger->info("Session Factory", ['e' => $customerSession->getCustomer()->getEmail()]);
+        }
         $store = $this->storeManager->getStore();
         $storeId = To::int($store->getId());
         $scope = $this->scopeManager->initialiseScope(ScopeInterface::SCOPE_STORE, $storeId);
