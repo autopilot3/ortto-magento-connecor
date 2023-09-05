@@ -54,8 +54,14 @@ class CustomerSessionContext
             So we can’t get any customer session data from \Magento\Customer\Model\Session.
          */
         try {
+            $this->logger->info("Running session plugin",
+                ['value' => $this->httpContext->getValue(\Magento\Customer\Model\Context::CONTEXT_AUTH)]);
             $isLoggedIn = To::bool($this->httpContext->getValue(\Magento\Customer\Model\Context::CONTEXT_AUTH));
             if ($isLoggedIn) {
+                $this->logger->info("Auth Context is set", [
+                    'id' => $this->customerSession->getCustomerId(),
+                    'e' => $this->customerSession->getCustomer()->getEmail(),
+                ]);
                 $this->httpContext->setValue(
                     TrackDataProviderInterface::CUSTOMER_ID_SESSION_KEY,
                     $this->customerSession->getCustomerId(),
