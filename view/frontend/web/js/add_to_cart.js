@@ -20,7 +20,9 @@ define(['jquery'], function ($) {
                     if (resp.error) {
                         return;
                     }
-                    ap3c.trackMagento(config.email, config.phone, resp);
+                    ap3c.trackMagento(resp.email, resp.phone, resp);
+                },
+                error: function () {
                 }
             });
         }

@@ -45,6 +45,9 @@ class CheckoutSuccess extends Template
     {
         try {
             $trackingData = $this->trackDataProvider->getData();
+            if (!$trackingData->isTrackingEnabled()) {
+                return false;
+            }
             $scope = $trackingData->getScope();
             if ($sessionOrder = $this->session->getLastRealOrder()) {
                 $orderId = $sessionOrder->getId();

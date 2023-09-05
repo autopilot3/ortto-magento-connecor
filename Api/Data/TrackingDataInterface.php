@@ -12,6 +12,7 @@ interface TrackingDataInterface
     public const SCOPE = "scope";
     public const EMAIL = "email";
     public const PHONE = "phone";
+    public const ENABLED = "enabled";
 
     /**
      * Getter for Scope.
@@ -60,4 +61,20 @@ interface TrackingDataInterface
      * @return $this
      */
     public function setPhone(string $phone);
+
+    /**
+     * Getter for Enabled.
+     *
+     * @return bool
+     */
+    public function isTrackingEnabled(): bool;
+
+    /**
+     * Setter for Enabled.
+     *
+     * @param bool $enabled
+     *
+     * @return $this
+     */
+    public function setEnabled(bool $enabled);
 }
