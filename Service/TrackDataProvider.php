@@ -61,10 +61,12 @@ class TrackDataProvider implements TrackDataProviderInterface
         $data->setEnabled($scope->isConnected() && $this->configReader->isTrackingEnabled($scope->getType(),
                 $scope->getId()));
         if (!$data->isTrackingEnabled()) {
+            $this->logger->info("Tracking disabled", $scope->toArray());
             return $data;
         }
         $data->setScope($scope);
         $customerData = $this->getCustomerData();
+        $this->logger->info("Customer Data", $customerData);
         $data->setEmail($customerData[TrackingDataInterface::EMAIL]);
         $data->setPhone($customerData[TrackingDataInterface::PHONE]);
         return $data;
@@ -77,13 +79,16 @@ class TrackDataProvider implements TrackDataProviderInterface
     {
         $value = $this->httpContext->getValue(self::CUSTOMER_ID_SESSION_KEY);
         if (!empty($value)) {
+            $this->logger->info("HTTP Context");
             return [
                 TrackingDataInterface::EMAIL => $this->getTextValue(self::CUSTOMER_EMAIL_SESSION_KEY),
                 TrackingDataInterface::PHONE => $this->getTextValue(self::CUSTOMER_PHONE_SESSION_KEY),
             ];
         }
+        $this->logger->info("Checking Session Fallback");
         // Fallback to session for AJAX calls (eg. Added to cart activity)
         if ($this->session->isLoggedIn()) {
+            $this->logger->info("Session is Logged in");
             $customer = $this->session->getCustomer();
             $email = $customer->getEmail();
             return [
@@ -91,6 +96,7 @@ class TrackDataProvider implements TrackDataProviderInterface
                 TrackingDataInterface::PHONE => $this->getCustomerPhoneNumber($customer),
             ];
         }
+        $this->logger->info("Not Logged in");
         return [
             TrackingDataInterface::EMAIL => '',
             TrackingDataInterface::PHONE => '',
