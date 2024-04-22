@@ -333,15 +333,15 @@ class OrttoProductRepository implements OrttoProductRepositoryInterface
             $connection = $this->resourceConnection->getConnection();
             $stockTable = $connection->getTableName('inventory_stock');
             $salesChannelTable = $connection->getTableName('inventory_stock_sales_channel');
-            $sql = sprintf(
-                "SELECT s.name
-                    FROM %s s INNER JOIN %s sc ON s.stock_id = sc.stock_id
-                    WHERE sc.code = '%s';",
-                $stockTable,
-                $salesChannelTable,
-                $scope->getWebsiteCode()
-            );
-            return (string)$connection->fetchOne($sql);
+
+            $select = $connection->select()
+                ->from(['st' => $stockTable])
+                ->reset('columns')
+                ->columns('name')
+                ->join(['sc' => $salesChannelTable], 'st.stock_id = sc.stock_id', [])
+                ->where('sc.code = ?', $scope->getWebsiteCode());
+            return (string)$connection->fetchOne($select);
+
         } catch (\Exception $e) {
             $this->logger->error($e, sprintf("Failed to fetch %s website's stock name", $scope->getWebsiteCode()));
             return '';
